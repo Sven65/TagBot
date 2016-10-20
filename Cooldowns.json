@@ -1,0 +1,10 @@
+{
+	"add": 5,
+	"edit": 5,
+	"delete": 5,
+	"list": 5,
+	"glist": 5,
+	"commands": 5,
+	"raw": 5,
+	"tags": 2
+}
