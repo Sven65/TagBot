@@ -15,7 +15,7 @@
 */
 
 String.prototype.format = function(){
-	var args = arguments;
+	let args = arguments;
 	this.unkeyed_index = 0;
 	return this.replace(/\{(\d*)\}/gmi, function(match, key) { 
 		if (key === '') {
@@ -27,7 +27,7 @@ String.prototype.format = function(){
 				? args[key]
 				: match;
 		} else {
-			for (var i = 0; i < args.length; i++) {
+			for (let i = 0; i < args.length; i++) {
 				if (typeof args[i] === 'object' && typeof args[i][key] !== 'undefined') {
 					return args[i][key];
 				}
@@ -38,8 +38,8 @@ String.prototype.format = function(){
 };
 
 Array.prototype.rInt = function(){
-	var min = Number(this[0]);
-	var max = Number(this[1]);
+	let min = Number(this[0]);
+	let max = Number(this[1]);
 	return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
@@ -48,35 +48,32 @@ Array.prototype.random = function(){
 }
 
 var generateTemplateString = (function(){
-	var cache = {};
+	let cache = {};
 
 	function generateTemplate(template){
 
-	var fn = cache[template];
+		let fn = cache[template];
 
-	if (!fn){
+		if (!fn){
 
-	// Replace ${expressions} (etc) with ${map.expressions}.
+			// Replace ${expressions} (etc) with ${map.expressions}.
 
-	var sanitized = template
-		.replace(/\$\{([\s]*[^;\s]+[\s]*)\}/g, function(_, match){
-			return `\$\{map.${match.trim()}\}`;
-		})
-		// Afterwards, replace anything that's not ${map.expressions}' (etc) with a blank string.
-		.replace(/(\$\{(?!map\.)[^}]+\})/g, '');
+			let sanitized = template.replace(/\$\{([\s]*[^;\s]+[\s]*)\}/g, function(_, match){
+				return `\$\{map.${match.trim()}\}`;
+			}).replace(/(\$\{(?!map\.)[^}]+\})/g, '');
 
-	fn = Function('map', `return \`${sanitized}\``);
+			fn = Function('map', `return \`${sanitized}\``);
 
-	}
+		}
 
-	return fn;
-};
+		return fn;
+	};
 
-return generateTemplate;
+	return generateTemplate;
 })();
 
 function formatDate(time){
-	var newDate = new Date();
+	let newDate = new Date();
 	newDate.setTime(time);
 	return newDate.toUTCString();
 }
@@ -120,16 +117,16 @@ function rformat(sstring){
 };
 
 module.exports = function(msg, message){
-	var x = message.content.split(" ");
-	var formt = x.splice(1, x.length);
+	let x = message.content.split(" ");
+	let formt = x.splice(1, x.length);
 
-	var xObj = {};
+	let xObj = {};
 
 	for(i=0;i<formt.length;i++){
 		xObj[Number(i)] = formt[i];
 	}
 
-	var q = msg.format(formt);
+	let q = msg.format(formt);
 
 	q = chooseFormat(q);
 	q = rformat(q);//.rformat();
@@ -179,46 +176,46 @@ module.exports = function(msg, message){
 	};
 
 	if(message.author.game == null){
-		tObj["sgame"] = "";
+		tObj.sgame = "";
 		if(msg.trim().toLowerCase() == "${sgame}"){
-			tObj["sgame"] = "Nothing";
+			tObj.sgame = "Nothing";
 		}
 	}else{
-		tObj["sgame"] = message.author.game.name;
+		tObj.sgame = message.author.game.name;
 	}
 
 	if(message.channel.type === "text"){
-		tObj["chanid"] = message.channel.id;
-		tObj["channame"] = message.channel.name;
-		tObj["chantype"] = message.channel.type;
-		tObj["chanpos"] = message.channel.position;
-		tObj["chantopic"] = message.channel.topic;
+		tObj.chanid = message.channel.id;
+		tObj.channame = message.channel.name;
+		tObj.chantype = message.channel.type;
+		tObj.chanpos = message.channel.position;
+		tObj.chantopic = message.channel.topic;
 
 		if(message.mentions.users.length >= 1){
-			tObj["mentionname"] = message.mentions.users[0].username;
-			tObj["mentionid"] = message.mentions.users[0].id;
-			tObj["mentiondiscrim"] = message.mentions.users[0].discriminator;
-			tObj["mentionstatus"] = message.mentions.users[0].status;
-			tObj["mentionbot"] = message.mentions.users[0].bot;
-			tObj["mention"] = message.mentions.users[0];
-			tObj["mentionjoined"] = server.members.find("id", message.mentions.users[0].id).joinDate;
+			tObj.mentionname = message.mentions.users[0].username;
+			tObj.mentionid = message.mentions.users[0].id;
+			tObj.mentiondiscrim = message.mentions.users[0].discriminator;
+			tObj.mentionstatus = message.mentions.users[0].status;
+			tObj.mentionbot = message.mentions.users[0].bot;
+			tObj.mention = message.mentions.users[0];
+			tObj.mentionjoined = server.members.find("id", message.mentions.users[0].id).joinDate;
 		}
 
 		if(message.guild != undefined){
-			var server = message.guild;
-			tObj["sjoined"] = server.members.find("id", message.author.id).joinDate;
-			tObj["serverregion"] = server.region;
-			tObj["serverid"] = server.id;
-			tObj["servername"] = server.name;
-			tObj["servermembs"] = server.memberCount;
-			tObj["serverchans"] = server.channels.size;
-			tObj["serverowner"] = server.owner.user.username;
-			tObj["serverdefchan"] = server.defaultChannel.name;
+			let server = message.guild;
+			tObj.sjoined = server.members.find("id", message.author.id).joinDate;
+			tObj.serverregion = server.region;
+			tObj.serverid = server.id;
+			tObj.servername = server.name;
+			tObj.servermembs = server.memberCount;
+			tObj.serverchans = server.channels.size;
+			tObj.serverowner = server.owner.user.username;
+			tObj.serverdefchan = server.defaultChannel.name;
 		}
 	}
 
 
-	var togs = [];
+	let togs = [];
 	Object.keys(tObj).map((a) => {
 		togs.push("``"+a+"``");
 	});
@@ -227,7 +224,7 @@ module.exports = function(msg, message){
 
 	//tObj
 
-	var tmpl = generateTemplateString(q);
+	let tmpl = generateTemplateString(q);
 
 	return tmpl(tObj);
 }

@@ -30,7 +30,7 @@ let Tags = {
 	},
 
 	getTag: (tag) => {
-		return tags[tag].content||null;
+		return tags[tag]||null;
 	},
 	editTag: (tag, data) => {
 		return new Promise((resolve, reject) => {
@@ -70,7 +70,14 @@ let Tags = {
 			resolve(q);
 		});
 	},
+	glist: () => {
+		return new Promise((resolve, reject) => {
+			resolve(Object.keys(tags));
+		});
+	},
 	tagExist: (tag) => {
 		return tags.hasOwnProperty(tag);
 	}
-}
+};
+
+module.exports = Tags;

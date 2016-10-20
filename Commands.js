@@ -17,7 +17,7 @@
 let Commands = {
 	cmds: ["add", "edit", "delete", "list", "glist", "commands", "raw"],
 	add: {
-		exec: (bot, message) => {
+		exec: (bot, message, args) => {
 			let tag = args[1];
 
 			if(tag === undefined){
@@ -26,7 +26,7 @@ let Commands = {
 			}
 
 			let val = args.splice(2, args.length);
-			if(Tags.tagExist(tag.toLowerCase()) || this.cmds.indexOf(tag.toLowerCase()) > -1){
+			if(Tags.tagExist(tag.toLowerCase()) || Commands.cmds.indexOf(tag.toLowerCase()) > -1){
 				message.channel.sendMessage(`Sorry, ${message.author.username}, but that tag already exists.`);
 				return;
 			}else{
@@ -45,11 +45,115 @@ let Commands = {
 		}
 	},
 	edit: {
-		exec: (bot, message) => {
-			
+		exec: (bot, message, args) => {
+			if(args.length >= 3){
+				let tag = args[1].toLowerCase();
+				let val = args.splice(2, args.length);
+				if(Tags.tagExist(tag)){
+					let tg = Tags.getTag(tag);
+					if(tg.owner === message.author.id){
+						Tags.editTag(tag, {content: val.join(" ").replace(/`/gmi, "\\`"), owner: message.author.id}).then(() => {
+							message.channel.sendMessage("Changed tag ``"+tag+"``");
+						}).catch((e) => {
+							console.log(e);
+						});
+						return;
+					}else{
+						message.channel.sendMessage(`You don't own this tag, ${message.author.username}.`);
+						return;
+					}
+				}else{
+					message.channel.sendMessage("Unknown tag ``"+tag+"``");
+					return;
+				}
+			}
+		}
+	},
+	delete: {
+		exec: (bot, message, args) => {
+			if(args.length >= 2){
+				let tag = args[1].toLowerCase();
+				if(Tags.exists(tag)){
+					let tg = Tags.getTag(tag);
+					if(tg.owner === message.author.id){
+						Tags.deleteTag(tag).then(() => {
+							message.channel.sendMessage("Deleted tag ``"+tag+"``");
+						}).catch((e) => {
+							console.log(e);
+						});
+						return;
+					}else{
+						message.channel.sendMessage(`You don't own this tag, ${message.author.username}.`);
+						return;
+					}
+				}else{
+					message.channel.sendMessage("Unknown tag ``"+tag+"``");
+					return;
+				}
+			}
+		}
+	},
+	list: {
+		exec: (bot, message, args) => {
+			Tags.list(message.author.id).then((t) => {
+				let b = [];
+				t.map((a) => {
+					b.push(``+a+``);
+				});
+				let msg = b.join(', ');
+				if(msg.length > 2000){
+					msg = `Too many tags to display. (${b.length})`;
+				}
+				message.channel.sendMessage(msg);
+			});
+		}
+	},
+	glist: {
+		exec: (bot, message, args) => {
+			Tags.glist().then((t) => {
+				let b = [];
+				t.map((a) => {
+					b.push(``+a+``);
+				});
+				let msg = b.join(', ');
+				if(msg.length > 2000){
+					msg = `Too many tags to display. (${b.length})`;
+				}
+				message.channel.sendMessage(msg);
+			});
+		}
+	},
+	commands: {
+		exec: (bot, message, args) => {
+			let list = [];
+			this.cmds.map((a) => {
+				list.push("``"+a+"``");
+			});
+			if(list.length <= 0){
+				message.channel.sendMessage("No commands found :(");
+				return;
+			}else{
+				message.channel.sendMessage(`Found ${list.length} commands.\n${list.sort().join(", ")}`);
+				return;
+			}
+		}
+	},
+	raw: {
+		exec: (bot, message, args) => {
+			if(args.length >= 2){
+				let tag = args[1].toLowerCase();
+				if(Tags.tagExist(tag)){
+					let t = Tags.getTag(tag);
+					let msg = t.content;
+					message.channel.sendMessage("``"+msg+"``");
+					return;
+				}else{
+					message.channel.sendMessage("Unknown tag ``"+tag+"``");
+					return;
+				}
+			}
 		}
 	}
-
 };
 
 module.exports = Commands;

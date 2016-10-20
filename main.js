@@ -16,7 +16,7 @@
 
 const Discord = require("discord.js");
 const fs = require("fs")
-const config = require("./Config.json");
+const Config = require("./Config.json");
 const cooldowns = require("./Cooldowns.json");
 let Tags = require("./Tags.js");
 let template = require("./template.js");
@@ -32,7 +32,7 @@ let lastExecTime = {};
 let firstTime = {};
 Tags.loadTags().then(() => {
 	global.Tags = Tags;
-	bot.login(config.token).then(() => {
+	bot.login(Config.token).then(() => {
 		console.log("Logged in");
 	}, console.log);
 }).catch((e) => {
@@ -53,9 +53,9 @@ String.prototype.printf = function(){
 
 function handle(tag, bot, message){
 	try{
-		let content = tags.getTag(tag);
+		let content = Tags.getTag(tag);
 		if(content !== null){
-			message.channel.sendMessage(template(content, message)).catch((e) => {
+			message.channel.sendMessage(template(content.content, message)).catch((e) => {
 				console.dir(e);
 			});
 		}
@@ -77,7 +77,7 @@ function checkCooldown(user, cmd){
 	let now = new Date().valueOf();
 	let cd = 0;
 
-	if(commands.list.indexOf(cmd) > -1){
+	if(commands.cmds.indexOf(cmd) > -1){
 		cd = cooldowns[cmd];
 	}else{
 		cd = cooldowns["tags"];
@@ -103,7 +103,7 @@ bot.on("message", (message) => {
 
 			let cmd;
 
-			if(args[0].substring(0, prefix.length) !== prefix){
+			if(args[0].substring(0, Config.prefix.length) !== Config.prefix){
 				if(args[0] === "<@"+bot.user.id+">" || args[0].toLowerCase() === bot.user.username.toLowerCase()){
 					args = args.splice(1, args.length);
 
@@ -112,13 +112,15 @@ bot.on("message", (message) => {
 						return;
 					}
 					cmd = args[0].toLowerCase();
+				}else{
+					return;
 				}
 			}else{
-				cmd = args[0].replace(prefix, "").toLowerCase();
+				cmd = args[0].replace(Config.prefix, "").toLowerCase();
 			}
 
 			if(commands.cmds.indexOf(cmd) > -1){
-				commands[cmd].exec(bot, message);
+				commands[cmd].exec(bot, message, args);
 			}else if(cmd === "eval" && message.author.id === Config.owner){
 				try{
 					let msg = "";
@@ -137,13 +139,14 @@ bot.on("message", (message) => {
 				}
 			}else{
 
-				if(Tags.tagExists(cmd)){
+				if(Tags.tagExist(cmd)){
 					let data = checkCooldown(message.author.id, cmd);
 					if(data.state){
 						message.channel.sendMessage(`${message.author.username}!, Please wait! ${data.time} seconds`, function(e, m){ bot.deleteMessage(m, {"wait": 6000}); });
 						if (message.channel.type === "text") message.delete({"wait": 5000});
 						return;
 					}else{
+						let now = new Date().valueOf();
 						handle(cmd, bot, message);
 						lastExecTime[cmd][message.author.id] = now;
 						firstTime[cmd][message.author.id] = true;
