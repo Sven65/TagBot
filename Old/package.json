@@ -1,0 +1,10 @@
+{
+  "name": "tagbot",
+  "version": "0.0.1",
+  "description": "Tag bot",
+  "dependencies": {
+    "discord.js": "^9.3.0",
+    "python-format": "^1.0.2",
+    "redis": "^2.6.2"
+  }
+}

@@ -32,6 +32,17 @@ let Tags = {
 	getTag: (tag) => {
 		return tags[tag]||null;
 	},
+	getTagByContent: (content) => {
+		return new Promise((resolve, reject) => {
+			let t = null;
+			Object.keys(tags).map((a) => {
+				if(tags[a] === content){
+					t = a;
+				}
+			});
+			resolve(t);
+		});
+	},
 	editTag: (tag, data) => {
 		return new Promise((resolve, reject) => {
 			tags[tag] = data;
@@ -77,6 +88,17 @@ let Tags = {
 	},
 	tagExist: (tag) => {
 		return tags.hasOwnProperty(tag);
+	},
+	tagAmount: (user) => {
+		return new Promise((resolve, reject) => {
+			let i = 0;
+			Object.keys(tags).map((a) => {
+				if(tags[a].owner === user){
+					i++;
+				}
+			});
+			resolve(i);
+		});
 	}
 };
 
