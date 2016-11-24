@@ -28,7 +28,8 @@ Array.prototype.random = function(){
 }
 
 String.prototype.chooseFormat = function(){
-	let matches = this.match(/\{choose\((.*?)\)\}/g);
+	let string = this;
+	let matches = string.match(/\{choose\((.*?)\)\}/g);
 	if(matches !== null){
 		let numbers = matches.map(match => {
 			let m = match.match(/[^|]+/g).length;
@@ -36,14 +37,15 @@ String.prototype.chooseFormat = function(){
 		});
 
 		numbers.forEach(number => {
-			this.replace(/(\{choose\(.*?\)\})/, number);
+			string = string.replace(/(\{choose\(.*?\)\})/, number);
 		});
 	}
-	return this;
+	return string;
 }
 
 String.prototype.randFormat = function(){
-	let matches = this.match(/\{rint\(.*?[0-9]?\)\}/g);
+	let string = this;
+	let matches = string.match(/\{rint\(.*?[0-9]?\)\}/g);
 	if(matches !== null){
 		let numbers = matches.map(match => {
 			let m = match.match(/\d/g).length;
@@ -51,13 +53,13 @@ String.prototype.randFormat = function(){
 		});
 
 		numbers.forEach(number => {
-			this.replace(/\{rint\(.*?[0-9]?\)\}/,number);
+			string = string.replace(/\{rint\(.*?[0-9]?\)\}/,number);
 		});
 	}
-	return this;
+	return string;
 }
 
-Date.format = function(string){
+Date.prototype.format = function(string){
 	let format = {
 		"%%": "%",
 		"%a": ["Sun", "Mon", "Tue", "Wed", "Fri", "Sat"][this.getDay()],

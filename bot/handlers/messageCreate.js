@@ -11,16 +11,20 @@ module.exports = {
 
 		if(Args[0].startsWith(prefix)){
 			prefixType = 0;
-			command = Args[0].replace(prefix, "").toLowerCase();
 		}else if(Args[0].toLowerCase() === TagBot.user.username.toLowerCase()){
 			prefixType = 1;
 			Args.shift();
-			command = Args[0].toLowerCase();
 		}else if(message.isMentioned(TagBot.user)){
 			prefixType = 2;
 			Args.shift();
-			command = Args[0].toLowerCase();
 		}
+
+		if(Args[0] === undefined){
+			message.channel.sendMessage(`What do you want, ${message.author.username}?`);
+			return;
+		}
+
+		command = Args[0].replace(prefix, "").toLowerCase();
 
 		if(prefixType >= 0){
 			if(TagBot.Commands.All.indexOf(command) > -1){

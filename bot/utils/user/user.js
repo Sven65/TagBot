@@ -23,4 +23,10 @@ module.exports = class User{
 		data[command] = time;
 		return TagBot.rdb.r.table('FirstTime').insert(data, {conflict: "update"}).run(TagBot.rdb.conn);
 	}
+
+	tagCount(){
+		return TagBot.rdb.r.table("Tags").filter(function(tag){
+			return tag("Owner").eq(this.id)
+		}).count().default(0).run(TagBot.rdb.conn);
+	}
 }
