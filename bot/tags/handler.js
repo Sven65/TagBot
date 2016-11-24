@@ -146,10 +146,10 @@ module.exports = {
 
 		let template = generateTemplateString(Msg);
 		let toSend = template(TagObject);
+		toSend = new Date().format(toSend);
 		toSend = toSend.chooseFormat();
 		toSend = toSend.randFormat();
-		toSend = new Date().format(toSend);
-
+		
 		Message.channel.sendMessage(toSend);
 	}
 }
