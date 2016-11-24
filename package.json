@@ -1,0 +1,22 @@
+{
+  "name": "TagBot",
+  "version": "2.0.0",
+  "description": "A discord tagbot",
+  "license": "Apache-2.0",
+  "author": "Mackan90096 / Sven65 <mackan@discorddungeons.me>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Sven65/TagBot.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Sven65/Tagbot/issues"
+  },
+  "scripts": {
+    "start": "node bot/main.js"
+  },
+  "main": "bot/main.js",
+  "dependencies": {
+    "discord.js": "github:hydrabolt/discord.js#indev",
+    "rethinkdb": "^2.3.3"
+  }
+}
