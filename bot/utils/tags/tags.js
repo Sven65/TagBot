@@ -15,4 +15,22 @@ module.exports = class Tags{
 		};
 		return TagBot.rdb.r.table("Tags").insert(data).run(TagBot.rdb.conn);
 	}
+
+	editTag(name, content){
+		return TagBot.rdb.r.table("Tags").get(name).update({content: content}).run(TagBot.rdb.conn);
+	}
+
+	deleteTag(name){
+		return TagBot.rdb.r.table("Tags").get(name).delete().run(TagBot.rdb.conn);
+	}
+
+	getAll(){
+		return TagBot.rdb.r.table("Tags").run(TagBot.rdb.conn);
+	}
+
+	fromUser(user){
+		return TagBot.rdb.r.table("Tags").filter(function(tag){
+			return tag("owner").eq(user)
+		}).default(null).run(TagBot.rdb.conn);
+	}
 }

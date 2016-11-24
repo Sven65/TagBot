@@ -11,6 +11,11 @@ module.exports = {
 				let Tag = Args[0];
 				let Value = Args.splice(1, Args.length).join(" ");
 
+				if(TagBot.Commands.All.indexOf(Tag.toLowerCase()) > -1){
+					message.channel.sendMessage(`:x: You can't override commands, ${message.author.username}.`);
+					return;
+				}
+
 				Tags.getTag(Tag.toLowerCase()).then((tag) => {
 					if(tag !== null){
 						message.channel.sendMessage(`:x: Sorry, ${message.author.username}, but that tag already exists.`);
