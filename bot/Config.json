@@ -1,7 +1,7 @@
 {
 	"Token": "",
 	"Owner": "",
-	"TagCooldown": 10,
+	"TagCooldown": 5,
 	"db": {
 		"user": "",
 		"pass": ""

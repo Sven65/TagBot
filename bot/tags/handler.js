@@ -17,7 +17,7 @@ let generateTemplateString = (() => {
 module.exports = {
 	Handle: (Args, Message, Tag) => {
 		let Msg = Tag.content.format(Args);
-
+		
 		let TagObject = {
 			// Sender variables, 's' = Sender
 
@@ -145,7 +145,6 @@ module.exports = {
 		}
 
 		let template = generateTemplateString(Msg);
-
 		let toSend = template(TagObject);
 		toSend = toSend.chooseFormat();
 		toSend = toSend.randFormat();

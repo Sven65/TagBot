@@ -25,8 +25,9 @@ module.exports = class User{
 	}
 
 	tagCount(){
+		let id = this.id;
 		return TagBot.rdb.r.table("Tags").filter(function(tag){
-			return tag("Owner").eq(this.id)
+			return tag("Owner").eq(id)
 		}).count().default(0).run(TagBot.rdb.conn);
 	}
 }

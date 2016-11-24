@@ -1,5 +1,5 @@
 String.prototype.format = function(){
-	let args = arguments;
+	let args = arguments[0];
 	this.unkeyed_index = 0;
 	return this.replace(/\{(\d*)\}/gmi, function(match, key){ 
 		if(key === ''){
@@ -33,7 +33,7 @@ String.prototype.chooseFormat = function(){
 	if(matches !== null){
 		let numbers = matches.map(match => {
 			let m = match.match(/[^|]+/g).length;
-			return match.match(/[^|]+/g)[Math.floor(Math.random()*m)];
+			return match.match(/[^|]+/g)[Math.floor(Math.random()*m)].replace(/\)}$/, "").replace(/^{choose\(/, "");
 		});
 
 		numbers.forEach(number => {
