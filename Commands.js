@@ -15,7 +15,7 @@
 */
 
 let Commands = {
-	cmds: ["add", "edit", "delete", "list", "glist", "commands", "raw"],
+	cmds: ["add", "edit", "delete", "list", "glist", "commands", "raw", "getowner"],
 	add: {
 		exec: (bot, message, args) => {
 			let tag = args[1];
@@ -149,6 +149,23 @@ let Commands = {
 					return;
 				}else{
 					message.channel.sendMessage("Unknown tag ``"+tag+"``");
+					return;
+				}
+			}
+		}
+	},
+	getowner: {
+		exec: (bot, message, args) => {
+			if (args.length >= 1) {
+				const tag = args[1].toLowerCase();
+				if (Tags.tagExist(tag)){
+					const t= Tags.getTag(tag);
+					let owner = t.owner;
+					message.channel.sendMessage("The owner of the tag "+tag+" is "+owner+",@"+message.author.username+".");
+					return;
+				}
+				else {
+					message.channel.sendMessage("Can't find the tag ``"+tag+"``,@"+message.author.username+".");
 					return;
 				}
 			}
