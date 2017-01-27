@@ -18,30 +18,43 @@ let Commands = {
 	cmds: ["add", "edit", "delete", "list", "glist", "commands", "raw"],
 	add: {
 		exec: (bot, message, args) => {
-			let tag = args[1];
+			Tags.tagAmount(message.author.id).then((s) => {
+				
+				if(s >= 497){
+					message.channel.sendMessage(`Sorry, ${message.author.username}, but you can only have 497 tags.`);
+					return;
+				}
 
-			if(tag === undefined){
-				message.channel.sendMessage(`You what, ${message.author.username}?`);
-				return;
-			}
+				let tag = args[1];
 
-			let val = args.splice(2, args.length);
-			if(Tags.tagExist(tag.toLowerCase()) || Commands.cmds.indexOf(tag.toLowerCase()) > -1){
-				message.channel.sendMessage(`Sorry, ${message.author.username}, but that tag already exists.`);
-				return;
-			}else{
-				let x = val.join(" ").replace(/\`/gmi, "\\`");
-				if(x.length >= 3){
-					Tags.addTag(tag, {"content": x,"owner":message.author.id}).then(() => {
-						message.channel.sendMessage(`Added tag ${tag}!`);
-					}).catch((e) => {
-						console.log(e);
-					});
+				if(tag === undefined){
+					message.channel.sendMessage(`You what, ${message.author.username}?`);
+					return;
+				}
+
+				let val = args.splice(2, args.length);
+				if(Tags.tagExist(tag.toLowerCase()) || Commands.cmds.indexOf(tag.toLowerCase()) > -1){
+					message.channel.sendMessage(`Sorry, ${message.author.username}, but that tag already exists.`);
 					return;
 				}else{
-					message.channel.sendMessage(`Your tag needs to have atleast 5 characters of content, ${message.author.username}`);
+					let x = val.join(" ").replace(/\`/gmi, "\\`");
+					if(x.length >= 3){
+
+						if(x.includes("https://cdn.discordapp.com/attachments/227142431760449546/233285234605424641/Divorce1.png") || x.includes("https://cdn.discordapp.com/attachments/227142431760449546/233285234185994240/Divorce2.png")){
+							return;
+						}
+
+						Tags.addTag(tag, {"content": x,"owner":message.author.id}).then(() => {
+							message.channel.sendMessage(`Added tag ${tag}!`);
+						}).catch((e) => {
+							console.log(e);
+						});
+						return;
+					}else{
+						message.channel.sendMessage(`Your tag needs to have atleast 5 characters of content, ${message.author.username}`);
+					}
 				}
-			}
+			});
 		}
 	},
 	edit: {
@@ -52,6 +65,11 @@ let Commands = {
 				if(Tags.tagExist(tag)){
 					let tg = Tags.getTag(tag);
 					if(tg.owner === message.author.id){
+
+						if(val.join().includes("https://cdn.discordapp.com/attachments/227142431760449546/233285234605424641/Divorce1.png") || val.join().includes("https://cdn.discordapp.com/attachments/227142431760449546/233285234185994240/Divorce2.png")){
+							return;
+						}
+
 						Tags.editTag(tag, {content: val.join(" ").replace(/`/gmi, "\\`"), owner: message.author.id}).then(() => {
 							message.channel.sendMessage("Changed tag ``"+tag+"``");
 						}).catch((e) => {
@@ -73,7 +91,7 @@ let Commands = {
 		exec: (bot, message, args) => {
 			if(args.length >= 2){
 				let tag = args[1].toLowerCase();
-				if(Tags.exists(tag)){
+				if(Tags.tagExist(tag)){
 					let tg = Tags.getTag(tag);
 					if(tg.owner === message.author.id){
 						Tags.deleteTag(tag).then(() => {
