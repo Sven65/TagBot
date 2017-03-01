@@ -33,4 +33,8 @@ module.exports = class Tags{
 			return tag("owner").eq(user)
 		}).default(null).run(TagBot.rdb.conn);
 	}
+
+	setOwner(tag, owner){
+		return TagBot.rdb.r.table("Tags").get(tag).update({owner: owner}).run(TagBot.rdb.conn);
+	}
 }
