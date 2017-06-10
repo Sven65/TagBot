@@ -14,7 +14,7 @@ module.exports = (message) => {
 	const tagClass = new Tags()
 	
 
-	if(message.author.id !== "141610251299454976") return // FOR TEST ONLY
+	//if(message.author.id !== "141610251299454976") return // FOR TEST ONLY
 
 	if(message.channel.type === "text"){
 		if(message.guild.id === "172382467385196544" && message.channel.id === "172382467385196544"){
