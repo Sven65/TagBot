@@ -8,6 +8,8 @@ const SendError = require(`${__dirname}/utils/SendError.js`);
 const tags = require(`${__dirname}/utils/tags/index.js`);
 const TagHandler = require(`${__dirname}/tags/handler.js`);
 
+let locked = false;
+
 global.User = require(`${__dirname}/utils/user/index.js`);
 global.Tags = new tags.Tags;
 
@@ -93,6 +95,15 @@ rethink.connect({
 	TagBot.Config = Config;
 	TagBot.SendError = SendError;
 	TagBot.TagHandler = TagHandler;
+
+	conn.on("close", () => {
+		locked = true;
+	})
+
+	conn.on("timeout", () => {
+		locked = true;
+	})
+
 	CommandHelper.loadCommands().then(() => {
 		TagBot.Commands = Commands;
 		TagBot.CommandHelper = CommandHelper;
@@ -106,4 +117,7 @@ rethink.connect({
 	});
 });
 
-TagBot.on("message", message => Handlers.messageCreate.Handle(message));
+TagBot.on("message", message => {
+	if(locked) return;
+	Handlers.messageCreate.Handle(message)
+});
