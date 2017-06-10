@@ -1,8 +1,8 @@
 const Discord = require('discord.js')
-const Config = require(`${__dirname}/config.json`)
+const Config = require(`${__dirname}/Config.json`)
 
 class TagBot extends Discord.Client{
-	constructor(shardID){
+	constructor(){
 		super({
 			autoReconnect: true,
 			disableEveryone: true,
@@ -17,7 +17,7 @@ class TagBot extends Discord.Client{
 	}
 
 	login(){
-		return super.login(this.Config.token)
+		return super.login(this.Config.Token)
 	}
 
 	set rethinkdb(rethinkdb){

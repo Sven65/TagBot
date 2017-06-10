@@ -15,7 +15,7 @@ class User{
 	}
 
 	isFirstTime(command){
-		return ReDB.r.table('FirstTime').get(this.id)(command).default(false).run(ReDB.conn)
+		return ReDB.r.table('FirstTime').get(this._id)(command).default(false).run(ReDB.conn)
 	}
 
 	setFirstTime(command, time){

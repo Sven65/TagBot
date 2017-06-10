@@ -11,6 +11,7 @@ class Add{
 	}
 
 	Execute(Args, message){
+		console.log(Args)
 		if(Args.length >= 2){
 			const user = new User(message.author.id)
 			const tags = new Tags()
@@ -24,7 +25,7 @@ class Add{
 				let tagName = Args[0]
 				let tagContent = Args.splice(1, Args.length).join(" ")
 
-				if(message.client.Commands.All.indexOf(tagName.toLowerCase()) > -1){
+				if(message.client.commands.Commands.All.indexOf(tagName.toLowerCase()) > -1){
 					message.channel.send(`:x: You can't override commands, ${message.author.username}.`)
 					return
 				}

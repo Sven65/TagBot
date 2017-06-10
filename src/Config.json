@@ -4,6 +4,9 @@
 	"TagCooldown": 5,
 	"db": {
 		"user": "",
-		"pass": ""
+		"pass": "",
+		"url": "",
+		"port": 0,
+		"db": ""
 	}
 }

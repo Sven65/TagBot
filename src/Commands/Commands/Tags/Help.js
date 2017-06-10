@@ -16,10 +16,6 @@ class Help{
 			try{
 				let Command = Args[0].toLowerCase()
 
-				if(client.commands.Commands.Aliases[Command] !== undefined){
-					Command = client.commands.Commands.Aliases[Command]
-				}
-
 				if(client.commands.Commands.All.indexOf(Command) > -1){
 
 					const commandName = Command.capFirst()
