@@ -1,0 +1,1 @@
+global.ReDB = {r: rethinkdb, conn: conn}

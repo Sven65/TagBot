@@ -16,7 +16,7 @@
   },
   "main": "bot/main.js",
   "dependencies": {
-    "discord.js": "github:hydrabolt/discord.js#indev",
+    "discord.js": "^11.1.0",
     "rethinkdb": "^2.3.3"
   }
 }
