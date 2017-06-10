@@ -26,7 +26,7 @@ class Stealtag{
 				}
 
 				tags.setOwner(tagName.toLowerCase(), message.author.id).then(() => {
-					message.channel.send(`:white_check_mark: Stole tag \`${Tag}\`!`)
+					message.channel.send(`:white_check_mark: Stole tag \`${tagName}\`!`)
 				}).catch(e => message.client.sendError(message, e))
 			}).catch(e => message.client.sendError(message, e))
 		}else{

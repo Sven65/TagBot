@@ -78,7 +78,6 @@ Object.defineProperty(String.prototype, "randFormat", {
 		let matches = string.match(/\{rint\(.*?[0-9]?\)\}/g);
 		if(matches !== null){
 			let numbers = matches.map(match => {
-				let m = match.match(/\d/g).length;
 				return match.match(/\d/g).rInt();
 			});
 

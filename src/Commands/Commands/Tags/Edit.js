@@ -28,12 +28,12 @@ class Edit{
 					return
 				}
 
-				if(Value.length < 3){
+				if(contents.length < 3){
 					message.channel.send(`:x: Your tag needs to have atleast 3 characters of content, ${message.author.username}.`)
 					return
 				}
 
-				tags.editTag(tagName.toLowerCase(), content).then(() => {
+				tags.editTag(tagName.toLowerCase(), contents).then(() => {
 					message.channel.send(`:white_check_mark: Edited tag \`${tagName}\`!`)
 				}).catch(e => message.client.sendError(message, e))
 			}).catch(e => message.client.sendError(message, e))
