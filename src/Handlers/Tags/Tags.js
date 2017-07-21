@@ -60,7 +60,7 @@ class TagHandler{
 				servernameacr: message.guild.nameAcronym,
 				serverafktimeout: message.guild.afkTimeout||"Unknown",
 				servericon: message.guild.iconURL({format:'png'})||"None",
-				serversplash: message.guild.aplashURL({format:'png'})||"None",
+				serversplash: message.guild.splashURL({format:'png'})||"None",
 				serverid: message.guild.id,
 				servermembs: message.guild.memberCount,
 				serverchans: message.guild.channels.array().length,
