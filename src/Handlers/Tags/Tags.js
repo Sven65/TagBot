@@ -11,8 +11,9 @@ class TagHandler{
 			sdiscrim: message.author.discriminator,
 			sstatus: message.author.presence.status,
 			sgame: message.author.presence.game||"Unknown",
+			savatar: message.author.displayAvatarURL({format:'png'}),
 			sbot: message.author.bot,
-			sender: `<@${message.author.id}>`
+			sender: message.author.toString()
 		}
 	}
 
@@ -34,7 +35,8 @@ class TagHandler{
 	getMessageVariables(message){
 		return {
 			mtime: message.createdAt.toUTCString(),
-			mid: message.id
+			mid: message.id,
+			mtts: message.tts
 		}
 	}
 
@@ -44,7 +46,9 @@ class TagHandler{
 			chantype: message.channel.type,
 			chancreated: message.channel.createdAt.toUTCString(),
 			channame: message.channel.name||"Unknown",
-			chantopic: message.channel.topic||"Unknown"
+			chantopic: message.channel.topic||"Unknown",
+			chanpos: message.channel.position||"Unknown",
+			channsfw: message.channel.nsfw||"Unknown"
 		}
 	}
 
@@ -53,23 +57,42 @@ class TagHandler{
 			return {
 				serverregion: message.guild.region,
 				servername: message.guild.name,
+				servernameacr: message.guild.nameAcronym,
+				serverafktimeout: message.guild.afkTimeout||"Unknown",
+				servericon: message.guild.iconURL({format:'png'})||"None",
+				serversplash: message.guild.aplashURL({format:'png'})||"None",
 				serverid: message.guild.id,
 				servermembs: message.guild.memberCount,
 				serverchans: message.guild.channels.array().length,
-				serverdefchan: message.guild.defaultChannel,
+				servervchans: message.guild.channels.array().filter(c => c.type === 'voice').length,
+				servertchans: message.guild.channels.array().filter(c => c.type === 'text').length,
 				servercreated: message.guild.createdAt.toUTCString(),
-				serververification: message.guild.verificationLevel
+				serververification: message.guild.verificationLevel,
+				servercontentfilter: message.guild.explicitContentFilter,
+
+				serverdefchan: message.guild.defaultChannel,
+				serverdefchanname: message.guild.defaultChannel.name||"Unknown",
+				serverdefchantopic: message.guild.defaultChannel.topic||"Unknown",
+				serverdefchanpos: message.guild.defaultChannel.position,
+				serverdefchannsfw: message.guild.defaultChannel.nsfw
 			}
 		}else{
 			return {
 				serverregion: "Unknown",
 				servername: "Unknown",
+				servericon: "Unknown",
 				serverid: "Unknown",
 				servermembs: "Unknown",
 				serverchans: "Unknown",
+				servervchans: "Unknown",
+				servertchans: "Unknown",
 				serverdefchan: "Unknown",
 				servercreated: "Unknown",
-				serververification: "Unknown"
+				serververification: "Unknown",
+				serverdefchanname: "Unknown",
+				serverdefchantopic: "Unknown",
+				serverdefchanpos: "Unknown",
+				serverdefchannsfw: "Unknown"
 			}
 		}
 	}
@@ -78,12 +101,17 @@ class TagHandler{
 		if(message.guild !== null){
 			return {
 				serverowner: message.guild.owner,
-				serverownername: message.guild.owner.username,
+				serverownername: message.guild.owner.user.username,
 				serverownernick: message.guild.owner.displayName,
-				serverownerid: message.guild.owner.id,
+				serverownerid: message.guild.owner.user.id,
 				serverownerjoined: message.guild.owner.joinedAt.toUTCString(),
-				serverownerstatus: message.guild.owner.presence.status,
-				serverownergame: message.guild.owner.presence.game||"Unknown"
+				serverowneravatar: message.guild.owner.user.displayAvatarURL({format:'png'}),
+				serverownerstatus: message.guild.owner.user.presence.status,
+				serverownergame: message.guild.owner.user.presence.game||"Unknown",
+				serverownerfrole: message.guild.owner.highestRole.name,
+				serverownerhrole: message.guild.owner.hoistRole.name,
+				serverownercrole: message.guild.owner.colorRole.name||"Unknown",
+				serverownercolor: message.guild.owner.colorRole?message.guild.owner.displayHexColor:"None"
 			}
 		}else{
 			return {
@@ -93,7 +121,11 @@ class TagHandler{
 				serverownerid: "Unknown",
 				serverownerjoined: "Unknown",
 				serverownerstatus: "Unknown",
-				serverownergame: "Unknown"
+				serverownergame: "Unknown",
+				serverownerfrole: "Unknown",
+				serverownerhrole: "Unknown",
+				serverownercrole: "Unknown",
+				serverownercolor: "Unknown"
 			}
 		}
 	}
@@ -108,9 +140,14 @@ class TagHandler{
 			mentiongame: "Unknown",
 			mentionbot: "Unknown",
 			mention: "Unknown",
+			mentionavatar: "Unknown",
 
 			mentionjoined: "Unknown",
-			mentionnick: "Unknown"
+			mentionnick: "Unknown",
+			mentionfrole: "Unknown",
+			mentionhrole: "Unknown",
+			mentioncrole: "Unknown",
+			mentioncolor: "Unknown"
 		}
 
 		let Mentions = message.content.match(/<@!?\d+>/g)
@@ -137,6 +174,7 @@ class TagHandler{
 				toReturn.mentionstatus = Mention.presence.status;
 				toReturn.mentiongame = Mention.presence.game||"Unknown";
 				toReturn.mentionbot = Mention.bot;
+				toReturn.mentionavatar: Mention.author.displayAvatarURL({format:'png'});
 				toReturn.mention = Mention;
 
 				if(message.guild !== null){
@@ -145,8 +183,12 @@ class TagHandler{
 					let Member = message.guild.members.get(Mentions[0])
 
 					if(Member !== null && Member !== undefined){
-						toReturn.mentionjoined = Member.joinedAt.toUTCString()
-						toReturn.mentionnick = Member.nickname||Mention.username
+						toReturn.mentionjoined = Member.joinedAt.toUTCString();
+						toReturn.mentionnick = Member.nickname||Mention.username;
+						toReturn.mentionfrole = Member.highestRole.name;
+						toReturn.mentionhrole = Member.hoistRole.name;
+						toReturn.mentioncrole = Member.colorRole.name||"Unknown";
+						toReturn.mentioncolor = Member.colorRole?message.guild.owner.displayHexColor:"None";
 					}
 
 				}
