@@ -17,11 +17,19 @@ class TagEngine {
 			try {
 				const tagReq = require(`${__dirname}/Tags/${file}`)
 
-				const name = file.slice(0, -3).toLowerCase()
+				if (tagReq.tagType === 'multiple') {
+					Object.keys(tagReq.tagList).forEach(item => {
+						this.subTags[item] = {
+							execute: tagReq.tagList[item]
+						}
+					})
+				} else {
+					const name = file.slice(0, -3).toLowerCase()
 
-				this.subTags[name] = tagReq
+					this.subTags[name] = tagReq
+				}
 			} catch(e){
-				console.log(`error file: ${File}`)
+				console.log(`error file: ${file}`)
 				console.error(e)
 				//reject(e)
 			}
@@ -59,11 +67,6 @@ class TagEngine {
 				output += this.iterate(ast.children, options, state).join('')
 			}
 		} else if (ast.type === Lexer.TAG_TYPES.CALL) {
-			
-			console.log("AST", ast)
-			console.log("this.subTags", this.subTags)
-			console.log("ast.text.trim = ", ast.text.trim())
-
 			const tagName = ast.text.trim()
 
 			if (ast.children.length > 0) {
@@ -82,9 +85,11 @@ class TagEngine {
 					if (ast.children[0]) {
 						funcArgs = ast.children[0].text
 					}
-					output += tag.execute(options.message, funcArgs)
+					output += tag.execute(options.message, funcArgs.split(','))
 				}
 			}
+		} else if (ast.type === Lexer.TAG_TYPES.SPACE) {
+			output += ' '
 		}
 
 		return output
@@ -92,9 +97,9 @@ class TagEngine {
 
 	static handle (args, message, tag) {
 		const parsed = Lexer.lex(tag.content)
-		console.log("tag", tag)
 
-		console.log("parsed", Util.inspect(parsed, false, 32))
+		console.log("parsed", parsed)
+
 		let finalMessage
 
 		try {

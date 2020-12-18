@@ -4,8 +4,15 @@ class Choose {
 	}
 
 	static execute (message, args) {
-		console.log("args", args)
-		return this.randomFromArray(args.split("|"))
+		let options
+		if (args.length > 2) {
+			options = args
+		} else {
+			options = args[0].split('|')
+		}
+
+		console.log("options", options)
+		return this.randomFromArray(options)
 	}
 }
 

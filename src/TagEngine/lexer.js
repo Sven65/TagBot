@@ -3,6 +3,7 @@ const TAG_TYPES = Object.freeze({
 	RAW: 1,
 	TAG: 2,
 	ARGUMENT: 3,
+	SPACE: 4,
 })
 
 class Lexer {
@@ -32,8 +33,6 @@ class Lexer {
 
 	static goOver (type) {
 		const node =  this.createNode(this._currentNode, type)
-
-		console.log("current node", this._currentNode)
 
 		this._currentNode.parent.children.push(node)
 
@@ -65,29 +64,42 @@ class Lexer {
 				this._currentNode.type = content[i - 1] === '{' ? TAG_TYPES.CALL : TAG_TYPES.RAW
 			}
 
+			
+
 			if (c === '{') {
 				this.goDown(TAG_TYPES.CALL)
 			} else if (c === '}') {
 				this.goUp()
-				// if (content[i + 1]) {
-				// 	this.goOver()
-				// }
+
+				if (this._currentNode.parent) {
+					if (content[i + 1]) {
+						this.goOver()
+					}
+				}
 			} else if (c === '(') {
-				console.group("LEFT PAREN")
+				if (this._currentNode.type === TAG_TYPES.RAW && !this._currentNode.parent && this._currentNode.parent.type !== TAG_TYPES.CALL) {
+					this._currentNode.text += '('
+				}
 
 				if (this._currentNode.type === TAG_TYPES.CALL) {
 					this.goDown(TAG_TYPES.ARGUMENT)
 				}
-
-				console.log("THIS", this._currentNode)
-				if (this._currentNode.type === TAG_TYPES.RAW && !this._currentNode.parent && this._currentNode.parent.type !== TAG_TYPES.CALL) {
-					this._currentNode.text += '('
-				}
-				console.groupEnd()
-
-
 			} else if (c === ')') {
 				this.goUp()
+			} else if (c === ' ') {
+				/* This lets us add the spaces in the tags to the final messages properly.
+				 * There is 100% a better way to do this, but I'm really lazy, and this works.
+				 * If you're reading this, feel free to submit a PR if you're able to do it better!
+				 *
+				 * For reference of where this is actually used, look for `ast.type === Lexer.TAG_TYPES.SPACE` in index.js in this directory.
+				 * 
+				 */
+				if (this._currentNode.type === TAG_TYPES.CALL && !this._currentNode.parent) {
+					this.goDown(TAG_TYPES.SPACE)
+					this.goUp()
+				}
+
+				this._currentNode.text += c
 			} else {
 				this._currentNode.text += c
 			}
