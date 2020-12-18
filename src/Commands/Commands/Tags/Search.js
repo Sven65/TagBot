@@ -6,7 +6,7 @@ class Search{
 		this._Metadata = {
 			cooldown: 60,
 			description: "Searches for tags",
-			usage: "`<term>`"
+			usage: "`<term>`",
 		}
 	}
 
@@ -14,7 +14,9 @@ class Search{
 		return new Promise(resolve => {
 
 			const options = {
-				extract: function(el){ return el.id}
+				extract: function(el){
+					return el.id
+				},
 			}
 
 			let results = fuzzy.filter(tagName, tags, options)
@@ -27,7 +29,7 @@ class Search{
 		})
 	}
 
-	Execute(Args, message){
+	async Execute(Args, message){
 		if(Args.length >= 1){
 			const tagClass = new Tags()
 
@@ -50,7 +52,7 @@ class Search{
 
 					let tagArray = results.map(result => result.id)
 
-					let toSend = `Found ${tagArray.length.formatNumber()} tags!\n${tagArray.join(", ")}`;
+					let toSend = `Found ${tagArray.length.formatNumber()} tags!\n${tagArray.join(", ")}`
 
 					if(toSend.length >= 2000){
 						let buffer = new Buffer(tagArray.join("\r\n"), "utf-8")
@@ -58,9 +60,9 @@ class Search{
 							files: [
 								{
 									attachment: buffer,
-									name: `Tags.txt`
-								}
-							]
+									name: `Tags.txt`,
+								},
+							],
 						})
 					}else{
 						message.channel.send(toSend)

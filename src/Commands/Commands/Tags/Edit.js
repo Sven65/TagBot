@@ -5,11 +5,11 @@ class Edit{
 		this._Metadata = {
 			cooldown: 10,
 			description: "Edits a tag",
-			usage: "`<name>`, `<content>`"
+			usage: "`<name>`, `<content>`",
 		}
 	}
 
-	Execute(Args, message){
+	async Execute(Args, message){
 		if(Args.length >= 2){
 			const tags = new Tags()
 

@@ -5,11 +5,11 @@ class Glist{
 		this._Metadata = {
 			cooldown: 60,
 			description: "Gives a list of all tags",
-			usage: ""
+			usage: "",
 		}
 	}
 
-	Execute(Args, message){
+	async Execute(Args, message){
 		const tagClass = new Tags()
 
 		tagClass.getAll().then(tags => {
@@ -23,9 +23,9 @@ class Glist{
 				files: [
 					{
 						attachment: buffer,
-						name: `Tags.txt`
-					}
-				]
+						name: `Tags.txt`,
+					},
+				],
 			})
 		}).catch(e => message.client.sendError(message, e))
 	}

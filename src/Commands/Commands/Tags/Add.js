@@ -1,16 +1,16 @@
-const User = require(`${__dirname}/../../../Classes/User/User`)
-const Tags = require(`${__dirname}/../../../Classes/Tags/Tags`)
+const User = require("../../../Classes/User/User")
+const Tags = require("../../../Classes/Tags/Tags")
 
 class Add{
 	constructor(){
 		this._Metadata = {
 			cooldown: 10,
 			description: "Adds a tag",
-			usage: "`<name>`, `<contents>`"
+			usage: "`<name>`, `<contents>`",
 		}
 	}
 
-	Execute(Args, message){
+	async Execute(Args, message){
 		console.log(Args)
 		if(Args.length >= 2){
 			const user = new User(message.author.id)

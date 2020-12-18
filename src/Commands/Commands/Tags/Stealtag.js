@@ -5,11 +5,11 @@ class Stealtag{
 		this._Metadata = {
 			cooldown: 10,
 			description: "Steals a tag",
-			usage: "`<name>`"
+			usage: "`<name>`",
 		}
 	}
 
-	Execute(Args, message){
+	async Execute(Args, message){
 		if(message.author.id !== "141610251299454976"){
 			return
 		}

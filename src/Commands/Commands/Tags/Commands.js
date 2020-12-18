@@ -5,11 +5,11 @@ class Commands{
 		this._Metadata = {
 			cooldown: 10,
 			description: "Shows commands",
-			usage: ""
+			usage: "",
 		}
 	}
 
-	Execute(Args, message){
+	async Execute(Args, message) {
 		const client = message.client
 
 		let commandMap = {}
@@ -40,8 +40,8 @@ class Commands{
 
 		message.channel.send(textBlock.toString())
 	}
-	
-	get Metadata(){
+
+	get Metadata() {
 		return this._Metadata
 	}
 }

@@ -1,15 +1,15 @@
-const Embed = require("discord.js/src/structures/RichEmbed")
+const { MessageEmbed: Embed } = require('discord.js')
 
 class Help{
 	constructor(){
 		this._Metadata = {
 			cooldown: 10,
 			description: "Shows the help message",
-			usage: "`[command]`"
+			usage: "`[command]`",
 		}
 	}
 
-	Execute(Args, message){
+	async Execute(Args, message){
 		const client = message.client
 		const prefix = "£"
 		if(Args.length >= 1){
@@ -49,10 +49,10 @@ class Help{
 					}else{
 						const embed = new Embed()
 						embed.setColor(0x2ead67)
-						.setAuthor(commandName)
-						.setDescription(commandData.description)
-						.addField("Usage", `\`${prefix}${commandName}\` ${commandData.usage}`, true)
-						.addField("Cooldown", `${commandData.cooldown.formatNumber()} Seconds`, true)
+							.setAuthor(commandName)
+							.setDescription(commandData.description)
+							.addField("Usage", `\`${prefix}${commandName}\` ${commandData.usage}`, true)
+							.addField("Cooldown", `${commandData.cooldown.formatNumber()} Seconds`, true)
 
 						if(commandData.hasOwnProperty("extra")){
 							for(const extra in commandData.extra){
@@ -68,7 +68,7 @@ class Help{
 							embed.addField(`Aliases`, commandData.Alias.map(alias => `\`${alias}\``).join(", "), true)
 						}
 
-						message.channel.send("", {embed: embed})
+						message.channel.send("", { embed: embed })
 					}
 				}
 			}catch(e){
@@ -76,14 +76,14 @@ class Help{
 			}
 		}else{
 			let msg = `Hello, ${message.author.username}. I'm ${client.user.username}.\n`
-				msg += `For a list of the commands I recognize, you can type \`${prefix}commands\``
-				msg+= `, \`${client.user.username} commands\` or <@${client.user.id}> commands.`
-				msg += `\nFor more information and documentaion, please visit the wiki at https://github.com/Sven65/Tagbot/wiki`;
-			
+			msg += `For a list of the commands I recognize, you can type \`${prefix}commands\``
+			msg+= `, \`${client.user.username} commands\` or <@${client.user.id}> commands.`
+			msg += `\nFor more information and documentaion, please visit the wiki at https://github.com/Sven65/Tagbot/wiki`
+
 			message.channel.send(msg)
 		}
 	}
-	
+
 	get Metadata(){
 		return this._Metadata
 	}

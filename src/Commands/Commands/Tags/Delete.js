@@ -5,11 +5,11 @@ class Delete{
 		this._Metadata = {
 			cooldown: 10,
 			description: "Deletes a tag",
-			usage: "`<name>`"
+			usage: "`<name>`",
 		}
 	}
 
-	Execute(Args, message){
+	async Execute(Args, message){
 		if(Args.length >= 1){
 			const tags = new Tags()
 

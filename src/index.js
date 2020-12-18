@@ -1,59 +1,59 @@
-const rethinkdb = require("rethinkdb")
-const commandHandler = require(`${__dirname}/Commands/Handler.js`)
-const messageHandler = require(`${__dirname}/Handlers/messageCreate.js`)
+const config = require("config")
+const redis = require("redis")
+const TagBotClient = require("./Client.js")
 
+const commandHandler = require(`./Commands/Handler.js`)
+const messageHandler = require(`./Handlers/messageCreate.js`)
 
-const TBClient = require(__dirname+"/TagBot.js")
-const TagBot = new TBClient()
+const Cache = require(`./Util/Cache`)
+
+const Client = new TagBotClient()
 const commands = new commandHandler(`${__dirname}/Commands/Commands`)
 
-rethinkdb.connect({host: TagBot.Config.db.url, port: TagBot.Config.db.port, user: TagBot.Config.db.user, password: TagBot.Config.db.pass}, (err, conn) => {
-	console.log("Connected to rethink")
-	if(err){ throw err; }
 
-	conn.use(TagBot.Config.db.db)
-	global.ReDB = {r: rethinkdb, conn: conn}
-
-	commands.loadCommands().then(() => {
-		TagBot.commands = commands
-
-		TagBot.login().then(() => {
-			// Logged in
-			console.log("Logged in");
-		}).catch(e => {
-			throw e
-		})
-
-		TagBot.on('error', (error) => {
-			console.dir(error);
-		});
-
-		TagBot.on("warn", (str) => {
-			console.log(str);
-		});
-
-		TagBot.on('message', (message) => {
-			try{
-				messageHandler(message)
-			}catch(e){
-				console.log(e)
-			}
-		})
-	}).catch(e => {throw e})
+const redisCli = redis.createClient({
+	host: config.get('redis.host'),
+	port: config.get('redis.port'),
 })
 
-process.once('uncaughtException', (err) => {
-	console.dir("got error "+err.stack);
-	console.dir("UNCAUGHT")
-	console.log("MESSAGE", err.message)
-	console.log("FILENAME", err.fileName)
-	console.log("LINE", err.lineNumber)
-	console.log("\n\nSTACK", err)
-	setTimeout(() => {
-		process.exit(0);
-	}, 2500)
+redisCli.on("error", err => {
+	throw err
 })
 
-process.on('unhandledRejection', (reason, p) => {
-	console.log("Unhandled Rejection at ", p, 'reason ', reason.stack);
+const cache = new Cache(redisCli)
+
+const r = require("rethinkdbdash")({
+	pool: false,
 })
+
+async function init () {
+	let connection
+	try {
+		connection = await r.connect(config.get('rethink'))
+		console.log("\u001b[92mConnected to rethink\u001b[39m")
+	} catch (e) {
+		console.error('Failed to connect to rethink: ', e)
+		throw e
+	}
+
+	const ReDB = {
+		r: r,
+		conn: connection,
+	}
+
+	global.ReDB = ReDB
+
+	await commands.loadCommands()
+
+	Client.commands = commands
+	Client.cache = cache
+
+
+	Client.login()
+
+	Client.on("message", (message) => {
+		messageHandler(message)
+	})
+}
+
+init()

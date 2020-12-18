@@ -5,11 +5,11 @@ class List{
 		this._Metadata = {
 			cooldown: 60,
 			description: "Gives a list of a users tags",
-			usage: ""
+			usage: "",
 		}
 	}
 
-	Execute(Args, message){
+	async Execute(Args, message){
 		const tagClass = new Tags()
 
 		tagClass.fromUser(message.author.id).then(tags => {
@@ -34,14 +34,14 @@ class List{
 					files: [
 						{
 							attachment: buffer,
-							name: `Tags.txt`
-						}
-					]
+							name: `Tags.txt`,
+						},
+					],
 				})
 			}else{
 				message.channel.send(toSend)
 			}
-		}).catch(e => message.client.sendError(message, e))
+		}).catch(e => message.sendError(message, e))
 	}
 
 	get Metadata(){
