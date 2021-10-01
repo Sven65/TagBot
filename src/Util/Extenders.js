@@ -76,11 +76,19 @@ Object.defineProperty(String.prototype, "randFormat", {
 	value: function(){
 		let string = this.toString();
 		let matches = string.match(/\{rint\(.*?[0-9]?\)\}/g);
+		
 		if(matches !== null){
 			let numbers = matches.map(match => {
-				return match.match(/\d/g).rInt();
+				const parsed = match.match(/(\d+),\s*(\d+)/)
+	
+				if (parsed) {
+					const n1 = parseInt(parsed[1], 10)
+					const n2 = parseInt(parsed[2], 10)
+	
+					return [n1, n2].rInt()
+				}
 			});
-
+	
 			numbers.forEach(number => {
 				string = string.replace(/\{rint\(.*?[0-9]?\)\}/,number);
 			});
