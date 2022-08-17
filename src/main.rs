@@ -1,11 +1,17 @@
+
 use dotenv::dotenv;
 use std::env;
 use serenity::{
 	Client,
 	prelude::{GatewayIntents, EventHandler, Context},
 	async_trait,
-	model::prelude::{Ready, GuildId, command::Command, interaction::{InteractionResponseType, Interaction}
+	model::prelude::{Ready, command::Command, interaction::{InteractionResponseType, Interaction}
 }};
+
+use tracing::Level;
+use tracing_subscriber::FmtSubscriber;
+
+pub use tagbot::commands::framework::commands;
 
 struct Handler;
 
@@ -56,6 +62,16 @@ impl EventHandler for Handler {
 
 #[tokio::main]
 async fn main() {
+	let subscriber = FmtSubscriber::builder()
+	// all spans/events with a level higher than TRACE (e.g, debug, info, warn, etc.)
+	// will be written to stdout.
+	.with_max_level(Level::TRACE)
+	// completes the builder.
+	.finish();
+
+tracing::subscriber::set_global_default(subscriber)
+	.expect("setting default subscriber failed");
+
 	dotenv().ok();
 
 	let token = env::var("BOT_TOKEN").expect("Expected bot token to be present in env.");
