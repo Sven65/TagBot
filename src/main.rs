@@ -8,12 +8,10 @@ use serenity::{
 	model::prelude::{Ready, command::Command, interaction::{InteractionResponseType, Interaction}
 }};
 
-use tracing::Level;
-use tracing_subscriber::FmtSubscriber;
-
-pub use tagbot::commands::framework::commands;
 
 struct Handler;
+
+mod commands;
 
 #[async_trait]
 impl EventHandler for Handler {
@@ -60,17 +58,14 @@ impl EventHandler for Handler {
 }
 
 
+fn ping2() {
+	
+}
+
+
 #[tokio::main]
 async fn main() {
-	let subscriber = FmtSubscriber::builder()
-	// all spans/events with a level higher than TRACE (e.g, debug, info, warn, etc.)
-	// will be written to stdout.
-	.with_max_level(Level::TRACE)
-	// completes the builder.
-	.finish();
-
-tracing::subscriber::set_global_default(subscriber)
-	.expect("setting default subscriber failed");
+	register_command_macro!(ping2);
 
 	dotenv().ok();
 
