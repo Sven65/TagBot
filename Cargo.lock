@@ -1363,19 +1363,9 @@ dependencies = [
  "lazy_static",
  "reql",
  "serenity",
- "tagbot_attribs",
  "tokio",
  "tracing",
  "tracing-subscriber",
-]
-
-[[package]]
-name = "tagbot_attribs"
-version = "4.0.0"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
 ]
 
 [[package]]

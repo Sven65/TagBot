@@ -1,1 +1,1 @@
-pub mod commands;
+mod commands;

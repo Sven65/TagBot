@@ -40,6 +40,8 @@ impl EventHandler for Handler {
 
 	async fn ready(&self, ctx: Context, ready: Ready) {
 		println!("{} is connected", ready.user.name);
+
+		commands::initCommands();
 	
 		// let guildId = GuildId(
 		//     env::var("GUILD_ID")
