@@ -12,7 +12,7 @@ use serenity::{
 struct Handler;
 
 mod commands;
-
+mod util;
 
 
 #[async_trait]
@@ -27,7 +27,7 @@ impl EventHandler for Handler {
 
 
 			let content = match stored_command {
-				Some(stored_command) => stored_command(),
+				Some(stored_command) => stored_command(command.data.clone()),
 				None => {
 					locked_index.remove_command(command.data.id).await;
 					"Invalid command.".to_string()

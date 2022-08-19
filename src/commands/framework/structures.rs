@@ -1,3 +1,5 @@
+use serenity::{builder::CreateApplicationCommand};
+
 
 
 pub trait Command {
@@ -6,3 +8,5 @@ pub trait Command {
 
 	fn execute(&self);
 }
+
+pub type OptionCreatorFn = fn(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand;
