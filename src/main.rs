@@ -21,18 +21,16 @@ impl EventHandler for Handler {
 		if let Interaction::ApplicationCommand(command) = interaction {
 			println!("Received command interaction: {:#?}", command);
 			let index = &commands::framework::COMMAND_INDEX;
-			let locked_index = index.lock().await;
+			let mut locked_index = index.lock().await;
 
 			let stored_command = locked_index.commands.get(command.data.name.as_str());
 
-			if stored_command.is_none() {
-				return;
-			}
 
 			let content = match stored_command {
 				Some(stored_command) => stored_command(),
 				None => {
-					"Invalid command".to_string()
+					locked_index.remove_command(command.data.id).await;
+					"Invalid command.".to_string()
 				},
 			};
 

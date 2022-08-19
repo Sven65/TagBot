@@ -2,6 +2,7 @@ pub mod structures;
 
 use lazy_static::{lazy_static};
 use serenity::futures::lock::Mutex;
+use serenity::model::prelude::CommandId;
 use serenity::model::prelude::command::Command;
 use serenity::prelude::Context;
 
@@ -42,6 +43,17 @@ impl CommandIndex {
 		self.commands.insert(name.to_string(), f);
 
 		dbg!("Registered to index");
+	}
+
+	#[allow(dead_code)]
+	pub async fn remove_command(&mut self, id: CommandId) {
+		if let None = self.context {
+			panic!("[CommandIndex] Unable to remove commands: Context is None.");
+		}
+
+		let deleted = Command::delete_global_application_command(&self.context.as_ref().unwrap().http, id).await;
+
+		println!("Delete result: {:#?}", deleted);
 	}
 }
 
