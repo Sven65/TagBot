@@ -5,7 +5,7 @@ use serenity::{
 	Client,
 	prelude::{GatewayIntents, EventHandler, Context},
 	async_trait,
-	model::prelude::{Ready, command::Command, interaction::{InteractionResponseType, Interaction}
+	model::prelude::{Ready, interaction::{InteractionResponseType, Interaction}
 }};
 
 
@@ -13,15 +13,27 @@ struct Handler;
 
 mod commands;
 
+
+
 #[async_trait]
 impl EventHandler for Handler {
 	async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
 		if let Interaction::ApplicationCommand(command) = interaction {
 			println!("Received command interaction: {:#?}", command);
+			let index = &commands::framework::COMMAND_INDEX;
+			let locked_index = index.lock().await;
 
-			let content = match command.data.name.as_str() {
-				"ping" => "shut up, go away".to_string(),
-				_ => "not fucking here dumbo".to_string(),
+			let stored_command = locked_index.commands.get(command.data.name.as_str());
+
+			if stored_command.is_none() {
+				return;
+			}
+
+			let content = match stored_command {
+				Some(stored_command) => stored_command(),
+				None => {
+					"Invalid command".to_string()
+				},
 			};
 
 			if let Err(why) = command
@@ -41,34 +53,15 @@ impl EventHandler for Handler {
 	async fn ready(&self, ctx: Context, ready: Ready) {
 		println!("{} is connected", ready.user.name);
 
-		commands::initCommands();
-	
-		// let guildId = GuildId(
-		//     env::var("GUILD_ID")
-		//     .expect("Expected GUILD_ID in env.")
-		//     .parse()
-		//     .expect("GUILD_ID must be integer"),
-		// );
-		
-		let guild_command = Command::create_global_application_command(&ctx.http, |command| {
-			command.name("ping").description("xd")
-		})
-		.await;
+		commands::framework::COMMAND_INDEX.lock().await.set_ctx(ctx.clone());
 
-		println!("I created the following global slash command: {:#?}", guild_command);
+		commands::init_commands().await;
+
 	}
 }
 
-
-fn ping2() {
-	
-}
-
-
 #[tokio::main]
 async fn main() {
-	register_command_macro!(ping2);
-
 	dotenv().ok();
 
 	let token = env::var("BOT_TOKEN").expect("Expected bot token to be present in env.");
@@ -79,6 +72,6 @@ async fn main() {
 		.expect("Error creating client");
 
 	if let Err(why) = client.start().await {
-		println!("Cleitn error: {:?}", why)
+		println!("Client error: {:?}", why)
 	}
 }

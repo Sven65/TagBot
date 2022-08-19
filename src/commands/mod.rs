@@ -1,10 +1,13 @@
-use crate::register_command_macro;
-
-use self::ping2::ping2;
-
+// use crate::{register_command_macro, commands::framework::register_command};
 pub mod framework;
-pub mod ping2;
+#[macro_use]
+pub mod commands;
 
-pub fn initCommands() {
-	register_command_macro!(ping2);
+use commands::ping2::ping2;
+
+use self::framework::COMMAND_INDEX;
+
+#[allow(dead_code)]
+pub async fn init_commands() {
+	COMMAND_INDEX.lock().await.register_command("ping2", ping2, Some("With desc")).await;
 }
