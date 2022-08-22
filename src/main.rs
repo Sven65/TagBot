@@ -11,6 +11,7 @@ use serenity::{
 
 struct Handler;
 
+mod services;
 mod commands;
 mod util;
 

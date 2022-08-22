@@ -1,8 +1,39 @@
+use std::io::Error;
+
+use reql::{cmd::connect, r};
 use serenity::{model::prelude::{interaction::application_command::{CommandData, CommandDataOptionValue}, command::CommandOptionType}, builder::CreateApplicationCommand};
+use futures::TryStreamExt;
 
-use crate::util::command_options::*;
+use crate::{util::command_options::*, services::rethinkdb::{RDB, Tag}};
 
-pub fn add(data: CommandData) -> String {
+async fn add_tag(name: String, content: String) -> Result<String, reql::Error> {
+	let mut locked = RDB.lock().unwrap();
+
+	let connection = locked.getConnection().await;
+
+	if connection.is_none() {
+		return Ok("Failed to create tag: Failed to get DB Connection.".to_string());
+	}
+
+	let connection = connection.unwrap();
+
+	let tag = Tag {
+		id: name.as_str(),
+		content: content.as_str(),
+		owner: "141610251299454976",
+	};
+
+	let mut query = r.table("tags").insert(tag).run(connection);
+
+	if let Some(result) = query.try_next().await? {
+		println!("Result {}", result);
+		return Ok("Done".to_string());
+    }
+
+	return Ok("OK".to_string());
+}
+
+pub async fn add(data: CommandData) -> String {
 	let name = data.find_option("name")
 		.expect("Expected name option")
 		.resolved
@@ -27,9 +58,15 @@ pub fn add(data: CommandData) -> String {
 	};
 
 
+	add_tag(name, contents);
 
-	format!("Creating tag {} with contents {}", name, contents)
+	// if result.is_ok() {
+	// 	return format!("Creating tag {} with contents {}", name, contents);
+    // }
 
+	// return "Failed to create tag".to_string();
+
+	return "fuck".to_string();
 }
 
 
