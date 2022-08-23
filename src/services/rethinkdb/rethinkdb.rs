@@ -1,36 +1,18 @@
 use dotenv::dotenv;
-use std::{env, sync::Mutex};
+use std::{env};
 use reql::{r, cmd::connect::Options, Session};
 use lazy_static::{lazy_static};
-use serde::Serialize;
+use tokio::runtime::Handle;
 
-#[derive(Serialize)]
-pub struct Tag<'a> {
-	id: &'a str,
-	content: &'a str,
-	owner: &'a str
-}
+use crate::infoln;
 
+#[derive(Clone)]
 pub struct RethinkDB {
 	pub session: Option<Session>,
 }
 
 impl RethinkDB {
-	pub async fn getConnection(&mut self) -> Option<&Session> {
-		if self.session.is_some() {
-			return self.session.as_ref();
-		}
-
-		self.init().await;
-
-		return self.session.as_ref();
-	}
-	
-	pub async fn init (&mut self) -> Result<bool, reql::Error> {
-		if self.session.is_some() {
-			return Ok(true);
-		}
-
+	async fn init_connection (&mut self) -> Result<&Session, reql::Error> {
 		dotenv().ok();
 
 		let host = env::var("RETHINK_HOST").expect("Expected rethinkdb host to be present in env.");
@@ -50,12 +32,36 @@ impl RethinkDB {
 
 		self.session = Some(conn);
 
-		return Ok(true);
+		infoln!("Connected to RethinkDB.");
+
+		return Ok(self.session.as_ref().unwrap());
+	}
+
+	fn set_connection(&mut self, conn: Option<Session>) {
+		self.session = conn;
+	}
+
+	pub async fn getConnection(&self) -> Option<&Session> {
+		return self.session.as_ref();
+	}
+
+	pub fn new() -> Self {
+		let mut rdb: RethinkDB = RethinkDB {
+			session: None,
+		};
+
+		let handle = Handle::current();
+
+		handle.enter();
+
+		futures::executor::block_on(rdb.init_connection());
+
+
+
+		return rdb;
 	}
 }
 
 lazy_static! {
-	pub static ref RDB: Mutex<RethinkDB> = Mutex::new(RethinkDB {
-		session: None,
-	});
+	pub static ref RDB: RethinkDB = RethinkDB::new();
 }

@@ -1,18 +1,20 @@
 pub mod structures;
 
 use lazy_static::{lazy_static};
-use serenity::futures::lock::Mutex;
+// use serenity::futures::lock::Mutex;
 use serenity::model::prelude::interaction::application_command::CommandData;
 use serenity::model::prelude::{CommandId};
 use serenity::model::prelude::command::{Command};
 use serenity::prelude::Context;
+// use futures::Future;
+use tokio::sync::Mutex;
 
 use std::collections::HashMap;
 
-use self::structures::OptionCreatorFn;
+use self::structures::{OptionCreatorFn, CommandExecutorFn};
 
 pub struct CommandIndex {
-	pub commands: HashMap<String, fn(CommandData) -> String>,
+	pub commands: HashMap<String, CommandExecutorFn>,
 
 	context: Option<Context>,
 }
@@ -26,7 +28,7 @@ impl CommandIndex {
 	pub async fn register_command (
 		&mut self,
 		name: &str,
-		f: fn(CommandData) -> String,
+		f: CommandExecutorFn,
 		desc: Option<&str>,
 		option_creator: Option<OptionCreatorFn>,
 	) {

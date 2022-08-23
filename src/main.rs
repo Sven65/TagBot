@@ -8,6 +8,9 @@ use serenity::{
 	model::prelude::{Ready, interaction::{InteractionResponseType, Interaction}
 }};
 
+use std::{pin::Pin};
+
+// use futures::{Future, FutureExt};
 
 struct Handler;
 
@@ -20,19 +23,22 @@ mod util;
 impl EventHandler for Handler {
 	async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
 		if let Interaction::ApplicationCommand(command) = interaction {
-			println!("Received command interaction: {:#?}", command);
+			// println!("Received command interaction: {:#?}", command);
 			let index = &commands::framework::COMMAND_INDEX;
 			let mut locked_index = index.lock().await;
 
 			let stored_command = locked_index.commands.get(command.data.name.as_str());
 
-
 			let content = match stored_command {
-				Some(stored_command) => stored_command(command.data.clone()),
+				Some(stored) => {
+					let result = stored(command.data.clone()).await;
+
+					result
+				},
 				None => {
 					locked_index.remove_command(command.data.id).await;
 					"Invalid command.".to_string()
-				},
+				}
 			};
 
 			if let Err(why) = command

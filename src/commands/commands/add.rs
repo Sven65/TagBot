@@ -1,15 +1,12 @@
-use std::io::Error;
-
-use reql::{cmd::connect, r};
+use reql::{r};
 use serenity::{model::prelude::{interaction::application_command::{CommandData, CommandDataOptionValue}, command::CommandOptionType}, builder::CreateApplicationCommand};
-use futures::TryStreamExt;
+use futures::{TryStreamExt};
 
-use crate::{util::command_options::*, services::rethinkdb::{RDB, Tag}};
+use crate::{util::command_options::*, services::rethinkdb::{rethinkdb::{RDB}, tags::{Tag, TagsTable}}};
 
 async fn add_tag(name: String, content: String) -> Result<String, reql::Error> {
-	let mut locked = RDB.lock().unwrap();
-
-	let connection = locked.getConnection().await;
+	// let mut locked = RDB.lock().await;
+	let connection = RDB.getConnection().await;
 
 	if connection.is_none() {
 		return Ok("Failed to create tag: Failed to get DB Connection.".to_string());
@@ -17,16 +14,16 @@ async fn add_tag(name: String, content: String) -> Result<String, reql::Error> {
 
 	let connection = connection.unwrap();
 
-	let tag = Tag {
-		id: name.as_str(),
-		content: content.as_str(),
-		owner: "141610251299454976",
-	};
+	let tag = Tag::new (
+		name,
+		content,
+		"141610251299454976".to_string(),
+	);
 
-	let mut query = r.table("tags").insert(tag).run(connection);
+
+	let mut query = r.table("Tags").insert(tag).run::<&reql::Session, reql::types::WriteStatus>(connection);
 
 	if let Some(result) = query.try_next().await? {
-		println!("Result {}", result);
 		return Ok("Done".to_string());
     }
 
@@ -57,8 +54,28 @@ pub async fn add(data: CommandData) -> String {
 		&_ => { "Invalid contents".to_string() }
 	};
 
+	// let exists = TagsTable::tag_exists()
 
-	add_tag(name, contents);
+	let gotten_tag = TagsTable::get_tag(name.clone()).await;
+
+	if gotten_tag.is_ok() {
+		let gotten = gotten_tag.ok().unwrap();
+
+		return format!("gotten_tag {}", gotten.id);
+	} else {
+		println!("Error getting tag: {:?}", gotten_tag.err());
+		return "Error while getting tag".to_string();
+	}
+
+
+	let result = add_tag(name.clone(), contents).await;
+
+	if result.is_ok() {
+		return format!("Added tag {}", name);
+	} else {
+		println!("Error adding tag: {:?}", result.err());
+		return "Error while adding tag".to_string();
+	}
 
 	// if result.is_ok() {
 	// 	return format!("Creating tag {} with contents {}", name, contents);
@@ -66,7 +83,6 @@ pub async fn add(data: CommandData) -> String {
 
 	// return "Failed to create tag".to_string();
 
-	return "fuck".to_string();
 }
 
 
