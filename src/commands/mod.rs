@@ -9,6 +9,7 @@ use self::commands::add::add_options_creator;
 use self::commands::delete::{delete, delete_options_creator};
 use self::commands::edit::{edit, edit_options_creator};
 use self::commands::glist::glist;
+use self::commands::list::list;
 use self::framework::{COMMAND_INDEX};
 
 
@@ -19,5 +20,6 @@ pub async fn init_commands() {
 	COMMAND_INDEX.lock().await.register_command("delete", |data, ctx| Box::pin(delete(data, ctx)), Some("Deletes a tag"), Some(delete_options_creator), false).await;
 	COMMAND_INDEX.lock().await.register_command("edit", |data, ctx| Box::pin(edit(data, ctx)), Some("Edits a tag"), Some(edit_options_creator), false).await;
 	COMMAND_INDEX.lock().await.register_command("glist", |data, ctx| Box::pin(glist(data, ctx)), Some("Gives a list of all tags"), None, true).await;
+	COMMAND_INDEX.lock().await.register_command("list", |data, ctx| Box::pin(list(data, ctx)), Some("Gives a list of all tags you own"), None, true).await;
 
 }

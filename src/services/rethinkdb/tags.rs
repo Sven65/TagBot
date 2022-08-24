@@ -1,5 +1,5 @@
 use futures::TryStreamExt;
-use reql::{r, Session, types::WriteStatus};
+use reql::{r, Session, types::WriteStatus, cmd::args::{self, Args}, func};
 use serde::{Serialize, Deserialize};
 
 use super::rethinkdb::RDB;
@@ -162,6 +162,7 @@ impl TagsTable {
 		return create_error!("Failed to get tag");
 	}
 
+	/// Gets all tags in the database
 	pub async fn get_all() -> Result<Vec<Tag>, reql::Error> {
 		let connection = RDB.getConnection().await;
 
@@ -177,8 +178,33 @@ impl TagsTable {
 		let mut tags: Vec<Tag> = Vec::new();
 
 		while let Some(result) = query.try_next().await? {
-			println!("Result {:?}", result);
+			tags.push(result);
+		}
 
+		return Ok(tags);
+	}
+
+	/// Gets all tags in the database owned by a user
+	///
+	/// # Arguments
+	/// 
+	/// * `owner_id` - The id of the user whose tags to get
+	pub async fn get_all_by_owner(owner_id: String) -> Result<Vec<Tag>, reql::Error> {
+		let connection = RDB.getConnection().await;
+
+		if connection.is_none() {
+			return create_error!("Failed to get user tags: Failed to get DB Connection.");
+		}
+
+		let connection = connection.unwrap();
+
+		let mut query = r.table("Tags").filter(func!(|doc| {
+			doc.get_field("owner").eq(owner_id)
+		})).run::<&Session, Tag>(connection);
+
+		let mut tags: Vec<Tag> = Vec::new();
+
+		while let Some(result) = query.try_next().await? {
 			tags.push(result);
 		}
 
