@@ -23,7 +23,7 @@ mod util;
 impl EventHandler for Handler {
 	async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
 		if let Interaction::ApplicationCommand(command) = interaction {
-			// println!("Received command interaction: {:#?}", command);
+			println!("Received command interaction: {:#?}", command);
 			let index = &commands::framework::COMMAND_INDEX;
 			let mut locked_index = index.lock().await;
 
@@ -31,7 +31,7 @@ impl EventHandler for Handler {
 
 			let content = match stored_command {
 				Some(stored) => {
-					let result = stored(command.data.clone()).await;
+					let result = stored(command.clone()).await;
 
 					result
 				},

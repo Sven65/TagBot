@@ -41,6 +41,11 @@ impl Tag {
 pub struct TagsTable {}
 
 impl TagsTable {
+	/// Gets a tag from the tags table, if it exists.
+	/// 
+	/// # Arguments
+	/// 
+	/// * `tag_name` - The name of the tag to get
 	pub async fn get_tag(tag_name: String) -> Result<Tag, reql::Error> {
 		let connection = RDB.getConnection().await;
 
@@ -51,6 +56,33 @@ impl TagsTable {
 		let connection = connection.unwrap();
 
 		let mut query = r.table("Tags").get(tag_name).run::<&Session, Tag>(connection);
+
+		if let Some(result) = query.try_next().await? {
+			println!("Result {:?}", result);
+			return Ok(result);
+		}
+	
+
+		return Err(reql::Error::from(std::io::Error::new(std::io::ErrorKind::Other, "Failed to get tag")));
+	}
+
+	/// Deletes a tag from the tags table, if it exists.
+	/// 
+	/// # Arguments
+	/// 
+	/// * `tag_name` - The name of the tag to delete
+	pub async fn delete_tag(tag_name: String) -> Result<reql::types::WriteStatus, reql::Error> {
+		let connection = RDB.getConnection().await;
+
+		if connection.is_none() {
+			panic!("Failed to get tag: Failed to get DB Connection.");
+		}
+
+		let connection = connection.unwrap();
+
+		let delete_options = reql::cmd::delete::Options::new();
+
+		let mut query = r.table("Tags").get(tag_name).delete(delete_options).run::<&Session, reql::types::WriteStatus>(connection);
 
 		if let Some(result) = query.try_next().await? {
 			println!("Result {:?}", result);

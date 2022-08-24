@@ -2,7 +2,6 @@ pub mod structures;
 
 use lazy_static::{lazy_static};
 // use serenity::futures::lock::Mutex;
-use serenity::model::prelude::interaction::application_command::CommandData;
 use serenity::model::prelude::{CommandId};
 use serenity::model::prelude::command::{Command};
 use serenity::prelude::Context;

@@ -1,10 +1,10 @@
 use reql::{r};
-use serenity::{model::prelude::{interaction::application_command::{CommandData, CommandDataOptionValue}, command::CommandOptionType}, builder::CreateApplicationCommand};
+use serenity::{model::prelude::{interaction::application_command::{CommandDataOptionValue, ApplicationCommandInteraction}, command::CommandOptionType}, builder::CreateApplicationCommand};
 use futures::{TryStreamExt};
 
 use crate::{util::command_options::*, services::rethinkdb::{rethinkdb::{RDB}, tags::{Tag, TagsTable}}};
 
-async fn add_tag(name: String, content: String) -> Result<String, reql::Error> {
+async fn add_tag(name: String, content: String, owner_id: String) -> Result<String, reql::Error> {
 	// let mut locked = RDB.lock().await;
 	let connection = RDB.getConnection().await;
 
@@ -17,7 +17,7 @@ async fn add_tag(name: String, content: String) -> Result<String, reql::Error> {
 	let tag = Tag::new (
 		name,
 		content,
-		"141610251299454976".to_string(),
+		owner_id,
 	);
 
 
@@ -30,7 +30,9 @@ async fn add_tag(name: String, content: String) -> Result<String, reql::Error> {
 	return Ok("OK".to_string());
 }
 
-pub async fn add(data: CommandData) -> String {
+pub async fn add(interaction: ApplicationCommandInteraction) -> String {
+	let data = interaction.data.clone();
+
 	let name = data.find_option("name")
 		.expect("Expected name option")
 		.resolved
@@ -59,16 +61,10 @@ pub async fn add(data: CommandData) -> String {
 	let gotten_tag = TagsTable::get_tag(name.clone()).await;
 
 	if gotten_tag.is_ok() {
-		let gotten = gotten_tag.ok().unwrap();
-
-		return format!("gotten_tag {}", gotten.id);
-	} else {
-		println!("Error getting tag: {:?}", gotten_tag.err());
-		return "Error while getting tag".to_string();
+		return format!("That tag already exists!");
 	}
 
-
-	let result = add_tag(name.clone(), contents).await;
+	let result = add_tag(name.clone(), contents, interaction.user.id.to_string()).await;
 
 	if result.is_ok() {
 		return format!("Added tag {}", name);
@@ -76,13 +72,6 @@ pub async fn add(data: CommandData) -> String {
 		println!("Error adding tag: {:?}", result.err());
 		return "Error while adding tag".to_string();
 	}
-
-	// if result.is_ok() {
-	// 	return format!("Creating tag {} with contents {}", name, contents);
-    // }
-
-	// return "Failed to create tag".to_string();
-
 }
 
 
