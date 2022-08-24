@@ -1,6 +1,6 @@
 use std::pin::Pin;
 use std::future::Future;
-use serenity::{builder::CreateApplicationCommand, model::prelude::{interaction::application_command::{ApplicationCommandInteraction}}};
+use serenity::{builder::CreateApplicationCommand, model::prelude::{interaction::application_command::{ApplicationCommandInteraction}}, prelude::Context};
 
 // fn wrap<F>(_f: F) -> CommandExecution
 // where
@@ -15,7 +15,7 @@ use serenity::{builder::CreateApplicationCommand, model::prelude::{interaction::
 //     }
 // }
 
-pub type CommandExecutorFn = fn(data: ApplicationCommandInteraction) -> Pin<Box<dyn Future<Output = std::string::String> + Send>>;
+pub type CommandExecutorFn = fn(data: ApplicationCommandInteraction, ctx: Context) -> Pin<Box<dyn Future<Output = std::string::String> + Send>>;
 
 
 pub trait Command {

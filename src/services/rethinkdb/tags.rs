@@ -10,7 +10,7 @@ macro_rules! create_error {
 	};
 }
 
-#[derive(Serialize, Debug, Deserialize)]
+#[derive(Serialize, Debug, Deserialize, Clone)]
 pub struct Tag {
 	pub id: String,
 	pub content: String,
@@ -160,5 +160,28 @@ impl TagsTable {
 	
 
 		return create_error!("Failed to get tag");
+	}
+
+	pub async fn get_all() -> Result<Vec<Tag>, reql::Error> {
+		let connection = RDB.getConnection().await;
+
+		if connection.is_none() {
+			return create_error!("Failed to get all tags: Failed to get DB Connection.");
+		}
+
+		let connection = connection.unwrap();
+
+
+		let mut query = r.table("Tags").run::<&Session, Tag>(connection);
+
+		let mut tags: Vec<Tag> = Vec::new();
+
+		while let Some(result) = query.try_next().await? {
+			println!("Result {:?}", result);
+
+			tags.push(result);
+		}
+
+		return Ok(tags);
 	}
 }

@@ -9,13 +9,27 @@ use serenity::prelude::Context;
 use tokio::sync::Mutex;
 
 use std::collections::HashMap;
+use core::fmt::Debug;
 
 use self::structures::{OptionCreatorFn, CommandExecutorFn};
 
+#[derive(Debug, Clone, Copy)]
+pub struct TBCommand {
+	pub executor: CommandExecutorFn,
+	pub sends_message: bool,
+}
+
+#[derive(Clone)]
 pub struct CommandIndex {
-	pub commands: HashMap<String, CommandExecutorFn>,
+	pub commands: HashMap<String, TBCommand>,
 
 	context: Option<Context>,
+}
+
+impl Debug for CommandIndex {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("CommandIndex").field("commands", &self.commands).finish()
+    }
 }
 
 impl CommandIndex {
@@ -30,6 +44,7 @@ impl CommandIndex {
 		f: CommandExecutorFn,
 		desc: Option<&str>,
 		option_creator: Option<OptionCreatorFn>,
+		sends_message: bool,
 	) {
 		if let None = self.context {
 			panic!("[CommandIndex] Unable to register commands: Context is None.");
@@ -51,7 +66,12 @@ impl CommandIndex {
 
 		println!("Created global command {:#?}", created);
 
-		self.commands.insert(name.to_string(), f);
+		let tb_command = TBCommand {
+			executor: f,
+			sends_message,
+		};
+
+		self.commands.insert(name.to_string(), tb_command);
 
 		dbg!("Registered to index");
 	}

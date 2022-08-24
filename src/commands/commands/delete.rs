@@ -1,8 +1,8 @@
-use serenity::{builder::CreateApplicationCommand, model::prelude::{command::CommandOptionType, interaction::application_command::{CommandDataOptionValue, ApplicationCommandInteraction}}};
+use serenity::{builder::CreateApplicationCommand, model::prelude::{command::CommandOptionType, interaction::application_command::{CommandDataOptionValue, ApplicationCommandInteraction}}, prelude::Context};
 
 use crate::{services::rethinkdb::tags::TagsTable, util::command_options::FindOption};
 
-pub async fn delete(interaction: ApplicationCommandInteraction) -> String {
+pub async fn delete(interaction: ApplicationCommandInteraction, _ctx: Context) -> String {
 	let data = interaction.data.clone();
 
 	let name = data.find_option("name")

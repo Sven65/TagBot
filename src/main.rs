@@ -26,12 +26,15 @@ impl EventHandler for Handler {
 			println!("Received command interaction: {:#?}", command);
 			let index = &commands::framework::COMMAND_INDEX;
 			let mut locked_index = index.lock().await;
+			let cloned = locked_index.clone();
 
-			let stored_command = locked_index.commands.get(command.data.name.as_str());
+
+			let stored_command = cloned.commands.get(command.data.name.as_str());
 
 			let content = match stored_command {
 				Some(stored) => {
-					let result = stored(command.clone()).await;
+					let executor = stored.executor;
+					let result = executor(command.clone(), ctx.clone()).await;
 
 					result
 				},
@@ -41,16 +44,18 @@ impl EventHandler for Handler {
 				}
 			};
 
-			if let Err(why) = command
-				.create_interaction_response(&ctx.http, |response| {
-					response
-						.kind(InteractionResponseType::ChannelMessageWithSource)
-						.interaction_response_data(|message| message.content(content))
-				})
-				.await
-				{
-					println!("Cannot respond to stupidf command {}", why);
-				}
+			if !stored_command.unwrap().sends_message {
+				if let Err(why) = command
+					.create_interaction_response(&ctx.http, |response| {
+						response
+							.kind(InteractionResponseType::ChannelMessageWithSource)
+							.interaction_response_data(|message| message.content(content))
+					})
+					.await
+					{
+						println!("Cannot respond to stupidf command {}", why);
+					}
+			}
 		}
 	}
 

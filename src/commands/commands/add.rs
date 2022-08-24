@@ -1,9 +1,9 @@
 use reql::{r};
-use serenity::{model::prelude::{interaction::application_command::{CommandDataOptionValue, ApplicationCommandInteraction}, command::CommandOptionType}, builder::CreateApplicationCommand};
+use serenity::{model::prelude::{interaction::application_command::{CommandDataOptionValue, ApplicationCommandInteraction}, command::CommandOptionType}, builder::CreateApplicationCommand, prelude::Context};
 
 use crate::{util::command_options::*, services::rethinkdb::{tags::{TagsTable}}};
 
-pub async fn add(interaction: ApplicationCommandInteraction) -> String {
+pub async fn add(interaction: ApplicationCommandInteraction, _ctx: Context) -> String {
 	let data = interaction.data.clone();
 
 	let name = data.find_option("name")
