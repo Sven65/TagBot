@@ -4,7 +4,7 @@ use reql::{r, cmd::connect::Options, Session};
 use lazy_static::{lazy_static};
 use tokio::runtime::Handle;
 
-use crate::infoln;
+use crate::{infoln};
 
 #[derive(Clone)]
 pub struct RethinkDB {
@@ -37,11 +37,7 @@ impl RethinkDB {
 		return Ok(self.session.as_ref().unwrap());
 	}
 
-	fn set_connection(&mut self, conn: Option<Session>) {
-		self.session = conn;
-	}
-
-	pub async fn getConnection(&self) -> Option<&Session> {
+	pub async fn get_connection(&self) -> Option<&Session> {
 		return self.session.as_ref();
 	}
 
@@ -52,9 +48,15 @@ impl RethinkDB {
 
 		let handle = Handle::current();
 
-		handle.enter();
+		#[allow(unused_must_use)] {
+			handle.enter();
+		}
 
-		futures::executor::block_on(rdb.init_connection());
+		let res = futures::executor::block_on(rdb.init_connection());
+
+		if res.is_err() {
+			println!("Failed to spawn blocker while creating connection: {:#?}", res.err());
+		}
 
 
 

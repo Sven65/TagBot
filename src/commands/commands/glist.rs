@@ -1,8 +1,7 @@
 use serenity::{model::prelude::{interaction::{application_command::{ApplicationCommandInteraction}, InteractionResponseType}, AttachmentType}, prelude::Context};
-use tokio::fs::OpenOptions;
-use std::{io::{Read, Write}, borrow::Cow};
+use std::{io::{Write}};
 
-use crate::services::rethinkdb::tags::TagsTable;
+use crate::{services::rethinkdb::tags::TagsTable, handle_error};
 
 pub async fn glist(interaction: ApplicationCommandInteraction, ctx: Context) -> String {
 	let tags = TagsTable::get_all().await;
@@ -14,7 +13,7 @@ pub async fn glist(interaction: ApplicationCommandInteraction, ctx: Context) -> 
 
 		for tag in tags.iter() {
 			println!("Tag name {}", tag.id);
-			file_data.write_all(format!("{}\n", tag.id).as_bytes());
+			handle_error!(file_data.write_all(format!("{}\n", tag.id).as_bytes()), "Failed to write to temp file while creating global list");
 		}
 		
 		let file = AttachmentType::Bytes { data: file_data.into(), filename: "tags.txt".to_string() };

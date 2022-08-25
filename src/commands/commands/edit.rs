@@ -1,4 +1,3 @@
-use reql::{r};
 use serenity::{model::prelude::{interaction::application_command::{CommandDataOptionValue, ApplicationCommandInteraction}, command::CommandOptionType}, builder::CreateApplicationCommand, prelude::Context};
 
 use crate::{util::command_options::*, services::rethinkdb::{tags::{TagsTable}}};
@@ -28,8 +27,6 @@ pub async fn edit(interaction: ApplicationCommandInteraction, _ctx: Context) -> 
 		CommandDataOptionValue::String(option) => {option.to_string()}
 		&_ => { "Invalid contents".to_string() }
 	};
-
-	// let exists = TagsTable::tag_exists()
 
 	let gotten_tag = TagsTable::get_tag(name.clone()).await;
 

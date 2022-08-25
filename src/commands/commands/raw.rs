@@ -1,8 +1,7 @@
 use futures::AsyncWriteExt;
-use reql::{r};
 use serenity::{model::prelude::{interaction::{application_command::{CommandDataOptionValue, ApplicationCommandInteraction}, InteractionResponseType}, command::CommandOptionType, AttachmentType}, builder::CreateApplicationCommand, prelude::Context};
 
-use crate::{util::command_options::*, services::rethinkdb::{tags::{TagsTable}}};
+use crate::{util::command_options::*, services::rethinkdb::{tags::{TagsTable}}, handle_error};
 
 pub async fn raw(interaction: ApplicationCommandInteraction, ctx: Context) -> String {
 	let data = interaction.data.clone();
@@ -27,7 +26,7 @@ pub async fn raw(interaction: ApplicationCommandInteraction, ctx: Context) -> St
 
 		let mut file_data = Vec::new();
 
-		file_data.write_all(tag.content.as_bytes()).await;
+		handle_error!(file_data.write_all(tag.content.as_bytes()).await, "Failed to write to temp file while creating raw tag file");
 
 		let file = AttachmentType::Bytes { data: file_data.into(), filename: format!("{}.txt", tag.id) };
 

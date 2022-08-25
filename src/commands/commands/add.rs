@@ -1,35 +1,60 @@
-use reql::{r};
-use serenity::{model::prelude::{interaction::application_command::{CommandDataOptionValue, ApplicationCommandInteraction}, command::CommandOptionType}, builder::CreateApplicationCommand, prelude::Context};
+use serenity::{model::prelude::{interaction::{application_command::{ApplicationCommandInteraction}, InteractionResponseType, modal::ModalSubmitInteraction}, component::InputTextStyle}, prelude::Context};
 
-use crate::{util::command_options::*, services::rethinkdb::{tags::{TagsTable}}};
+use crate::{util::{input_field::FindInput, message::send_modal_message}, services::rethinkdb::{tags::{TagsTable}}, handle_error};
 
-pub async fn add(interaction: ApplicationCommandInteraction, _ctx: Context) -> String {
-	let data = interaction.data.clone();
+pub async fn add(interaction: ApplicationCommandInteraction, ctx: Context) -> String {
+	let modal = interaction.create_interaction_response(&ctx.http, |response| {
+		response.kind(InteractionResponseType::Modal)
+		.interaction_response_data(|modal| {
+			modal.custom_id(format!("add-{}", interaction.user.id))
+				.title("Create a new tag")
+				.components(|comp| {
+					comp.create_action_row(|row| {
+						row.create_input_text(|input| {
+							input.custom_id("name_input")
+								.label("Name")
+								.min_length(1)
+								.required(true)
+								.style(InputTextStyle::Short)	
+						})
+					})
+					
+					.create_action_row(|row| {
+						row.create_input_text(|input| {
+							input.custom_id("content_input")
+								.label("Content")
+								.min_length(1)
+								.required(true)
+								.style(InputTextStyle::Paragraph)	
+						})
+					})
+				})
+		})
+	}).await;
 
-	let name = data.find_option("name")
-		.expect("Expected name option")
-		.resolved
-		.as_ref()
-		.expect("Expected name value");
+	if modal.is_err() {
+		println!("Failed to create modal: {}", modal.err().unwrap())
+	}
 
-	let contents = data.find_option("content")
-		.expect("Expected content option")
-		.resolved
-		.as_ref()
-		.expect("Expected content value");
-		
+	return "".to_string();
+}
 
-	let name: String = match name {
-		CommandDataOptionValue::String(option) => {option.to_string()}
-		&_ => { "Invalid name".to_string() }
-	};
+pub async fn add_tag_handle_modal (interaction: ModalSubmitInteraction, ctx: Context) -> String {
+	let name_field = interaction.data.components.find_input("name_input");
+	let content_field = interaction.data.components.find_input("content_input");
 
-	let contents = match contents {
-		CommandDataOptionValue::String(option) => {option.to_string()}
-		&_ => { "Invalid contents".to_string() }
-	};
+	let name = &name_field.unwrap().value;
+	let content = &content_field.unwrap().value;
 
-	// let exists = TagsTable::tag_exists()
+	if name.is_empty() {
+		handle_error!(send_modal_message(ctx, interaction, "Expected name to be provided.", true).await, "Failed to send empty name modal error");
+		return "".to_string();
+	}
+
+	if content.is_empty() {
+		handle_error!(send_modal_message(ctx, interaction, "Expected content to be provided.", true).await, "Failed to send empty content modal error");
+		return "".to_string();
+	}
 
 	let gotten_tag = TagsTable::get_tag(name.clone()).await;
 
@@ -37,31 +62,16 @@ pub async fn add(interaction: ApplicationCommandInteraction, _ctx: Context) -> S
 		return format!("That tag already exists!");
 	}
 
-	let result = TagsTable::add_tag(name.clone(), contents, interaction.user.id.to_string()).await;
+	let result = TagsTable::add_tag(name.clone(), content.to_string(), interaction.user.id.to_string()).await;
+
 
 	if result.is_ok() {
-		return format!("Added tag {}", name);
+		handle_error!(send_modal_message(ctx, interaction.clone(), &format!("Added tag {}", name), false).await, "Failed to send tag add success message");
+		return "".to_string();
 	} else {
 		println!("Error adding tag: {:?}", result.err());
-		return "Error while adding tag".to_string();
+		handle_error!(send_modal_message(ctx, interaction.clone(), "Error while adding tag", false).await, "Failed to send tag add error message");
+
+		return "".to_string();
 	}
-}
-
-
-pub fn add_options_creator(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
-	command.create_option(|option| {
-		option.name("name")
-		.kind(CommandOptionType::String)
-		.description("The name of the tag")
-		.required(true)
-	});
-
-	let data = command.create_option(|option| {
-		option.name("content")
-		.kind(CommandOptionType::String)
-		.description("The contents of the tag")
-		.required(true)
-	});
-
-	return data;
 }

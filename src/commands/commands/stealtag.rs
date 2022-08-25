@@ -1,6 +1,4 @@
-use futures::AsyncWriteExt;
-use reql::{r};
-use serenity::{model::prelude::{interaction::{application_command::{CommandDataOptionValue, ApplicationCommandInteraction}, InteractionResponseType}, command::CommandOptionType, AttachmentType}, builder::CreateApplicationCommand, prelude::Context};
+use serenity::{model::prelude::{interaction::{application_command::{CommandDataOptionValue, ApplicationCommandInteraction}}, command::CommandOptionType}, builder::CreateApplicationCommand, prelude::Context};
 
 use crate::{util::command_options::*, services::rethinkdb::{tags::{TagsTable}}};
 

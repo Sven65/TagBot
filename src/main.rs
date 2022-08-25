@@ -8,9 +8,6 @@ use serenity::{
 	model::prelude::{Ready, interaction::{InteractionResponseType, Interaction}
 }};
 
-use std::{pin::Pin};
-
-// use futures::{Future, FutureExt};
 
 struct Handler;
 
@@ -49,12 +46,46 @@ impl EventHandler for Handler {
 					.create_interaction_response(&ctx.http, |response| {
 						response
 							.kind(InteractionResponseType::ChannelMessageWithSource)
-							.interaction_response_data(|message| message.content(content))
+							.interaction_response_data(|message| message.content(content).ephemeral(false))
 					})
 					.await
 					{
 						println!("Cannot respond to stupidf command {}", why);
 					}
+			}
+		} else if let Interaction::ModalSubmit(modal) = interaction {
+			if modal.data.custom_id.is_empty() {
+				panic!("Received modal has no custom id.");
+			}
+
+			let split = modal.data.custom_id.split("-");
+
+			let split = split.collect::<Vec<&str>>();
+
+			if split[0].is_empty() {
+				panic!("No command found in modal custom id.");
+			}
+
+
+			let index = &commands::framework::COMMAND_INDEX;
+			let locked_index = index.lock().await;
+			let cloned = locked_index.clone();
+
+
+			let stored_command = cloned.commands.get(split[0]);
+
+			if stored_command.is_none() {
+				panic!("Can't find command for {}", split[0])
+			}
+
+			let stored_command = stored_command.unwrap();
+
+			if stored_command.modal_handler.is_some() {
+				let handler = stored_command.modal_handler.unwrap();
+
+				handler(modal, ctx).await;
+			} else {
+				panic!("No modal handler found for {}", split[0]);
 			}
 		}
 	}

@@ -7,3 +7,5 @@ pub mod list;
 pub mod raw;
 pub mod stealtag;
 pub mod tagowner;
+
+pub mod tag;

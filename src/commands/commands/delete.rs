@@ -29,7 +29,15 @@ pub async fn delete(interaction: ApplicationCommandInteraction, _ctx: Context) -
 		return format!("You don't own that tag");
 	}
 
-	TagsTable::delete_tag(name.clone()).await;
+	
+	let res = TagsTable::delete_tag(name.clone()).await;
+
+	if res.is_err() {
+		println!("Failed to delete tag: {:?}", res.err());
+		return format!("Failed to delete tag {}", name);
+	}
+
+	// if res.is_err()
 
 	return format!("Deleted tag {}", name);
 }

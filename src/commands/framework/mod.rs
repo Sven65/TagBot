@@ -11,12 +11,13 @@ use tokio::sync::Mutex;
 use std::collections::HashMap;
 use core::fmt::Debug;
 
-use self::structures::{OptionCreatorFn, CommandExecutorFn};
+use self::structures::{OptionCreatorFn, CommandExecutorFn, CommandModalHandlerFn};
 
 #[derive(Debug, Clone, Copy)]
 pub struct TBCommand {
 	pub executor: CommandExecutorFn,
 	pub sends_message: bool,
+	pub modal_handler: Option<CommandModalHandlerFn>,
 }
 
 #[derive(Clone)]
@@ -28,7 +29,9 @@ pub struct CommandIndex {
 
 impl Debug for CommandIndex {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("CommandIndex").field("commands", &self.commands).finish()
+        f.debug_struct("CommandIndex")
+			.field("commands", &self.commands)
+			.finish()
     }
 }
 
@@ -45,6 +48,7 @@ impl CommandIndex {
 		desc: Option<&str>,
 		option_creator: Option<OptionCreatorFn>,
 		sends_message: bool,
+		modal_handler: Option<CommandModalHandlerFn>,
 	) {
 		if let None = self.context {
 			panic!("[CommandIndex] Unable to register commands: Context is None.");
@@ -64,11 +68,12 @@ impl CommandIndex {
 		})
 		.await;
 
-		println!("Created global command {:#?}", created);
+		println!("Created global command {:#?}", created.unwrap().name);
 
 		let tb_command = TBCommand {
 			executor: f,
 			sends_message,
+			modal_handler,
 		};
 
 		self.commands.insert(name.to_string(), tb_command);

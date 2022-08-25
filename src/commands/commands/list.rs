@@ -1,7 +1,7 @@
 use serenity::{model::prelude::{interaction::{application_command::{ApplicationCommandInteraction}, InteractionResponseType}, AttachmentType}, prelude::Context};
-use std::{io::{Read, Write}, borrow::Cow};
+use std::io::Write;
 
-use crate::services::rethinkdb::tags::TagsTable;
+use crate::{services::rethinkdb::tags::TagsTable, handle_error};
 
 
 pub async fn list(interaction: ApplicationCommandInteraction, ctx: Context) -> String {
@@ -14,7 +14,7 @@ pub async fn list(interaction: ApplicationCommandInteraction, ctx: Context) -> S
 
 		for tag in tags.iter() {
 			println!("Tag name {}", tag.id);
-			file_data.write_all(format!("{}\n", tag.id).as_bytes());
+			handle_error!(file_data.write_all(format!("{}\n", tag.id).as_bytes()), "Failed to write to temp file while creating user list");
 		}
 		
 		let file = AttachmentType::Bytes { data: file_data.into(), filename: "tags.txt".to_string() };
