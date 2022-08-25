@@ -17,6 +17,14 @@ pub struct Tag {
 	pub owner: String,
 }
 
+#[derive(Serialize, Debug, Deserialize, Clone)]
+
+struct OwnerTag {
+	pub id: String,
+	pub owner: String,
+}
+
+
 
 impl Tag {
 	pub fn new (id: String, content: String, owner: String) -> Self {
@@ -209,5 +217,31 @@ impl TagsTable {
 		}
 
 		return Ok(tags);
+	}
+
+	pub async fn set_owner(tag_name: String, new_owner: String) -> Result<WriteStatus, reql::Error> {
+		let connection = RDB.getConnection().await;
+
+		if connection.is_none() {
+			return create_error!("Failed to set tag owner: Failed to get DB Connection.");
+		}
+
+		let connection = connection.unwrap();
+
+		let new_tag = OwnerTag {
+			id: tag_name.clone(),
+			owner: new_owner,
+		};
+
+		let mut query = r.table("Tags").get(tag_name).update(new_tag).run::<&Session, WriteStatus>(connection);
+
+
+		if let Some(result) = query.try_next().await? {
+			println!("Result {:?}", result);
+			return Ok(result);
+		}
+	
+
+		return create_error!("Failed to update tag owner");
 	}
 }
