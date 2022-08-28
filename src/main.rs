@@ -1,5 +1,6 @@
 
 use dotenv::dotenv;
+use services::rethinkdb::tags::Tag;
 use std::env;
 use serenity::{
 	Client,
@@ -14,6 +15,7 @@ struct Handler;
 mod services;
 mod commands;
 mod util;
+mod tags;
 
 
 #[async_trait]
@@ -104,6 +106,8 @@ impl EventHandler for Handler {
 #[tokio::main]
 async fn main() {
 	dotenv().ok();
+
+	tags::legacy::executor::execute_tag();
 
 	let token = env::var("BOT_TOKEN").expect("Expected bot token to be present in env.");
 
