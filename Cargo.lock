@@ -1401,6 +1401,7 @@ dependencies = [
  "dotenv",
  "futures",
  "lazy_static",
+ "rand",
  "regex",
  "reql",
  "rlua",

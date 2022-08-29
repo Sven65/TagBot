@@ -5,6 +5,8 @@ use serenity::{model::{prelude::{interaction::{application_command::{Application
 
 use crate::{services::rethinkdb::tags::Tag, util::command_options::FindOption, tags::legacy::args::parse_mentions};
 
+use rand::{seq::SliceRandom, Rng};
+
 
 
 pub fn replace_pos_variables(content: String, data: &CommandData) -> String {
@@ -24,6 +26,7 @@ pub fn replace_pos_variables(content: String, data: &CommandData) -> String {
 	let args: Vec<&str> = args.split(" ").collect();
 
 	let res = POS_VAR_REGEX.replace_all(&content, |caps: &Captures| {
+
 		let pos = caps.get(1);
 
 		if pos.is_none() {
@@ -32,7 +35,7 @@ pub fn replace_pos_variables(content: String, data: &CommandData) -> String {
 
 		let pos: i32 = pos.unwrap().as_str().to_string().parse::<i32>().unwrap();
 		let pos = pos as usize;
-
+ 
 		if pos >= args.len() {
 			return caps.get(0).unwrap().as_str().to_string();
 		}
@@ -40,6 +43,45 @@ pub fn replace_pos_variables(content: String, data: &CommandData) -> String {
 		let pos_arg = args[pos];
 
 		return pos_arg.to_string();
+	});
+
+	return res.to_string();
+}
+
+pub fn replace_choosers(content: String) -> String {
+	lazy_static! {
+		static ref CHOOSE_VAR_REGEX: Regex = Regex::new(r"\{choose\((.*?)\)\}").unwrap();
+	}
+
+	let res = CHOOSE_VAR_REGEX.replace_all(&content, |caps: &Captures| {
+		let options: Vec<&str> = caps.get(1).unwrap().as_str().split("|").collect();
+
+		let option = options.choose(&mut rand::thread_rng());
+
+		return option.unwrap().to_string();
+	});
+
+	return res.to_string();
+}
+
+pub fn replace_rint(content: String) -> String {
+	lazy_static! {
+		static ref RINT_REGEX: Regex = Regex::new(r"\{rint\((\d+),\s*(\d+)\)\}").unwrap();
+	}
+
+	let res = RINT_REGEX.replace_all(&content, |caps: &Captures| {
+
+		let min = caps.get(1).unwrap();
+		let max = caps.get(2).unwrap();
+
+		let min: i32 = min.as_str().parse::<i32>().unwrap();
+		let max: i32 = max.as_str().parse::<i32>().unwrap();
+
+		let mut rng = rand::thread_rng();
+
+		let val = rng.gen_range(min..max);
+
+		return val.to_string();
 	});
 
 	return res.to_string();
@@ -266,6 +308,10 @@ pub async fn execute_tag(tag: Tag, interaction: ApplicationCommandInteraction, c
 	content = replace_server_variables(&ctx, content, interaction.guild_id).await;
 	content = replace_server_owner_variables(&ctx, content, interaction.guild_id).await;
 	content = replace_mention_variables(&ctx, content, &interaction.data, interaction.guild_id).await;
+
+	content = replace_choosers(content);
+	content = replace_rint(content);
+
 	
 
 	return content
