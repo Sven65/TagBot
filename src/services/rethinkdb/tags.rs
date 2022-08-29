@@ -40,17 +40,6 @@ impl Tag {
 			owner: owner,
 		}
 	}
-
-	// pub fn empty() -> Self {
-	// 	return Tag { id: None, content: None, owner: None }
-	// }
-
-
-	// pub fn is_empty(&self) -> bool {
-	// 	return self.id.is_none() && self.content.is_none() && self.owner.is_none();
-	// }
-
-
 }
 
 pub struct TagsTable {}
@@ -86,40 +75,6 @@ impl TagsTable {
 		}
 
 		return create_error!("Failed to insert tag");
-
-	}
-
-
-	/// Edits a tag in the tags table.
-	/// 
-	/// # Arguments
-	/// 
-	/// * `tag_name` - The name of the tag to edit. Automatically converted to lowercase.
-	/// * `content` - The new content of the tag
-	/// * `owner_id` - Snowflake of the tag owner
-	pub async fn edit_tag(tag_name: String, content: String, owner_id: String) -> Result<WriteStatus, reql::Error> {
-		let connection = RDB.get_connection().await;
-
-		if connection.is_none() {
-			return create_error!("Failed to edit tag: Failed to get DB Connection.");
-		}
-
-		let connection = connection.unwrap();
-
-		let tag = Tag::new (
-			tag_name.to_lowercase(),
-			content,
-			owner_id,
-		);
-
-
-		let mut query = r.table("Tags").get(tag_name.to_lowercase()).update(tag).run::<&reql::Session, WriteStatus>(connection);
-
-		if let Some(result) = query.try_next().await? {
-			return Ok(result);
-		}
-
-		return create_error!("Failed to update tag");
 
 	}
 
