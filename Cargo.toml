@@ -16,6 +16,7 @@ futures = "0.3.23"
 serde = "1.0.144"
 rlua = "0.19.4"
 regex = "1"
+chrono = "0.4.22"
 rand = "0.8.5"
 
 [dependencies.serenity]

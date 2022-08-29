@@ -1,4 +1,5 @@
 
+use chrono::{DateTime, Utc};
 use lazy_static::lazy_static;
 use regex::{Regex, Captures};
 use serenity::{model::{prelude::{interaction::{application_command::{ApplicationCommandInteraction, CommandData}}, Member, ChannelId, GuildId}, user::User}, prelude::Context};
@@ -85,6 +86,13 @@ pub fn replace_rint(content: String) -> String {
 	});
 
 	return res.to_string();
+}
+
+pub fn replace_dates(content: String) -> String {
+	let now: DateTime<Utc> = Utc::now();
+
+	return now.format(&content).to_string();
+
 }
 
 pub fn replace_sender_variables(content: String, sender: &User) -> String {
@@ -301,6 +309,7 @@ pub async fn execute_tag(tag: Tag, interaction: ApplicationCommandInteraction, c
 	let mut content = tag.content;
 
 	content = replace_pos_variables(content, &interaction.data);
+	content = replace_dates(content);
 
 	content = replace_sender_variables(content, &interaction.user);
 	content = replace_sender_member_variables(content, interaction.member);
