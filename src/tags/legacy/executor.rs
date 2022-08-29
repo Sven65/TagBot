@@ -1,8 +1,49 @@
 
+use lazy_static::lazy_static;
+use regex::{Regex, Captures};
 use serenity::{model::{prelude::{interaction::{application_command::{ApplicationCommandInteraction, CommandData}}, Member, ChannelId, GuildId}, user::User}, prelude::Context};
 
 use crate::{services::rethinkdb::tags::Tag, util::command_options::FindOption, tags::legacy::args::parse_mentions};
 
+
+
+pub fn replace_pos_variables(content: String, data: &CommandData) -> String {
+	lazy_static! {
+		static ref POS_VAR_REGEX: Regex = Regex::new(r"\{(\d+)\}").unwrap();
+	}
+
+	let args_opt = data.find_option("args");
+
+	if args_opt.is_none() {
+		return content
+	}
+
+	let args = args_opt.unwrap();
+	let args = args.value.as_ref().unwrap().as_str().unwrap();
+
+	let args: Vec<&str> = args.split(" ").collect();
+
+	let res = POS_VAR_REGEX.replace_all(&content, |caps: &Captures| {
+		let pos = caps.get(1);
+
+		if pos.is_none() {
+			return caps.get(0).unwrap().as_str().to_string();
+		}
+
+		let pos: i32 = pos.unwrap().as_str().to_string().parse::<i32>().unwrap();
+		let pos = pos as usize;
+
+		if pos >= args.len() {
+			return caps.get(0).unwrap().as_str().to_string();
+		}
+
+		let pos_arg = args[pos];
+
+		return pos_arg.to_string();
+	});
+
+	return res.to_string();
+}
 
 pub fn replace_sender_variables(content: String, sender: &User) -> String {
 	return content
@@ -77,7 +118,6 @@ async fn replace_server_variables(ctx: &Context, content: String, guild_id: Opti
 	if guild.approximate_member_count.is_some() {
 		member_count_str = format!("{}", guild.approximate_member_count.unwrap());
 	} else {
-		println!("Member count is None.")
 		// TODO: Try making this fetch members
 	}
 
@@ -150,7 +190,7 @@ async fn replace_server_owner_variables (ctx: &Context, content: String, guild_i
 
 }
 
-async fn replace_mention_variables (ctx: &Context, content: String, data: CommandData, guild_id: Option<GuildId>) -> String {
+async fn replace_mention_variables (ctx: &Context, content: String, data: &CommandData, guild_id: Option<GuildId>) -> String {
 	let args_opt = data.find_option("args");
 
 	if args_opt.is_none() {
@@ -218,12 +258,14 @@ pub async fn execute_tag(tag: Tag, interaction: ApplicationCommandInteraction, c
 	
 	let mut content = tag.content;
 
+	content = replace_pos_variables(content, &interaction.data);
+
 	content = replace_sender_variables(content, &interaction.user);
 	content = replace_sender_member_variables(content, interaction.member);
 	content = replace_channel_variables(&ctx, content, interaction.channel_id).await;
 	content = replace_server_variables(&ctx, content, interaction.guild_id).await;
 	content = replace_server_owner_variables(&ctx, content, interaction.guild_id).await;
-	content = replace_mention_variables(&ctx, content, interaction.data, interaction.guild_id).await;
+	content = replace_mention_variables(&ctx, content, &interaction.data, interaction.guild_id).await;
 	
 
 	return content

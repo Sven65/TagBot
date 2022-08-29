@@ -18,10 +18,16 @@ pub struct Tag {
 }
 
 #[derive(Serialize, Debug, Deserialize, Clone)]
-
 struct OwnerTag {
 	pub id: String,
 	pub owner: String,
+}
+
+
+#[derive(Serialize, Debug, Deserialize, Clone)]
+struct ContentTag {
+	pub id: String,
+	pub content: String,
 }
 
 
@@ -243,5 +249,31 @@ impl TagsTable {
 	
 
 		return create_error!("Failed to update tag owner");
+	}
+
+	pub async fn set_content(tag_name: String, new_content: String) -> Result<WriteStatus, reql::Error> {
+		let connection = RDB.get_connection().await;
+
+		if connection.is_none() {
+			return create_error!("Failed to set tag content: Failed to get DB Connection.");
+		}
+
+		let connection = connection.unwrap();
+
+		let new_tag = ContentTag {
+			id: tag_name.clone(),
+			content: new_content,
+		};
+
+		let mut query = r.table("Tags").get(tag_name).update(new_tag).run::<&Session, WriteStatus>(connection);
+
+
+		if let Some(result) = query.try_next().await? {
+			println!("Result {:?}", result);
+			return Ok(result);
+		}
+	
+
+		return create_error!("Failed to update tag content");
 	}
 }
