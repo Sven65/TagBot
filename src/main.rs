@@ -107,8 +107,6 @@ impl EventHandler for Handler {
 async fn main() {
 	dotenv().ok();
 
-	tags::legacy::executor::execute_tag();
-
 	let token = env::var("BOT_TOKEN").expect("Expected bot token to be present in env.");
 
 	let mut client = Client::builder(token, GatewayIntents::empty())

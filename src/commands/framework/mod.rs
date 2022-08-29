@@ -13,6 +13,8 @@ use core::fmt::Debug;
 
 use self::structures::{OptionCreatorFn, CommandExecutorFn, CommandModalHandlerFn};
 
+const CREATE_COMMANDS: bool = false;
+
 #[derive(Debug, Clone, Copy)]
 pub struct TBCommand {
 	pub executor: CommandExecutorFn,
@@ -54,21 +56,23 @@ impl CommandIndex {
 			panic!("[CommandIndex] Unable to register commands: Context is None.");
 		}
 
-		let created = Command::create_global_application_command(&self.context.as_ref().unwrap().http, |command| {
-			command.name(name)
-				.description(desc.unwrap_or("Default description."));
+		if CREATE_COMMANDS {
+			let created = Command::create_global_application_command(&self.context.as_ref().unwrap().http, |command| {
+				command.name(name)
+					.description(desc.unwrap_or("Default description."));
 
-				let data = match option_creator {
-					Some(option_creator) => option_creator(command),
-					None => { command },
-				};
+					let data = match option_creator {
+						Some(option_creator) => option_creator(command),
+						None => { command },
+					};
 
-				data
-				
-		})
-		.await;
+					data
+					
+			})
+			.await;
 
-		println!("Created global command {:#?}", created.unwrap().name);
+			println!("Created global command {:#?}", created.unwrap().name);
+		}
 
 		let tb_command = TBCommand {
 			executor: f,

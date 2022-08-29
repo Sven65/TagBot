@@ -1,9 +1,9 @@
 use serenity::{model::prelude::{interaction::{application_command::{CommandDataOptionValue, ApplicationCommandInteraction}}, command::CommandOptionType}, builder::CreateApplicationCommand, prelude::Context};
 
-use crate::{util::command_options::*, services::rethinkdb::{tags::{TagsTable}}};
+use crate::{util::command_options::*, services::rethinkdb::{tags::{TagsTable}}, tags::legacy::executor::execute_tag};
 
 
-pub async fn tag(interaction: ApplicationCommandInteraction, _ctx: Context) -> String {
+pub async fn tag(interaction: ApplicationCommandInteraction, ctx: Context) -> String {
 	let name = interaction.data.find_option("name")
 		.expect("Expected name option")
 		.resolved
@@ -21,7 +21,11 @@ pub async fn tag(interaction: ApplicationCommandInteraction, _ctx: Context) -> S
 		return format!("That tag doesn't exist!");
 	} else {
 		// Execute tag
-		return format!("Executing tag {}", gotten_tag.unwrap().id);
+		let data = execute_tag(gotten_tag.unwrap(), interaction, ctx).await;
+
+		return data;
+
+		//return format!("Executing tag {}", gotten_tag.unwrap().id);
 	}
 }
 
