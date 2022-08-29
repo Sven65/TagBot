@@ -1,6 +1,5 @@
 
 use dotenv::dotenv;
-use services::rethinkdb::tags::Tag;
 use std::env;
 use serenity::{
 	Client,
