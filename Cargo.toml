@@ -15,6 +15,7 @@ lazy_static = "1.4.0"
 futures = "0.3.23"
 serde = "1.0.144"
 rlua = "0.19.4"
+regex = "1"
 
 [dependencies.serenity]
 default-features = false

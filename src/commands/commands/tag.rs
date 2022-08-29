@@ -31,11 +31,17 @@ pub async fn tag(interaction: ApplicationCommandInteraction, ctx: Context) -> St
 
 
 pub fn tag_options_creator(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
-	let data = command.create_option(|option| {
+	command.create_option(|option| {
 		option.name("name")
 		.kind(CommandOptionType::String)
 		.description("The name of the tag")
 		.required(true)
+	});
+
+	let data = command.create_option(|option| {
+		option.name("args")
+			.kind(CommandOptionType::String)
+			.description("Arguments for the tag")
 	});
 
 	return data;

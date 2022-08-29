@@ -1,9 +1,7 @@
 
-use std::any::Any;
+use serenity::{model::{prelude::{interaction::{application_command::{ApplicationCommandInteraction, CommandData}}, Member, ChannelId, GuildId}, user::User}, prelude::Context};
 
-use serenity::{model::{prelude::{interaction::{application_command::ApplicationCommandInteraction, self}, Member, ChannelId, GuildId}, user::User}, prelude::Context};
-
-use crate::{services::rethinkdb::tags::Tag};
+use crate::{services::rethinkdb::tags::Tag, util::command_options::FindOption, tags::legacy::args::parse_mentions};
 
 
 pub fn replace_sender_variables(content: String, sender: &User) -> String {
@@ -152,11 +150,68 @@ async fn replace_server_owner_variables (ctx: &Context, content: String, guild_i
 
 }
 
-pub fn ee_tag(tag: Tag, interaction: ApplicationCommandInteraction) -> String {
-	return tag.content.replacen("", "", 1);
+async fn replace_mention_variables (ctx: &Context, content: String, data: CommandData, guild_id: Option<GuildId>) -> String {
+	let args_opt = data.find_option("args");
+
+	if args_opt.is_none() {
+		return content
+	}
+
+	let mut ret_content = content.clone();
+
+	let args = args_opt.unwrap();
+	let args = args.value.as_ref().unwrap().as_str().unwrap();
+	
+
+	let mentions = parse_mentions(args);
+
+	// Only use first mention
+
+	if mentions.len() == 0 {
+		return ret_content
+	}
+
+	let mentioned_user = mentions[0].to_user(&ctx.http).await;
+
+	if mentioned_user.is_err() {
+		return ret_content
+	}
+
+	let mentioned_user = mentioned_user.unwrap();
+
+	ret_content = ret_content.replacen("{mentionname}", &mentioned_user.name, 1)
+		.replacen("{mentionid}", mentioned_user.id.to_string().as_str(), 1)
+		.replacen("{mentiondiscrim}", mentioned_user.discriminator.to_string().as_str(), 1)
+		.replacen("{mentionbot}", &mentioned_user.bot.to_string(),  1)
+		.replacen("{mention}", format!("<@{}>", &mentioned_user.id.to_string()).as_str(), 1);
+
+	if guild_id.is_some() {
+		// Not a DM
+
+		let guild = guild_id.unwrap();
+
+		let guild_member = guild.member(&ctx.http, mentions[0]).await;
+
+		if guild_member.is_ok() {
+			let guild_member = guild_member.unwrap();
+
+			let mut joined_at_string = "Unknown".to_string();
+
+			if guild_member.joined_at.is_some() {
+				let joined_at_ts = guild_member.joined_at.unwrap().unix_timestamp();
+				joined_at_string = format!("<t:{}:F>", &joined_at_ts);
+			}
+
+
+			ret_content = ret_content.replacen("{mentionjoined}", joined_at_string.as_str(), 1)
+				.replacen("{mentionnick}", guild_member.nick.unwrap_or("Unknown".to_string()).as_str(), 1);
+		}
+	}
+
+	println!("args_opt {:#?}", args_opt);
+
+	return ret_content;
 }
-
-
 
 
 pub async fn execute_tag(tag: Tag, interaction: ApplicationCommandInteraction, ctx: Context) -> String {
@@ -168,20 +223,9 @@ pub async fn execute_tag(tag: Tag, interaction: ApplicationCommandInteraction, c
 	content = replace_channel_variables(&ctx, content, interaction.channel_id).await;
 	content = replace_server_variables(&ctx, content, interaction.guild_id).await;
 	content = replace_server_owner_variables(&ctx, content, interaction.guild_id).await;
+	content = replace_mention_variables(&ctx, content, interaction.data, interaction.guild_id).await;
 	
 
 	return content
-
-    // let user = User {
-    //     id: "123".to_string(),
-    //     name: "User name".to_string(),
-    //     discrim: "#1934".to_string(),
-    // };
-    
-    // let content: String = "id: {id}, name: {sname}, discrim: {discrim}".to_string();
-
-	// let formatted = replace_sender_variables(content, user);
-    
-    // println!("{}", formatted);
 }
 
