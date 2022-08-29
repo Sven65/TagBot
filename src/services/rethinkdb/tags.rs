@@ -96,7 +96,6 @@ impl TagsTable {
 		let mut query = r.table("Tags").get(tag_name.to_lowercase()).run::<&Session, Tag>(connection);
 
 		if let Some(result) = query.try_next().await? {
-			println!("Result {:?}", result);
 			return Ok(result);
 		}
 	
@@ -123,7 +122,6 @@ impl TagsTable {
 		let mut query = r.table("Tags").get(tag_name.to_lowercase()).delete(delete_options).run::<&Session, WriteStatus>(connection);
 
 		if let Some(result) = query.try_next().await? {
-			println!("Result {:?}", result);
 			return Ok(result);
 		}
 	
@@ -198,7 +196,6 @@ impl TagsTable {
 
 
 		if let Some(result) = query.try_next().await? {
-			println!("Result {:?}", result);
 			return Ok(result);
 		}
 	
@@ -224,7 +221,6 @@ impl TagsTable {
 
 
 		if let Some(result) = query.try_next().await? {
-			println!("Result {:?}", result);
 			return Ok(result);
 		}
 	

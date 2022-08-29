@@ -14,7 +14,6 @@ impl FindInput for Vec<ActionRow> {
 			components.iter().for_each(|component| {
 				match component {
 					ActionRowComponent::InputText(component) => {
-						println!("Component id {}, wanted = {}", component.custom_id, name);
 						if component.custom_id == name {
 							res = Some(component);
 						}

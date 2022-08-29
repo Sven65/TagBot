@@ -298,8 +298,6 @@ async fn replace_mention_variables (ctx: &Context, content: String, data: &Comma
 		}
 	}
 
-	println!("args_opt {:#?}", args_opt);
-
 	return ret_content;
 }
 

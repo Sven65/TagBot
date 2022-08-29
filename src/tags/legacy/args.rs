@@ -12,8 +12,6 @@ pub fn parse_mentions (args: &str) -> Vec<UserId> {
 	let mut mention_ids: Vec<UserId> = Vec::new();
 
 	for m in matches {
-		println!("Match {:#?}", m);
-
 		for cap in MENTION_REGEX.captures_iter(m.as_str()) {
 			let id = cap.get(1);
 

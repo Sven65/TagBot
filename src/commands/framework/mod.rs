@@ -11,6 +11,8 @@ use tokio::sync::Mutex;
 use std::collections::HashMap;
 use core::fmt::Debug;
 
+use crate::handle_error;
+
 use self::structures::{OptionCreatorFn, CommandExecutorFn, CommandModalHandlerFn};
 
 const CREATE_COMMANDS: bool = false;
@@ -91,9 +93,7 @@ impl CommandIndex {
 			panic!("[CommandIndex] Unable to remove commands: Context is None.");
 		}
 
-		let deleted = Command::delete_global_application_command(&self.context.as_ref().unwrap().http, id).await;
-
-		println!("Delete result: {:#?}", deleted);
+		handle_error!(Command::delete_global_application_command(&self.context.as_ref().unwrap().http, id).await, "Failed to delete command");
 	}
 }
 

@@ -21,7 +21,7 @@ mod tags;
 impl EventHandler for Handler {
 	async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
 		if let Interaction::ApplicationCommand(command) = interaction {
-			println!("Received command interaction: {:#?}", command);
+			// println!("Received command interaction: {:#?}", command);
 			let index = &commands::framework::COMMAND_INDEX;
 			let mut locked_index = index.lock().await;
 			let cloned = locked_index.clone();
