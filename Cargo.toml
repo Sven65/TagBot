@@ -3,6 +3,7 @@ name = "tagbot"
 version = "4.0.1"
 edition = "2021"
 license = "OPL-3.0"
+publish = false
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -19,6 +20,7 @@ rlua = "0.19.4"
 regex = "1"
 chrono = "0.4.22"
 rand = "0.8.5"
+include-lua = "0.1.4"
 
 [dependencies.serenity]
 default-features = false
