@@ -88,6 +88,42 @@ impl EventHandler for Handler {
 			} else {
 				panic!("No modal handler found for {}", split[0]);
 			}
+		} else if let Interaction::MessageComponent(component) = interaction {
+			println!("Received component interaction: {:#?}", component);
+
+			if component.data.custom_id.is_empty() {
+				panic!("Received modal has no custom id.");
+			}
+
+			let split = component.data.custom_id.split("-");
+
+			let split = split.collect::<Vec<&str>>();
+
+			if split[0].is_empty() {
+				panic!("No command found in component custom id.");
+			}
+
+			let index = &commands::framework::COMMAND_INDEX;
+			let locked_index = index.lock().await;
+			let cloned = locked_index.clone();
+
+
+			let stored_command = cloned.commands.get(split[0]);
+
+			if stored_command.is_none() {
+				panic!("Can't find command for {}", split[0])
+			}
+
+			let stored_command = stored_command.unwrap();
+
+			if stored_command.modal_handler.is_some() {
+				let handler = stored_command.component_handler.unwrap();
+
+				handler(component, ctx).await;
+			} else {
+				panic!("No component handler found for {}", split[0]);
+			}
+
 		}
 	}
 
