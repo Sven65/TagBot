@@ -20,6 +20,8 @@ RUN cargo install --path .
 
 # Final build
 
+# TODO: Add luarocks and sandbox
+
 FROM debian:buster-slim
 
 WORKDIR /home

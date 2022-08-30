@@ -1,6 +1,6 @@
 use serenity::{model::prelude::{interaction::{application_command::{CommandDataOptionValue, ApplicationCommandInteraction}}, command::CommandOptionType}, builder::CreateApplicationCommand, prelude::Context};
 
-use crate::{util::command_options::*, services::rethinkdb::{tags::{TagsTable}}, tags::legacy::executor::execute_tag};
+use crate::{util::command_options::*, services::rethinkdb::{tags::{TagsTable, TagType}}, tags::{legacy::executor::execute_tag, lua::executor::execute_tag as execute_lua_tag}};
 
 
 pub async fn tag(interaction: ApplicationCommandInteraction, ctx: Context) -> String {
@@ -20,12 +20,16 @@ pub async fn tag(interaction: ApplicationCommandInteraction, ctx: Context) -> St
 	if gotten_tag.is_err() {
 		return format!("That tag doesn't exist!");
 	} else {
+		let tag = gotten_tag.unwrap();
+
 		// Execute tag
-		let data = execute_tag(gotten_tag.unwrap(), interaction, ctx).await;
+		let data = match tag.tag_type {
+			Some(TagType::Legacy) => execute_tag(tag, interaction, ctx).await,
+			Some(TagType::Lua) => execute_lua_tag(tag, interaction, ctx).await,
+			_ => execute_tag(tag, interaction, ctx).await
+		};
 
 		return data;
-
-		//return format!("Executing tag {}", gotten_tag.unwrap().id);
 	}
 }
 
