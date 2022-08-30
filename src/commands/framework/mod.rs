@@ -13,7 +13,7 @@ use core::fmt::Debug;
 
 use crate::handle_error;
 
-use self::structures::{OptionCreatorFn, CommandExecutorFn, CommandModalHandlerFn};
+use self::structures::{OptionCreatorFn, CommandExecutorFn, CommandModalHandlerFn, CommandComponentHandlerFn};
 
 const CREATE_COMMANDS: bool = false;
 
@@ -22,6 +22,7 @@ pub struct TBCommand {
 	pub executor: CommandExecutorFn,
 	pub sends_message: bool,
 	pub modal_handler: Option<CommandModalHandlerFn>,
+	pub component_handler: Option<CommandComponentHandlerFn>,
 }
 
 #[derive(Clone)]
@@ -53,6 +54,7 @@ impl CommandIndex {
 		option_creator: Option<OptionCreatorFn>,
 		sends_message: bool,
 		modal_handler: Option<CommandModalHandlerFn>,
+		component_handler: Option<CommandComponentHandlerFn>,
 	) {
 		if let None = self.context {
 			panic!("[CommandIndex] Unable to register commands: Context is None.");
@@ -80,6 +82,7 @@ impl CommandIndex {
 			executor: f,
 			sends_message,
 			modal_handler,
+			component_handler,
 		};
 
 		self.commands.insert(name.to_string(), tb_command);

@@ -1,7 +1,8 @@
-use serenity::model::{application::component::{ActionRow, ActionRowComponent}, prelude::component::InputText};
+use serenity::model::{application::component::{ActionRow, ActionRowComponent}, prelude::component::{InputText, SelectMenu}};
 
 pub trait FindInput {
 	fn find_input(&self, name: &str) -> Option<&InputText>;
+	fn find_select(&self, name: &str) -> Option<&SelectMenu>;
 }
 
 impl FindInput for Vec<ActionRow> {
@@ -25,4 +26,25 @@ impl FindInput for Vec<ActionRow> {
 
 		return res;
     }
+
+	fn find_select(&self, name: &str) -> Option<&SelectMenu> {
+		let mut res: Option<&SelectMenu> = None;
+
+		self.iter().for_each(|item| {
+			let components = &item.components;
+
+			components.iter().for_each(|component| {
+				match component {
+					ActionRowComponent::SelectMenu(component) => {
+						if component.custom_id.as_ref().unwrap() == name {
+							res = Some(component);
+						}
+					},
+					&_ => {},
+				}
+			});
+		});
+
+		return res;
+	}
 }

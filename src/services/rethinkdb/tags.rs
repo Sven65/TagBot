@@ -11,10 +11,17 @@ macro_rules! create_error {
 }
 
 #[derive(Serialize, Debug, Deserialize, Clone)]
+pub enum TagType {
+	Legacy,
+	Lua,
+}
+
+#[derive(Serialize, Debug, Deserialize, Clone)]
 pub struct Tag {
 	pub id: String,
 	pub content: String,
 	pub owner: String,
+	pub tag_type: Option<TagType>,
 }
 
 #[derive(Serialize, Debug, Deserialize, Clone)]
@@ -33,11 +40,12 @@ struct ContentTag {
 
 
 impl Tag {
-	pub fn new (id: String, content: String, owner: String) -> Self {
+	pub fn new (id: String, content: String, owner: String, tag_type: Option<TagType>) -> Self {
 		return Tag {
-			id: id,
-			content: content,
-			owner: owner,
+			id,
+			content,
+			owner,
+			tag_type,
 		}
 	}
 }
@@ -52,7 +60,7 @@ impl TagsTable {
 	/// * `tag_name` - The name of the tag to insert. Automatically converted to lowercase.
 	/// * `content` - The content of the tag
 	/// * `owner_id` - Snowflake of the tag owner
-	pub async fn add_tag(tag_name: String, content: String, owner_id: String) -> Result<WriteStatus, reql::Error> {
+	pub async fn add_tag(tag_name: String, content: String, owner_id: String, tag_type: Option<TagType>) -> Result<WriteStatus, reql::Error> {
 		let connection = RDB.get_connection().await;
 
 		if connection.is_none() {
@@ -65,6 +73,7 @@ impl TagsTable {
 			tag_name.to_lowercase(),
 			content,
 			owner_id,
+			tag_type,
 		);
 
 
