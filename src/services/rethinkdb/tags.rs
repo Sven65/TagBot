@@ -10,10 +10,24 @@ macro_rules! create_error {
 	};
 }
 
-#[derive(Serialize, Debug, Deserialize, Clone)]
+#[derive(Serialize, Debug, Deserialize, Clone, PartialEq)]
 pub enum TagType {
 	Legacy,
 	Lua,
+	/// Reserved for tag types that are invalid
+	Invalid,
+}
+
+impl std::fmt::Display for TagType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		let name = match self {
+			Self::Lua => "lua",
+			Self::Legacy => "legacy",
+			Self::Invalid => "invalid",
+		};
+
+		write!(f, "{}", name)
+    }
 }
 
 #[derive(Serialize, Debug, Deserialize, Clone)]
