@@ -1,5 +1,4 @@
 DOCKER_REGISTRY=
-
 PACKAGE_VERSION := $(shell cargo metadata --no-deps --format-version 1 | jq '.packages[0].version' | tr -d '"')
 IMAGE_NAME := $(shell cargo metadata --no-deps --format-version 1 | jq '.packages[0].name' | tr -d '"')
 
@@ -16,5 +15,7 @@ build:
 	docker build -t $(IMAGE_TAG_VERSION) -t $(IMAGE_TAG_LATEST) .
 publish:
 	docker push $(IMAGE_TAG) --all-tags
-
+run-local:
+	docker run --rm --env-file=.env --network=host $(IMAGE_TAG_VERSION)
+	
 all: info build publish clean
