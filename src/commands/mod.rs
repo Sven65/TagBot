@@ -5,7 +5,7 @@ pub mod commands;
 use commands::ping2::ping2;
 use commands::add::add;
 
-use self::commands::add::{add_tag_handle_modal, add_tag_handle_component};
+use self::commands::add::{add_tag_handle_modal, add_options_creator};
 use self::commands::delete::{delete, delete_options_creator};
 use self::commands::edit::{edit, edit_options_creator, edit_tag_handle_modal};
 use self::commands::glist::glist;
@@ -20,7 +20,7 @@ use self::framework::{COMMAND_INDEX};
 #[allow(dead_code)]
 pub async fn init_commands() {
 	COMMAND_INDEX.lock().await.register_command("ping2", |data, ctx| Box::pin(ping2(data, ctx)), Some("With desc"), None, false, None, None).await;
-	COMMAND_INDEX.lock().await.register_command("add", |data, ctx| Box::pin(add(data, ctx)), Some("Adds tags"), None, true, Some(|interaction, ctx| Box::pin(add_tag_handle_modal(interaction, ctx))), Some(|interaction, ctx| Box::pin(add_tag_handle_component(interaction, ctx)))).await;
+	COMMAND_INDEX.lock().await.register_command("add", |data, ctx| Box::pin(add(data, ctx)), Some("Adds tags"), Some(add_options_creator), true, Some(|interaction, ctx| Box::pin(add_tag_handle_modal(interaction, ctx))), None).await;
 	COMMAND_INDEX.lock().await.register_command("delete", |data, ctx| Box::pin(delete(data, ctx)), Some("Deletes a tag"), Some(delete_options_creator), false, None, None).await;
 	COMMAND_INDEX.lock().await.register_command("edit", |data, ctx| Box::pin(edit(data, ctx)), Some("Edits a tag"), Some(edit_options_creator), false, Some(|interaction, ctx| Box::pin(edit_tag_handle_modal(interaction, ctx))), None).await;
 

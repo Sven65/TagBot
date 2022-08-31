@@ -1,31 +1,22 @@
-use include_lua::include_lua;
-use rlua::{Lua, Result, HookTriggers, FromLuaMulti, MultiValue};
+use rlua::{Lua, Result, FromLuaMulti};
 use serenity::{model::prelude::interaction::application_command::ApplicationCommandInteraction, prelude::Context};
-use std::{env, path::{PathBuf, Path}};
+use std::{io::Read};
+use gag::{BufferRedirect};
 
-use crate::{services::rethinkdb::tags::Tag, handle_error};
+use crate::{services::rethinkdb::tags::Tag};
 
-fn get_current_dir() -> PathBuf {
-	let current_exe = env::current_exe();
-
-	if current_exe.is_err() {
-		panic!("Failed to get current exe path");
-	}
-
-	let current_exe = current_exe.ok().unwrap();
-
-	return current_exe;
-}
 
 fn eval<'lua, T: FromLuaMulti<'lua>>(lua_ctx: rlua::Context<'lua>, script: &str) -> Result<T> {
-    lua_ctx.load(script).eval()
+    lua_ctx.load(script).set_name("cock.lua")?.eval()
 }
 
-fn execute_code(tag: Tag, interaction: ApplicationCommandInteraction, ctx: Context) -> rlua::Result<String> {
+fn execute_code(tag: Tag, _interaction: ApplicationCommandInteraction, _ctx: Context) -> rlua::Result<String> {
+
 	let lua = Lua::new();
 
 	// MB * 1024 kb * 1024 bytes
 	lua.set_memory_limit(Some(1 * 1024 * 1024));
+
 
 	lua.context(|lua_ctx| {
 		let globals = lua_ctx.globals();
@@ -34,29 +25,47 @@ fn execute_code(tag: Tag, interaction: ApplicationCommandInteraction, ctx: Conte
 		Ok(())
 	})?;
 
-	// lua.context(|lua_ctx| {
-	// 	let print = lua_ctx.create_function(func)
+	let lua_buf = BufferRedirect::stdout();
 
-	// 	Ok(())
-	// })?;
+	if lua_buf.is_err() {
+		panic!("Failed to open lua buffer {:#?}", lua_buf.err());
+	}
 
-	let data = lua.context(|lua_ctx| {
+	let lua_buf = lua_buf.unwrap();
+	let mut output = String::new();
+
+	
+	let result = lua.context(|lua_ctx| {
+		let lua_script = format!("
+			local _print = print
+			local sandbox = require 'sandbox'
+
+
+			local env = {{ print = _print }}
+
+			local ok, result = pcall(sandbox.run, [[{}]], {{env = env, quota = 10000}})
+
+			if result then
+				print(result)
+			end
+
+			return ''
+		", &tag.content);
+
 		eval::<String>(
 			lua_ctx, 
-			format!("
-				local sandbox = require 'sandbox'
-
-
-				local ok, result = pcall(sandbox.run, {})
-
-				print(ok, result)
-			", &tag.content).as_str()
+			lua_script.as_str()
 		)
 	});
 
-	println!("Data is {:#?}", data);
+	lua_buf.into_inner().read_to_string(&mut output).unwrap();
 
-	return Ok("exec done".to_string());
+	if result.is_err() {
+		println!("Error executing lua: {:#?}", result.err());
+	}
+
+
+	return Ok(output.to_string());
 }
 
 pub async fn execute_tag(tag: Tag, interaction: ApplicationCommandInteraction, ctx: Context) -> String {

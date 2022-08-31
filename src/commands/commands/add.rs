@@ -1,55 +1,51 @@
-use serenity::{model::prelude::{interaction::{application_command::{ApplicationCommandInteraction}, InteractionResponseType, modal::ModalSubmitInteraction, message_component::MessageComponentInteraction}, component::InputTextStyle}, prelude::Context};
+use serenity::{model::prelude::{interaction::{application_command::{ApplicationCommandInteraction, CommandDataOptionValue}, InteractionResponseType, modal::ModalSubmitInteraction}, component::InputTextStyle, command::CommandOptionType}, prelude::Context, builder::CreateApplicationCommand};
 
-use crate::{util::{input_field::FindInput, message::{send_modal_message, send_component_message}}, services::rethinkdb::{tags::{TagsTable, TagType}}, handle_error};
+use crate::{util::{input_field::FindInput, message::{send_modal_message, send_app_interaction_message}, command_options::FindOption}, services::rethinkdb::{tags::{TagsTable, TagType}}, handle_error};
 
 pub async fn add(interaction: ApplicationCommandInteraction, ctx: Context) -> String {
-	let result = interaction.create_interaction_response(&ctx.http, |response| {
-		response.interaction_response_data(|data| {
-			data.content("Please select a tag type")
-				.components(|components| {
-				components.create_action_row(|row| {
-					row.create_select_menu(|menu| {
-						menu.custom_id(format!("add-{}", interaction.user.id))
-							.min_values(1)
-							.max_values(1)
-							.options(|opts| {
-								opts.create_option(|opt| {
-									opt.description("A regular tag")
-										.label("Regular tag")
-										.value("legacy")
-								})
-								.create_option(|opt| {
-									opt.description("A scriptable tag")
-										.label("Lua tag")
-										.value("lua")
-								})
-							})
-					})
-				})
-			})
-		})
-	}).await;
+	
+	let tag_type = interaction.data.find_option("type")
+		.expect("Expected tag type option")
+		.resolved
+		.as_ref()
+		.expect("Expected tag type value");
 
-	if result.is_err() {
-		println!("Error sending tag type select menu: {:#?}", result.err().unwrap());
+	let tag_type: String = match tag_type {
+		CommandDataOptionValue::String(option) => {option.to_string()}
+		&_ => { "Invalid tag type".to_string() }
+	};
+
+	let tag_type = match tag_type.to_lowercase().as_str() {
+		"regular" => TagType::Legacy,
+		"lua" => TagType::Lua,
+		&_ => TagType::Invalid,
+	};
+
+	if tag_type == TagType::Invalid {
+		handle_error!(send_app_interaction_message(ctx, interaction, "Expected tag type to be one of lua or regular.", true).await, "Failed to send invalid tag type error");
+		return "".to_string();
 	}
 
-	return "".to_string();
-}
+	// Send modal itself
 
-pub async fn add_tag_handle_component(interaction: MessageComponentInteraction, ctx: Context) -> String {
+	let name_field = interaction.data.find_option("name");
+	let mut tag_name: Option<String> = None;
 
-	let value = interaction.data.values.get(0);
+	if name_field.is_some() {
+		let name = name_field.unwrap().resolved.as_ref().unwrap();
 
-	if value.is_none() {
-		handle_error!(send_component_message(ctx, interaction, "Expected tag type to be provided.", true).await, "Failed to send empty tag type select error");
-		return "".to_string();
+		let tag_name_value = match name {
+			CommandDataOptionValue::String(option) => {option.to_string()}
+			_ => { "Invalid tag name type".to_string() }
+		};
+
+		tag_name = Some(tag_name_value);
 	}
 
 	let modal = interaction.create_interaction_response(&ctx.http, |response| {
 		response.kind(InteractionResponseType::Modal)
 		.interaction_response_data(|modal| {
-			modal.custom_id(format!("add-{}-{}", interaction.user.id, value.unwrap()))
+			modal.custom_id(format!("add-{}-{}", interaction.user.id, tag_type))
 				.title("Create a new tag")
 				.components(|comp| {
 					
@@ -60,7 +56,13 @@ pub async fn add_tag_handle_component(interaction: MessageComponentInteraction, 
 								.label("Name")
 								.min_length(1)
 								.required(true)
-								.style(InputTextStyle::Short)	
+								.style(InputTextStyle::Short);
+
+							if tag_name.is_some() {
+								input.value(tag_name.unwrap());
+							}
+
+							return input;
 						})
 					})
 					
@@ -85,7 +87,9 @@ pub async fn add_tag_handle_component(interaction: MessageComponentInteraction, 
 	return "".to_string();
 }
 
+
 pub async fn add_tag_handle_modal (interaction: ModalSubmitInteraction, ctx: Context) -> String {
+
 	let name_field = interaction.data.components.find_input("name_input");
 	let content_field = interaction.data.components.find_input("content_input");
 
@@ -122,6 +126,8 @@ pub async fn add_tag_handle_modal (interaction: ModalSubmitInteraction, ctx: Con
 	let gotten_tag = TagsTable::get_tag(name.clone()).await;
 
 	if gotten_tag.is_ok() {
+		handle_error!(send_modal_message(ctx, interaction, "That tag already exists.", true).await, "Failed to send tag exists content modal error");
+
 		return format!("That tag already exists!");
 	}
 
@@ -137,4 +143,24 @@ pub async fn add_tag_handle_modal (interaction: ModalSubmitInteraction, ctx: Con
 
 		return "".to_string();
 	}
+}
+
+
+pub fn add_options_creator(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
+	command.create_option(|option|{
+		option.name("type")
+			.kind(CommandOptionType::String)
+			.description("The type of the tag")
+			.add_string_choice("Regular", "regular")
+			.add_string_choice("Lua", "lua")
+			.required(true)
+	});
+
+	let data = command.create_option(|option| {
+		option.name("name")
+		.kind(CommandOptionType::String)
+		.description("The name of the tag")
+	});
+
+	return data;
 }

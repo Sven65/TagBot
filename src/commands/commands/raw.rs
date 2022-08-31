@@ -1,7 +1,7 @@
 use futures::AsyncWriteExt;
 use serenity::{model::prelude::{interaction::{application_command::{CommandDataOptionValue, ApplicationCommandInteraction}, InteractionResponseType}, command::CommandOptionType, AttachmentType}, builder::CreateApplicationCommand, prelude::Context};
 
-use crate::{util::command_options::*, services::rethinkdb::{tags::{TagsTable}}, handle_error};
+use crate::{util::{command_options::*, message::{send_app_interaction_message}}, services::rethinkdb::{tags::{TagsTable}}, handle_error};
 
 pub async fn raw(interaction: ApplicationCommandInteraction, ctx: Context) -> String {
 	let data = interaction.data.clone();
@@ -20,6 +20,8 @@ pub async fn raw(interaction: ApplicationCommandInteraction, ctx: Context) -> St
 	let gotten_tag = TagsTable::get_tag(name.clone()).await;
 
 	if gotten_tag.is_err() {
+		handle_error!(send_app_interaction_message(ctx, interaction, "That tag doesn't exist", false).await, "Failed sending invalid raw tag message");
+
 		return format!("That tag doesn't exist!");
 	} else {
 		let tag = gotten_tag.unwrap();
