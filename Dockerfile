@@ -106,11 +106,19 @@ COPY --from=lua_builder /usr/local/share/lua/ /usr/local/share/lua/
 ### Copy modules
 
 COPY --from=lua_modules /usr/local/lib/luarocks/ /usr/local/lib/luarocks/
+COPY --from=lua_modules /usr/local/share/lua/ /usr/local/share/lua/
 
+
+## Copy libm bs lmao
+
+COPY --from=build /lib/x86_64-linux-gnu/libm-2.31.so /lib/x86_64-linux-gnu/ 
+RUN rm /lib/x86_64-linux-gnu/libm.so.6
+RUN ln -s /lib/x86_64-linux-gnu/libm-2.31.so /lib/x86_64-linux-gnu/libm.so.6
 
 ## Copy tagbot binary
 
+
 COPY --from=build /tagbot/target/release/tagbot ./tagbot
 
-# ENTRYPOINT './tagbot'
+ENTRYPOINT './tagbot'
 # CMD []
