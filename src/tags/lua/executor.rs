@@ -1,6 +1,6 @@
-use rlua::{Lua, Result as LuaResult, FromLuaMulti, HookTriggers, Error as LuaError, ExternalError};
+use rlua::{Lua, Result as LuaResult, FromLuaMulti, HookTriggers, Error as LuaError};
 use serenity::{model::prelude::interaction::application_command::{ApplicationCommandInteraction, CommandData}, prelude::Context};
-use std::{io::{Read, ErrorKind, Error}, sync::Arc};
+use std::{io::{Read, ErrorKind, Error}};
 use gag::{BufferRedirect};
 
 use crate::{services::rethinkdb::tags::Tag, util::command_options::FindOption};
