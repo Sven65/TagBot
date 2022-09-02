@@ -1,4 +1,6 @@
 
+use std::io::Error;
+
 use chrono::{DateTime, Utc};
 use lazy_static::lazy_static;
 use regex::{Regex, Captures};
@@ -7,6 +9,7 @@ use serenity::{model::{prelude::{interaction::{application_command::{Application
 use crate::{services::rethinkdb::tags::Tag, util::command_options::FindOption, tags::legacy::args::parse_mentions};
 
 use rand::{seq::SliceRandom, Rng};
+
 
 
 /// Parses and replaces positional variables, i.e {0}, {1} etc
@@ -403,7 +406,7 @@ async fn replace_mention_variables (ctx: &Context, content: String, data: &Comma
 }
 
 
-pub async fn execute_tag(tag: Tag, interaction: ApplicationCommandInteraction, ctx: Context) -> String {
+pub async fn execute_tag(tag: Tag, interaction: ApplicationCommandInteraction, ctx: Context) -> Result<String, Error> {
 	
 	let mut content = tag.content;
 
@@ -422,6 +425,6 @@ pub async fn execute_tag(tag: Tag, interaction: ApplicationCommandInteraction, c
 
 	
 
-	return content
+	return Ok(content);
 }
 
