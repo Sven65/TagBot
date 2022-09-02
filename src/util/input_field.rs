@@ -6,6 +6,11 @@ pub trait FindInput {
 }
 
 impl FindInput for Vec<ActionRow> {
+	/// Finds an input by custom id
+	/// 
+	/// # Arguments
+	/// 
+	/// * `name` - The custom id of the field to find
     fn find_input(&self, name: &str) -> Option<&InputText> {
 		let mut res: Option<&InputText> = None;
 
@@ -27,6 +32,11 @@ impl FindInput for Vec<ActionRow> {
 		return res;
     }
 
+	/// Finds a select menu by custom id
+	/// 
+	/// # Arguments
+	/// 
+	/// * `name` - The custom id of the select menu to find
 	fn find_select(&self, name: &str) -> Option<&SelectMenu> {
 		let mut res: Option<&SelectMenu> = None;
 

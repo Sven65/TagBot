@@ -201,6 +201,12 @@ impl TagsTable {
 		return Ok(tags);
 	}
 
+	/// Sets the owner of a tag
+	/// 
+	/// # Arguments
+	/// 
+	/// * `tag_name` - The id of the tag to change the owner of
+	/// * `new_owner` - The id of the new tag owner
 	pub async fn set_owner(tag_name: String, new_owner: String) -> Result<WriteStatus, reql::Error> {
 		let connection = RDB.get_connection().await;
 
@@ -226,6 +232,12 @@ impl TagsTable {
 		return create_error!("Failed to update tag owner");
 	}
 
+	/// Sets the content of a tag
+	/// 
+	/// # Arguments
+	/// 
+	/// * `tag_name` - The id of the tag to change the content of
+	/// * `new_content` - The new content for the tag
 	pub async fn set_content(tag_name: String, new_content: String) -> Result<WriteStatus, reql::Error> {
 		let connection = RDB.get_connection().await;
 

@@ -6,6 +6,11 @@ pub trait FindOption {
 }
 
 impl FindOption for CommandData {
+	/// Finds a command option by name
+	/// 
+	/// # Arguments
+	/// 
+	/// * `name` - The name of the option to find
     fn find_option(&self, name: &str) -> Option<&CommandDataOption> {
 		return self.options.iter().find(|item| {
 			return item.name == name;
