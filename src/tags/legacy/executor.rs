@@ -9,7 +9,12 @@ use crate::{services::rethinkdb::tags::Tag, util::command_options::FindOption, t
 use rand::{seq::SliceRandom, Rng};
 
 
-
+/// Parses and replaces positional variables, i.e {0}, {1} etc
+/// 
+/// # Arguments
+/// 
+/// * `content` - The content to replace in
+/// * `data` - Command interaction data to use when parsing
 pub fn replace_pos_variables(content: String, data: &CommandData) -> String {
 	lazy_static! {
 		static ref POS_VAR_REGEX: Regex = Regex::new(r"\{(\d+)\}").unwrap();
@@ -49,6 +54,13 @@ pub fn replace_pos_variables(content: String, data: &CommandData) -> String {
 	return res.to_string();
 }
 
+/// Parses, executes and replaces chooser tags in the content.
+/// 
+/// {choose(1|2|3)} would be replaced by 1, 2 or 3.
+/// 
+/// # Arguments
+/// 
+/// * `content` - The content to replace
 pub fn replace_choosers(content: String) -> String {
 	lazy_static! {
 		static ref CHOOSE_VAR_REGEX: Regex = Regex::new(r"\{choose\((.*?)\)\}").unwrap();
@@ -65,6 +77,14 @@ pub fn replace_choosers(content: String) -> String {
 	return res.to_string();
 }
 
+
+/// Parses, executes and replaces rint tags in the content.
+/// 
+/// {rint(1,6)} would be replaced by a number between 1 and 6
+/// 
+/// # Arguments
+/// 
+/// * `content` - The content to replace
 pub fn replace_rint(content: String) -> String {
 	lazy_static! {
 		static ref RINT_REGEX: Regex = Regex::new(r"\{rint\((\d+),\s*(\d+)\)\}").unwrap();
@@ -88,6 +108,11 @@ pub fn replace_rint(content: String) -> String {
 	return res.to_string();
 }
 
+/// Formats the content with datetime formatter tags, i.e %H etc
+/// 
+/// # Arguments
+/// 
+/// * `content` - The content to replace
 pub fn replace_dates(content: String) -> String {
 	lazy_static! {
 		static ref DATE_FORMAT_REGEX: Regex = Regex::new(r"%(\w{1}|%)").unwrap();
@@ -128,6 +153,12 @@ pub fn replace_dates(content: String) -> String {
 
 }
 
+/// Replaces sender tags with the appropriate data of the passed sender
+/// 
+/// # Arguments
+/// 
+/// * `content` - The content to replace
+/// * `sender` - The user to use for data
 pub fn replace_sender_variables(content: String, sender: &User) -> String {
 	return content
 		.replacen("{sname}", &sender.name, 1)
@@ -137,6 +168,13 @@ pub fn replace_sender_variables(content: String, sender: &User) -> String {
 		.replacen("{sender}", &format!("<@{}>", sender.id), 1);
 }
 
+
+/// Replaces sender member tags with the appropriate data of the passed member
+/// 
+/// # Arguments
+/// 
+/// * `content` - The content to replace
+/// * `member` - The user to use for data
 pub fn replace_sender_member_variables(content: String, member: Option<Member>) -> String {
 	if member.is_none() {
 		return content;
@@ -157,6 +195,13 @@ pub fn replace_sender_member_variables(content: String, member: Option<Member>) 
 }
 
 
+/// Replaces channel tags with the appropriate data of the passed channel id
+/// 
+/// # Arguments
+/// 
+/// * `ctx` - The serenity content to use for fetching the channel
+/// * `content` - The content to replace
+/// * `channel_id` - The id of the channel to use for data
 async fn replace_channel_variables(ctx: &Context, content: String, channel_id: ChannelId) -> String {
 	let channel = channel_id.to_channel(&ctx.http).await;
 
@@ -182,6 +227,13 @@ async fn replace_channel_variables(ctx: &Context, content: String, channel_id: C
 
 }
 
+/// Replaces server tags with the appropriate data of the passed server id
+/// 
+/// # Arguments
+/// 
+/// * `ctx` - The serenity content to use for fetching the server
+/// * `content` - The content to replace
+/// * `guild_id` - The id of the guild to use for data
 async fn replace_server_variables(ctx: &Context, content: String, guild_id: Option<GuildId>) -> String {
 	if guild_id.is_none() {
 		return content;
@@ -225,6 +277,13 @@ async fn replace_server_variables(ctx: &Context, content: String, guild_id: Opti
 		.replacen("{serververification}", format!("{:?}", &guild.verification_level).as_str(), 1);
 }
 
+/// Replaces server owner tags with the appropriate data of the owner of the passed guild id
+/// 
+/// # Arguments
+/// 
+/// * `ctx` - The serenity content to use for fetching the guild owner
+/// * `content` - The content to replace
+/// * `guild_id` - The id of the server to use for data
 async fn replace_server_owner_variables (ctx: &Context, content: String, guild_id: Option<GuildId>) -> String {
 	if guild_id.is_none() {
 		return content;
@@ -273,6 +332,15 @@ async fn replace_server_owner_variables (ctx: &Context, content: String, guild_i
 
 }
 
+
+/// Replaces channel tags with the appropriate data of the passed mention
+/// 
+/// # Arguments
+/// 
+/// * `ctx` - The serenity content to use for fetching the mentioned member
+/// * `content` - The content to replace
+/// * `data` - The command interaction data to use when parsing the mention
+/// * `guild_id` - The id of the guild to use for fetching the mentioned member
 async fn replace_mention_variables (ctx: &Context, content: String, data: &CommandData, guild_id: Option<GuildId>) -> String {
 	let args_opt = data.find_option("args");
 
