@@ -32,6 +32,6 @@ pub async fn init_commands() {
 	
 	COMMAND_INDEX.lock().await.register_command("tagowner", |data, ctx| Box::pin(tagowner(data, ctx)), Some("Shows who owns a tag"), Some(tagowner_options_creator), false, None, None).await;
 	
-	COMMAND_INDEX.lock().await.register_command("tag", |data, ctx| Box::pin(tag(data, ctx)), Some("Executes a tag"), Some(tag_options_creator), false, None, None).await;
+	COMMAND_INDEX.lock().await.register_command("tag", |data, ctx| Box::pin(tag(data, ctx)), Some("Executes a tag"), Some(tag_options_creator), true, None, None).await;
 
 }
