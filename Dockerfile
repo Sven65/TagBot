@@ -119,6 +119,7 @@ RUN ln -s /lib/x86_64-linux-gnu/libm-2.31.so /lib/x86_64-linux-gnu/libm.so.6
 
 
 COPY --from=build /tagbot/target/release/tagbot ./tagbot
+COPY ./data ./data
 
 ENTRYPOINT './tagbot'
 # CMD []

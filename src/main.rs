@@ -135,6 +135,7 @@ impl EventHandler for Handler {
 
 		commands::init_commands().await;
 
+		tags::lua::lua_modules::registry::init::init_modules().await;
 	}
 }
 

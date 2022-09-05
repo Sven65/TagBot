@@ -1,9 +1,11 @@
-use rlua::{Lua, Result as LuaResult, FromLuaMulti, HookTriggers, Error as LuaError};
+use rlua::{Lua, Result as LuaResult, FromLuaMulti, HookTriggers, Error as LuaError, Value};
 use serenity::{model::prelude::interaction::application_command::{ApplicationCommandInteraction, CommandData}, prelude::Context};
 use std::{io::{Read, ErrorKind, Error}};
 use gag::{BufferRedirect};
 
 use crate::{services::rethinkdb::tags::Tag, util::command_options::FindOption};
+
+use super::user_require::user_require;
 
 fn eval<'lua, T: FromLuaMulti<'lua>>(lua_ctx: rlua::Context<'lua>, script: &str) -> LuaResult<T> {
     lua_ctx.load(script).set_name("cock.lua")?.eval()
@@ -39,6 +41,11 @@ fn execute_code(tag: Tag, interaction: ApplicationCommandInteraction, _ctx: Cont
 
 		globals.set("arg", args)?;
 
+		let lua_user_require = lua_ctx.create_function(|ctx, name| {
+			return user_require::<Value>(ctx, name);
+		})?;
+
+		globals.set("user_require", lua_user_require)?;
 
 		Ok(())
 	})?;
@@ -66,7 +73,7 @@ fn execute_code(tag: Tag, interaction: ApplicationCommandInteraction, _ctx: Cont
 			local _print = print
 			local sandbox = require 'sandbox'
 
-			local env = {{ print = _print, arg = arg }}
+			local env = {{ print = _print, arg = arg, require = user_require }}
 
 			local ok, result = pcall(sandbox.run, [[{}]], {{env = env, quota = 1000}})
 
