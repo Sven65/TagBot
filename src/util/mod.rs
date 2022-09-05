@@ -3,3 +3,4 @@ pub mod log;
 pub mod input_field;
 pub mod message;
 pub mod error;
+pub mod paths;
