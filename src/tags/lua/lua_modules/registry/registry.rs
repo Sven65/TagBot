@@ -5,7 +5,6 @@ use std::io::Error;
 
 #[derive(Clone)]
 pub struct LuaModule {
-	name: String,
 	path: String,
 }
 
@@ -16,10 +15,9 @@ pub struct LuaModuleRegistry {
 
 impl LuaModuleRegistry {
 	pub fn register_module_file(&mut self, name: &str, module_path: &str) {
-		println!("Registering {} with path {}", name, module_path);
+		println!("Registering module \"{}\" with path {}", name, module_path);
 
 		let module = LuaModule {
-			name: name.to_string(),
 			path: module_path.to_string(),
 		};
 
