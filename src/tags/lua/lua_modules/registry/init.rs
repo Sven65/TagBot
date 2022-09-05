@@ -18,7 +18,7 @@ fn resolve_path(module_path: &str) -> String {
 	return path;
 }
 
-pub async fn init_modules() {
+pub fn init_modules() {
 	LUA_MODULE_INDEX.lock().unwrap().register_module_file("util", &resolve_path("util.lua"));
 }
 

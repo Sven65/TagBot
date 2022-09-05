@@ -16,7 +16,6 @@ pub struct LuaModuleRegistry {
 
 impl LuaModuleRegistry {
 	pub fn register_module_file(&mut self, name: &str, module_path: &str) {
-		//println!("Registering ")
 		println!("Registering {} with path {}", name, module_path);
 
 		let module = LuaModule {
