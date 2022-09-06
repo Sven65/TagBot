@@ -2,7 +2,7 @@ use std::{collections::HashMap, sync::Mutex, fs, io::ErrorKind};
 use lazy_static::lazy_static;
 use core::result::Result;
 use std::io::Error;
-use rlua::{Table, Context, Value, Error as LuaError};
+use rlua::{Context, Value};
 
 type RustModuleFn = fn(context: Context) -> Value;
 

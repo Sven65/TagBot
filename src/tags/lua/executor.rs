@@ -1,4 +1,4 @@
-use rlua::{Lua, Result as LuaResult, FromLuaMulti, HookTriggers, Error as LuaError, Value};
+use rlua::{Lua, Result as LuaResult, FromLuaMulti, HookTriggers, Error as LuaError};
 use serenity::{model::prelude::interaction::application_command::{ApplicationCommandInteraction, CommandData}, prelude::Context};
 use std::{io::{Read, ErrorKind, Error}};
 use gag::{BufferRedirect};

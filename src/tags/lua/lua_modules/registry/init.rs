@@ -1,6 +1,6 @@
 use rlua::Value;
 
-use crate::util::{paths::Paths, interactions::to_lua::TBUser};
+use crate::util::{paths::Paths};
 
 use super::registry::LUA_MODULE_INDEX;
 
