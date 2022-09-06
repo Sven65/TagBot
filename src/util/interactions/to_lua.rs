@@ -1,8 +1,6 @@
-use rlua::{ToLua, UserData};
-use serenity::model::{prelude::interaction::application_command::ApplicationCommandInteraction, prelude::User};
+use rlua::{ToLua, UserData, MetaMethod, Value};
+use serenity::model::{prelude::User};
 
-// Basically stolen from serenity,
-// but since rust can't implement traits for types the current crate doesn't own without 4 billion boilerplate wrappers, we do our own types
 #[derive(Clone, Debug)]
 pub struct TBUser(User);
 
@@ -13,19 +11,34 @@ impl TBUser {
 }
 
 
-
-// impl ToLua<'_> for TBUser {
-//     fn to_lua<'lua>(self, lua: rlua::Context<'lua>) -> rlua::Result<rlua::Value<'lua>> {
-// 		let user = self.0;
-
-// 		let table = lua.create_table()?;
-
-// 		table.set("id", user.id.to_string())?;
-
-// 		Ok(rlua::Value::Table(table))
-// 	}
-// }
-
+// This looks wild, but it's needed for indexing lol
 impl UserData for TBUser {
-
+	fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
+		methods.add_meta_method(MetaMethod::Index, |ctx, this, value: String| {
+			Ok(match &value.as_str() {
+				&"id" => this.0.id.to_string().to_lua(ctx)?,
+				&"name" => this.0.name.clone().to_lua(ctx)?,
+				&"avatar" => {
+					let val = this.0.avatar.as_ref();
+					if val.is_none() {
+						Value::Nil
+					} else {
+						val.unwrap().clone().to_lua(ctx)?
+					}
+				},
+				&"banner" => {
+					let val = this.0.banner.as_ref();
+					if val.is_none() {
+						Value::Nil
+					} else {
+						val.unwrap().clone().to_lua(ctx)?
+					}
+				},
+				&"bot" => this.0.bot.to_lua(ctx)?,
+				&"discriminator" => this.0.discriminator.to_lua(ctx)?,
+				&"tag" => this.0.tag().to_lua(ctx)?,
+				&_ => Value::Nil,
+			})
+		});
+	}
 }
