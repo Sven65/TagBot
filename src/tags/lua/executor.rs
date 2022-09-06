@@ -3,12 +3,18 @@ use serenity::{model::prelude::interaction::application_command::{ApplicationCom
 use std::{io::{Read, ErrorKind, Error}};
 use gag::{BufferRedirect};
 
-use crate::{services::rethinkdb::tags::Tag, util::command_options::FindOption};
+use crate::{services::rethinkdb::tags::Tag, util::{command_options::FindOption, interactions::to_lua::{TBUser}}};
 
 use super::user_require::user_require;
 
+
+const INSTRUCTION_LIMIT: Option<u32> = Some(1_000_000);
+const USER_MEMORY_LIMIT: usize = 1; // MB
+const SERVER_MEMORY_LIMIT: usize = 1; // MB
+const MEMORY_LIMIT: Option<usize> = Some((USER_MEMORY_LIMIT + SERVER_MEMORY_LIMIT) * 1024 * 1024); // MB * 1024 kb * 1024 bytes
+
 fn eval<'lua, T: FromLuaMulti<'lua>>(lua_ctx: rlua::Context<'lua>, script: &str) -> LuaResult<T> {
-    lua_ctx.load(script).set_name("cock.lua")?.eval()
+    lua_ctx.load(script).set_name("tag.lua")?.eval()
 }
 
 fn parse_pos_args(data: &CommandData) -> Vec<&str> {
@@ -30,19 +36,22 @@ fn execute_code(tag: Tag, interaction: ApplicationCommandInteraction, _ctx: Cont
 
 	let lua = Lua::new();
 
-	// MB * 1024 kb * 1024 bytes
-	lua.set_memory_limit(Some(1 * 1024 * 1024));
+	lua.set_memory_limit(MEMORY_LIMIT);
 
 	let args = parse_pos_args(&interaction.data);
 
 	lua.context(|lua_ctx| {
 		let globals = lua_ctx.globals();
-		globals.set("glob_test", "Hello World!")?;
+
+
+		let user = TBUser::new(interaction.clone().user);
 
 		globals.set("arg", args)?;
+		globals.set("tester", "hello world from test global")?;
+		globals.set("user", user)?;
 
 		let lua_user_require = lua_ctx.create_function(|ctx, name| {
-			return user_require::<Value>(ctx, name);
+			return user_require(ctx, name);
 		})?;
 
 		globals.set("user_require", lua_user_require)?;
@@ -52,7 +61,7 @@ fn execute_code(tag: Tag, interaction: ApplicationCommandInteraction, _ctx: Cont
 
 
 	lua.set_hook(HookTriggers {
-		every_nth_instruction: Some(100000), // Max instructions to execute.
+		every_nth_instruction: INSTRUCTION_LIMIT, // Max instructions to execute.
 		..Default::default()
 	}, |_lua_context, _debug| {
 		Err(LuaError::external("Too many instructions used"))

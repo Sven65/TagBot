@@ -1,4 +1,4 @@
-use rlua::{Result as LuaResult, Error as LuaError, Context, FromLuaMulti};
+use rlua::{Result as LuaResult, Error as LuaError, Context, FromLuaMulti, Value};
 
 use crate::tags::lua::lua_modules::registry::registry::LUA_MODULE_INDEX;
 
@@ -11,22 +11,20 @@ use crate::tags::lua::lua_modules::registry::registry::LUA_MODULE_INDEX;
 /// 
 /// * `ctx` - The lua context to load on
 /// * `name` - The name of the module to load
-pub fn user_require<'lua, T: FromLuaMulti<'lua>> (ctx: Context<'lua>, name: String) -> LuaResult<T> {
+pub fn user_require<'lua> (ctx: Context<'lua>, name: String) -> LuaResult<Value> {
 	let index = LUA_MODULE_INDEX.lock().unwrap();
+
+	let globs = ctx.globals();
+
+	println!("User is {:#?}", globs.get::<&str, Value>("user").unwrap());
 	
-	if !index.has_module(&name) {
-		return Err(LuaError::external(format!("Module {} not found.", name)));
+	let result = index.load_module(name.as_str(), ctx);
+
+	if result.is_err() {
+		return Err(LuaError::external(result.err().unwrap()));
 	}
 
-	let content = index.load_module_to_string(&name);
+	let final_result = result.unwrap();
 
-	if content.is_err() {
-		return Err(LuaError::external(content.err().unwrap()));
-	}
-
-	let source = content.ok().unwrap();
-
-	let chunk = ctx.load(source.as_str());
-
-	Ok(chunk.eval()?)
+	Ok(final_result)
 }
