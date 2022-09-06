@@ -1,21 +1,19 @@
-use rlua::Lua;
+// pub struct Sender {
+// 	pub id: String,
+// 	pub name: String,
+// 	pub discriminator: String,
+// 	pub bot: bool,
+// }
 
-pub struct Sender {
-	pub id: String,
-	pub name: String,
-	pub discriminator: String,
-	pub bot: bool,
-}
+// impl Sender {
+// 	pub fn new() {
 
-impl Sender {
-	pub fn new() {
+// 	}
 
-	}
-
-	pub fn to_mention(&self) -> String {
-		format!("<@{}>", self.id)
-	}
-}
+// 	pub fn to_mention(&self) -> String {
+// 		format!("<@{}>", self.id)
+// 	}
+// }
 
 // pub struct SenderModule {
 
