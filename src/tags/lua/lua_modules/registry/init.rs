@@ -1,4 +1,4 @@
-use rlua::Value;
+use rlua::{Value, Context};
 
 use crate::util::{paths::Paths};
 
@@ -20,18 +20,21 @@ fn resolve_path(module_path: &str) -> String {
 	return path;
 }
 
+fn get_value<'lua>(key: &str, ctx: Context<'lua>) -> rlua::Value<'lua> {
+	let value = ctx.globals().get::<&str, Value>(key);
+
+	if value.is_err() {
+		return rlua::Nil;
+	}
+
+	let value = value.unwrap();
+
+	return value;
+}
+
 pub fn init_modules() {
 	LUA_MODULE_INDEX.lock().unwrap().register_module_file("util", &resolve_path("util.lua"));
-	LUA_MODULE_INDEX.lock().unwrap().register_rust_module("variables/sender", |ctx| {
-		let user = ctx.globals().get::<&str, Value>("user");
-
-		if user.is_err() {
-			return rlua::Nil;
-		}
-
-		let user = user.unwrap();
-
-		return user;
-	});
+	LUA_MODULE_INDEX.lock().unwrap().register_rust_module("variables/sender", |ctx| get_value("sender", ctx));
+	LUA_MODULE_INDEX.lock().unwrap().register_rust_module("variables/sender_member", |ctx| get_value("sender_member", ctx));
 }
 

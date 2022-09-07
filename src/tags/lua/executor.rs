@@ -3,9 +3,9 @@ use serenity::{model::prelude::interaction::application_command::{ApplicationCom
 use std::{io::{Read, ErrorKind, Error}};
 use gag::{BufferRedirect};
 
-use crate::{services::rethinkdb::tags::Tag, util::{command_options::FindOption, interactions::to_lua::{TBUser}}};
+use crate::{services::rethinkdb::tags::Tag, util::{command_options::FindOption}, tags::lua::lua_modules::rs_lua::types::{user::TBUser, member::TBMember}};
 
-use super::user_require::user_require;
+use super::{user_require::user_require};
 
 
 const INSTRUCTION_LIMIT: Option<u32> = Some(1_000_000);
@@ -36,20 +36,37 @@ fn execute_code(tag: Tag, interaction: ApplicationCommandInteraction, _ctx: Cont
 
 	let lua = Lua::new();
 
+	println!("interaction {:#?}", interaction);
+
 	lua.set_memory_limit(MEMORY_LIMIT);
 
 	let args = parse_pos_args(&interaction.data);
-
+	
+	// Set interaction data
 	lua.context(|lua_ctx| {
 		let globals = lua_ctx.globals();
 
+		let sender = TBUser::new(interaction.clone().user);
 
-		let user = TBUser::new(interaction.clone().user);
+		let member = interaction.clone().member;
 
+
+		globals.set("sender", sender)?;
+
+		if member.is_some() {
+			let sender_member = TBMember::new(member.unwrap());	
+			globals.set("sender_member", sender_member)?;
+		}
+
+		Ok(())
+	})?;
+
+
+
+	lua.context(|lua_ctx| {
+		let globals = lua_ctx.globals();
 		globals.set("arg", args)?;
-		globals.set("tester", "hello world from test global")?;
-		globals.set("user", user)?;
-
+		
 		let lua_user_require = lua_ctx.create_function(|ctx, name| {
 			return user_require(ctx, name);
 		})?;
@@ -58,6 +75,7 @@ fn execute_code(tag: Tag, interaction: ApplicationCommandInteraction, _ctx: Cont
 
 		Ok(())
 	})?;
+
 
 
 	lua.set_hook(HookTriggers {
