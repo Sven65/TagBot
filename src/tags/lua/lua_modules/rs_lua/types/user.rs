@@ -1,3 +1,5 @@
+// Wraps a serenity user as a lua variable
+
 use rlua::{ToLua, UserData, MetaMethod, Value};
 use serenity::model::{prelude::User};
 
