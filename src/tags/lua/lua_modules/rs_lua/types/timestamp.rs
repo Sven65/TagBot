@@ -29,11 +29,14 @@ impl UserData for TBTimestamp {
 		});
 
 		methods.add_method("format", |ctx, this, value: String| {
-			let time = DateTime::parse_from_str(s, fmt)
+			let time = Utc.timestamp(this.unix_timestamp(), 0);
 
-			time.
+			let formatted = time.format(&value);
 
-			Ok(())
+			Ok(formatted.to_string().to_lua(ctx))
 		});
+
+		// Todo: Add method for discord timestamp format
+
 	}
 }
