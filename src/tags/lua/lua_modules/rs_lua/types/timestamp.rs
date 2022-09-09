@@ -1,4 +1,4 @@
-use rlua::{UserData, MetaMethod, ToLua, Value, FromLuaMulti};
+use rlua::{UserData, MetaMethod, ToLua, Value, Error as LuaError};
 use serenity::model::timestamp::Timestamp;
 use chrono::prelude::*;
 use std::ops::Deref;
@@ -36,7 +36,19 @@ impl UserData for TBTimestamp {
 			Ok(formatted.to_string().to_lua(ctx))
 		});
 
-		// Todo: Add method for discord timestamp format
+		// Formats with discord timestamp tag (https://gist.github.com/LeviSnoot/d9147767abeef2f770e9ddcd91eb85aa)
+		methods.add_method("d_format", |_ctx, this, specifier: String| {
+			let is_valid_specifier = ["", "t", "T", "d", "D", "f", "F", "R"].contains(&specifier.as_str());
 
+			if !is_valid_specifier {
+				return Err(LuaError::external(format!("Invalid format specifier `{}` provided", specifier)));
+			}
+
+			if specifier == "" {
+				return Ok(format!("<t:{}>", this.0.unix_timestamp()));
+			}
+			
+			return Ok(format!("<t:{}:{}>", this.0.unix_timestamp(), specifier));
+		})
 	}
 }
