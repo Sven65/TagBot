@@ -26,3 +26,6 @@ gag = "1.0.0"
 default-features = false
 version = "0.11.5"
 features = [ "builder", "cache", "client", "gateway", "http", "model", "utils", "rustls_backend" ]
+
+[dev-dependencies]
+test-case = "2.2.1"

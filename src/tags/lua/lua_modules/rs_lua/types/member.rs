@@ -1,5 +1,5 @@
 use rlua::{ToLua, UserData, MetaMethod, Value};
-use serenity::model::{prelude::{User, Member}};
+use serenity::model::{prelude::{Member}};
 
 use super::timestamp::TBTimestamp;
 
@@ -44,7 +44,7 @@ impl UserData for TBMember {
 				// &"roles" => "",
 				&"pending" => this.0.pending.to_lua(ctx)?,
 				&"premium_since" => {
-					let premium_since = this.0.premium_since.as_ref();
+					let premium_since = this.0.premium_since;
 					if premium_since.is_none() {
 						Value::Nil
 					} else {
@@ -62,7 +62,7 @@ impl UserData for TBMember {
 					}
 				},
 				&"communication_disabled_until" => {
-					let comms_disabled = this.0.communication_disabled_until.as_ref();
+					let comms_disabled = this.0.communication_disabled_until;
 					if comms_disabled.is_none() {
 						Value::Nil
 					} else {
