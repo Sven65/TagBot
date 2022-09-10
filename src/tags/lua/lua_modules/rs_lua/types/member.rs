@@ -33,13 +33,43 @@ impl UserData for TBMember {
 					}
 				},
 				&"mute" => this.0.mute.to_lua(ctx)?,
-				// &"nick" => {},
+				&"nick" => {
+					let nick = this.0.nick.as_ref();
+					if nick.is_none() {
+						Value::Nil
+					} else {
+						nick.unwrap().clone().to_lua(ctx)?
+					}
+				},
 				// &"roles" => "",
 				&"pending" => this.0.pending.to_lua(ctx)?,
-				// &"premium_since" => {},
+				&"premium_since" => {
+					let premium_since = this.0.premium_since.as_ref();
+					if premium_since.is_none() {
+						Value::Nil
+					} else {
+						let tb_timestamp = TBTimestamp::new(premium_since.unwrap());
+						tb_timestamp.to_lua(ctx)?
+					}
+				},
 				// &"permissions" => {},
-				// &"avatar" => {},
-				// &"communication_disabled_until" => {},
+				&"avatar" => {
+					let avatar = this.0.avatar.as_ref();
+					if avatar.is_none() {
+						Value::Nil
+					} else {
+						avatar.unwrap().clone().to_lua(ctx)?
+					}
+				},
+				&"communication_disabled_until" => {
+					let comms_disabled = this.0.communication_disabled_until.as_ref();
+					if comms_disabled.is_none() {
+						Value::Nil
+					} else {
+						let tb_timestamp = TBTimestamp::new(comms_disabled.unwrap());
+						tb_timestamp.to_lua(ctx)?
+					}
+				},
 				&_ => Value::Nil,
 			})
 		});
