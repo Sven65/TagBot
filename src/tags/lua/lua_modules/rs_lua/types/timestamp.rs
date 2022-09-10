@@ -52,3 +52,34 @@ impl UserData for TBTimestamp {
 		})
 	}
 }
+
+
+#[cfg(test)]
+mod tests {
+    use rlua::{Lua};
+	use serenity::model::Timestamp;
+use test_case::test_case;
+
+    use super::{TBTimestamp};
+
+	fn create_timestamp() -> TBTimestamp {
+		TBTimestamp::new(Timestamp::from_unix_timestamp(1662796089).unwrap())
+	}
+	
+	#[test]
+	fn formats_to_string () {
+		Lua::new().context(|lua| {
+			let userdata = lua.create_userdata(create_timestamp()).unwrap();
+			let globals = lua.globals();
+			globals.set("timestamp", userdata).unwrap();
+
+			let data = lua.load(
+				r#"
+					return tostring(timestamp)
+				"#,
+			).eval::<String>().unwrap();
+
+			assert_eq!(data, "2022-09-10T07:48:09Z")
+		})
+	}
+}
