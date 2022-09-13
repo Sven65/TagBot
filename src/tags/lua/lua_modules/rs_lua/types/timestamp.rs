@@ -1,7 +1,6 @@
 use rlua::{UserData, MetaMethod, ToLua, Value, Error as LuaError};
 use serenity::model::timestamp::Timestamp;
 use chrono::prelude::*;
-use std::ops::Deref;
 
 #[derive(Clone, Debug)]
 pub struct TBTimestamp(Timestamp);
@@ -58,7 +57,6 @@ impl UserData for TBTimestamp {
 mod tests {
     use rlua::{Lua};
 	use serenity::model::Timestamp;
-use test_case::test_case;
 
     use super::{TBTimestamp};
 
