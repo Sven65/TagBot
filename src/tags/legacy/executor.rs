@@ -89,9 +89,42 @@ pub fn replace_rint(content: String) -> String {
 }
 
 pub fn replace_dates(content: String) -> String {
+	lazy_static! {
+		static ref DATE_FORMAT_REGEX: Regex = Regex::new(r"%(\w{1}|%)").unwrap();
+	}
+
 	let now: DateTime<Utc> = Utc::now();
 
-	return now.format(&content).to_string();
+	fn format_date(now: DateTime<Utc>, fmt: &str) -> String {
+		let formatted = now.format(fmt);
+		return formatted.to_string().clone();
+	}
+
+	let res = DATE_FORMAT_REGEX.replace_all(&content, |capture: &Captures| {
+		let symbol = capture.get(1).unwrap().as_str();
+
+		let replace_with = match &symbol {
+			&"%" => "%".to_string(),
+			&"a" => format_date(now, "%a"),
+			&"A" => format_date(now, "%A"),
+			&"b" => format_date(now, "%b"),
+			&"B" => format_date(now, "%B"),
+			&"d" => format_date(now, "%d"),
+			&"D" => format_date(now, "%D"),
+			&"H" => format_date(now, "%H"),
+			&"M" => format_date(now, "%M"),
+			&"S" => format_date(now, "%S"),
+			&"T" => format_date(now, "%T"),
+			&"y" => format_date(now, "%y"),
+			&"Y" => format_date(now, "%Y"),
+			&_ => symbol.to_string(),
+		};
+
+		return replace_with.to_string();
+	});
+
+
+	return res.to_string();
 
 }
 
