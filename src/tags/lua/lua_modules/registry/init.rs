@@ -1,6 +1,6 @@
 use rlua::{Value, Context};
 
-use crate::util::{paths::Paths};
+use crate::{util::{paths::Paths}, tags::lua::lua_modules::rs_lua::types::{timestamp::TBTimestamp, Requireable}};
 
 use super::registry::LUA_MODULE_INDEX;
 
@@ -12,8 +12,6 @@ fn resolve_path(module_path: &str) -> String {
 	path.push("data");
 	path.push("lua");
 	path.push(module_path);
-
-	// println!("Path {:?}", path.clone());
 
 	let path = path.to_str().unwrap().to_string();
 
@@ -32,9 +30,11 @@ fn get_value<'lua>(key: &str, ctx: Context<'lua>) -> rlua::Value<'lua> {
 	return value;
 }
 
+
 pub fn init_modules() {
 	LUA_MODULE_INDEX.lock().unwrap().register_module_file("util", &resolve_path("util.lua"));
 	LUA_MODULE_INDEX.lock().unwrap().register_rust_module("variables/sender", |ctx| get_value("sender", ctx));
 	LUA_MODULE_INDEX.lock().unwrap().register_rust_module("variables/sender_member", |ctx| get_value("sender_member", ctx));
+	LUA_MODULE_INDEX.lock().unwrap().register_rust_module("timestamp", |ctx| TBTimestamp::create_module(ctx));
 }
 

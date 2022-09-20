@@ -2,6 +2,8 @@ use rlua::{UserData, MetaMethod, ToLua, Value, Error as LuaError};
 use serenity::model::timestamp::Timestamp;
 use chrono::prelude::*;
 
+use super::Requireable;
+
 #[derive(Clone, Debug)]
 pub struct TBTimestamp(Timestamp);
 
@@ -26,6 +28,7 @@ impl UserData for TBTimestamp {
 		methods.add_meta_method(MetaMethod::ToString, |ctx, this, _: Value| {
 			Ok(this.0.to_string().to_lua(ctx)?)
 		});
+
 
 		methods.add_method("format", |ctx, this, value: String| {
 			let time = Utc.timestamp(this.unix_timestamp(), 0);
@@ -52,11 +55,36 @@ impl UserData for TBTimestamp {
 	}
 }
 
+impl Requireable for TBTimestamp {
+    fn create_module<'lua>(ctx: rlua::Context<'lua>) -> rlua::Value<'lua> {
+		let value = ctx.create_table();
+
+		if value.is_err() {
+			return rlua::Nil;
+		}
+	
+		let value = value.unwrap();
+	
+		let func = ctx.create_function(|_, params: rlua::Table| {
+			let secs = params.get::<&str, i64>("secs")?;
+	
+			Ok(TBTimestamp::new(Timestamp::from_unix_timestamp(secs).unwrap()))
+		});
+	
+		value.set("new", func.unwrap()).unwrap();
+	
+		let table_value = rlua::Value::Table(value.clone());
+	
+		return table_value;
+    }
+}
 
 #[cfg(test)]
 mod tests {
     use rlua::{Lua};
 	use serenity::model::Timestamp;
+
+    use crate::tags::{self, lua::user_require::user_require};
 
     use super::{TBTimestamp};
 
@@ -74,6 +102,32 @@ mod tests {
 			let data = lua.load(
 				r#"
 					return tostring(timestamp)
+				"#,
+			).eval::<String>().unwrap();
+
+			assert_eq!(data, "2022-09-10T07:48:09Z")
+		})
+	}
+
+	#[test]
+	fn can_create_timestamp() {
+		tags::lua::lua_modules::registry::init::init_modules();
+
+		Lua::new().context(|lua| {
+			let globals = lua.globals();
+
+
+			let lua_user_require = lua.create_function(|ctx, name| {
+				return user_require(ctx, name);
+			}).unwrap();
+	
+			globals.set("user_require", lua_user_require).unwrap();
+	
+			let data = lua.load(
+				r#"
+					local Timestamp = user_require('timestamp')
+					local time = Timestamp.new{secs = 1662796089}
+					return tostring(time)
 				"#,
 			).eval::<String>().unwrap();
 
