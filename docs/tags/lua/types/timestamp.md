@@ -48,3 +48,11 @@ Formats the timestamp into a Discord timestamp tag, i.e `<t:timestamp>`, where t
 |Short Date/Time|`<t:1543392060:f>`|November 28, 2018 9:01 AM|28 November 2018 09:01
 |Long Date/Time|`<t:1543392060:F>`|Wednesday, November 28, 2018 9:01 AM|Wednesday, 28 November 2018 09:01
 |Relative Time|`<t:1543392060:R>`|3 years ago|3 years ago
+
+## Creating a new timestamp
+
+```lua
+local Timestamp = user_require('timestamp')
+local time = Timestamp.new{secs = 1662796089}
+print(tostring(time))
+```
