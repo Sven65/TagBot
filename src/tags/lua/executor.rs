@@ -3,7 +3,7 @@ use serenity::{model::prelude::interaction::application_command::{ApplicationCom
 use std::{io::{Read, ErrorKind, Error}};
 use gag::{BufferRedirect};
 
-use crate::{services::rethinkdb::tags::Tag, util::{command_options::FindOption}, tags::lua::lua_modules::rs_lua::types::{user::TBUser, member::TBMember}};
+use crate::{services::rethinkdb::tags::Tag, util::{command_options::FindOption}, tags::lua::lua_modules::rs_lua::types::{user::TBUser, member::TBMember, channel::TBChannelId}};
 
 use super::{user_require::user_require};
 
@@ -50,6 +50,8 @@ fn execute_code(tag: Tag, interaction: ApplicationCommandInteraction, _ctx: Cont
 
 		let member = interaction.clone().member;
 
+		let channel_id = interaction.clone().channel_id;
+
 
 		globals.set("sender", sender)?;
 
@@ -57,6 +59,8 @@ fn execute_code(tag: Tag, interaction: ApplicationCommandInteraction, _ctx: Cont
 			let sender_member = TBMember::new(member.unwrap());	
 			globals.set("sender_member", sender_member)?;
 		}
+
+		globals.set("channel_id", TBChannelId::new(channel_id))?;
 
 		Ok(())
 	})?;

@@ -11,3 +11,4 @@ pub trait Requireable {
 pub mod user;
 pub mod member;
 pub mod timestamp;
+pub mod channel;
