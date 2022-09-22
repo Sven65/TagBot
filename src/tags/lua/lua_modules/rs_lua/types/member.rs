@@ -3,6 +3,7 @@ use serenity::model::{prelude::{Member}};
 
 use super::timestamp::TBTimestamp;
 
+/// Wrapper for Serenity Member
 #[derive(Clone, Debug)]
 pub struct TBMember(Member);
 

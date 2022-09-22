@@ -89,13 +89,13 @@ fn execute_code(tag: Tag, interaction: ApplicationCommandInteraction, _ctx: Cont
 		Err(LuaError::external("Too many instructions used"))
 	});
 
-	// let lua_buf = BufferRedirect::stdout();
+	let lua_buf = BufferRedirect::stdout();
 
-	// if lua_buf.is_err() {
-	// 	panic!("Failed to open lua buffer {:#?}", lua_buf.err());
-	// }
+	if lua_buf.is_err() {
+		panic!("Failed to open lua buffer {:#?}", lua_buf.err());
+	}
 
-	// let lua_buf = lua_buf.unwrap();
+	let lua_buf = lua_buf.unwrap();
 	let mut output = String::new();
 
 	
@@ -121,7 +121,7 @@ fn execute_code(tag: Tag, interaction: ApplicationCommandInteraction, _ctx: Cont
 		)
 	});
 
-	// lua_buf.into_inner().read_to_string(&mut output).unwrap();
+	lua_buf.into_inner().read_to_string(&mut output).unwrap();
 
 	if result.is_err() {
 		println!("Error executing lua: {:#?}", result.clone().err());

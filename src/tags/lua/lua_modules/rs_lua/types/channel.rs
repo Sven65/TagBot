@@ -3,22 +3,30 @@
 
 use rlua::{UserData, MetaMethod, Value, ToLua, Error as LuaError};
 use serenity::{model::prelude::{Channel, ChannelId}, prelude::{Context as SerenityContext}, Error};
+use tagbot_macro::ud_index;
 use tokio::runtime::{Handle};
 
-
+/// Wrapper for serenity ChannelId
 #[derive(Clone)]
 pub struct TBChannelId(ChannelId, SerenityContext);
 
 impl TBChannelId {
+	/// Creates a new wrapper
+	/// 
+	/// # Arguments
+	/// * `channel_id` - The serenity ChannelId to wrap
+	/// * `s_ctx` - SerenityContext to use when resolving channel
 	pub fn new(channel_id: ChannelId, s_ctx: SerenityContext) -> TBChannelId {
 		TBChannelId(channel_id, s_ctx)
 	}
 }
 
+/// Wrapper for a Serenity Channel
 #[derive(Clone, Debug)]
 pub struct TBChannel(Channel);
 
 impl TBChannel {
+	/// Creates a new wrapper
 	pub fn new(channel: Channel) -> TBChannel {
 		TBChannel(channel)
 	}
@@ -37,15 +45,12 @@ impl UserData for TBChannelId {
 		});
 
 		methods.add_method("resolve", |ctx, this, _: Value| {
-			let handle = Handle::current();
 			let channel_id = this.0.clone();
 			let s_ctx = this.1.clone();
 
 			let channel = tokio::task::block_in_place(move || {
 				return Handle::current().block_on(async move {
 					let channel = get_channel(channel_id, s_ctx).await;
-
-					println!("Got channel now {:#?}", channel);
 
 					return channel
 				});
@@ -55,17 +60,20 @@ impl UserData for TBChannelId {
 				return Err(LuaError::external("Failed to get channel."));
 			}
 
-			Ok(TBChannel(channel.unwrap()).to_lua(ctx)?)
+			//Ok(TBChannel(channel.unwrap()).to_lua(ctx)?)
+			
+			Ok("sds".to_lua(ctx)?)
 		});
 	}
 }
 
+trait Test {}
+
+#[ud_index("category", AccessType::Function, LuaType::StringOrNil)]
 impl UserData for TBChannel {
-
+	// fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
+	// 	// methods.add_meta_method(MetaMethod::Index, |ctx, this, value: String| {
+	// 	// 	let index = this.0.
+	// 	// });
+	// }
 }
-
-// impl From<TBChannelId> for TBChannel {
-//     fn from(channel_id: TBChannelId) -> Self {
-//         let channel = channel_id.0.to_channel(cache_http)
-//     }
-// }
