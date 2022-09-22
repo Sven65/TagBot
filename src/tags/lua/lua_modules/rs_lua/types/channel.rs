@@ -1,9 +1,8 @@
 // Wraps a serenity channel as lua
 
 
-use futures::FutureExt;
 use rlua::{UserData, MetaMethod, Value, ToLua, Error as LuaError};
-use serenity::{model::prelude::{Channel, ChannelId}, prelude::{Context as SerenityContext}, Error, http::CacheHttp};
+use serenity::{model::prelude::{Channel, ChannelId}, prelude::{Context as SerenityContext}, Error};
 use tokio::runtime::{Handle};
 
 
@@ -25,9 +24,10 @@ impl TBChannel {
 	}
 }
 
-async fn get_channel(channel_id: &TBChannelId) -> Result<&str, Error> {
+async fn get_channel(channel_id: ChannelId, s_ctx: SerenityContext) -> Result<Channel, Error> {
+	let channel = channel_id.to_channel(&s_ctx.http).await.unwrap();
 
-	Ok("cock")
+	Ok(channel)
 }
 
 impl UserData for TBChannelId {
@@ -37,51 +37,31 @@ impl UserData for TBChannelId {
 		});
 
 		methods.add_method("resolve", |ctx, this, _: Value| {
-			println!("Resolving channel");
-
 			let handle = Handle::current();
-			let channel_id = this.clone();
-			let channel_to_get = channel_id.0;
-			let s_ctx = &channel_id.1;
-			let guard = handle.enter();
+			let channel_id = this.0.clone();
+			let s_ctx = this.1.clone();
 
-			println!("http is {:#?}", &s_ctx.http);
+			let channel = tokio::task::block_in_place(move || {
+				return Handle::current().block_on(async move {
+					let channel = get_channel(channel_id, s_ctx).await;
 
-			let channel_result = futures::executor::block_on(async {
-				println!("create task {:#?}", channel_id.0);
-				let channel_task = channel_to_get.to_channel(&s_ctx.http);
-				// let channel_task = get_channel(&channel_id);
-				println!("task dreated");
+					println!("Got channel now {:#?}", channel);
 
-
-				let channel = channel_task.await;
-
-				println!("task done {:#?}", channel);
-
-				channel
+					return channel
+				});
 			});
-			println!("adter task");
 
+			if channel.is_err() {
+				return Err(LuaError::external("Failed to get channel."));
+			}
 
-			// if channel_result.is_err() {
-			// 	println!("Failed to get channel.");
-			// 	return Ok(rlua::Nil);
-			// }
-
-
-			Ok(channel_result.unwrap().to_string().to_lua(ctx)?)
+			Ok(TBChannel(channel.unwrap()).to_lua(ctx)?)
 		});
-
-		// methods.add_method("resolve", (move |ctx, this, _: Value| {
-		// 		// let s_ctx = this.1;
-		// 		// let channel = this.0.to_channel(&s_ctx.http).await;
-
-		// 		// return channel.unwrap();
-		// 	});
-
-		// 	Ok(v)
-		// })
 	}
+}
+
+impl UserData for TBChannel {
+
 }
 
 // impl From<TBChannelId> for TBChannel {
