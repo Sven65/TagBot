@@ -6,6 +6,14 @@ use tagbot_macro::ud_index;
 #[derive(Clone, Debug)]
 pub struct TBChannelCategory(ChannelCategory);
 
+impl TBChannelCategory {
+	/// Creates a new wrapper
+	pub fn new(category: ChannelCategory) -> TBChannelCategory {
+		TBChannelCategory(category)
+	}
+}
+
+
 #[ud_index("name", AccessType::Field, "name", LuaType::Value)]
 impl UserData for TBChannelCategory {
 	// fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {

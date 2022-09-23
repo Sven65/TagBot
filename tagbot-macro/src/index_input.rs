@@ -13,6 +13,7 @@ pub enum AccessType {
 pub enum LuaType {
 	StringOrNil,
 	Value,
+	Convert,
 }
 
 #[derive(Debug)]
@@ -21,6 +22,7 @@ pub struct IndexInput {
 	pub access_type: AccessType,
 	pub lua_type: LuaType,
 	pub accessor_field: String,
+	pub convert_to: Option<syn::Type>,
 }
 
 impl std::fmt::Display for IndexInput {
@@ -35,6 +37,8 @@ impl Parse for IndexInput {
     fn parse(input: syn::parse::ParseStream) -> Result<Self, Error> {
 		let attrs = syn::punctuated::Punctuated::<syn::Expr, syn::Token![,]>::parse_terminated(input)
 		.unwrap();
+
+		println!("attrs {:#?}", attrs);
 
 		let field: syn::Result<String> = match &attrs[0] {
 			syn::Expr::Lit(pat) => {
@@ -94,11 +98,33 @@ impl Parse for IndexInput {
 			_ => panic!("Invalid token type for lua type.")
 		};
 
+		let mut convert_to: Option<syn::Type> = None;
+
+		if attrs.len() > 4 {
+			let convert_to_res: syn::Result<syn::Type> = match &attrs[4] {
+				syn::Expr::Path(pat) => {
+					let path_strings: Vec<String> = (&pat.path.segments).into_iter().map(|segment| {
+						segment.ident.to_string()
+					}).collect();
+
+					let full_path = path_strings.join("::");
+
+					let syn_type = syn::parse_str(&full_path).expect("Unable to parse type for conversion.");
+
+					Ok(syn_type)
+				},
+				_ => panic!("Invalid token type for convert to type.")
+			};
+
+			convert_to = Some(convert_to_res.unwrap());
+		}
+
 		Ok(IndexInput {
 			field: field.unwrap(),
 			access_type: access_type.unwrap(),
 			lua_type: lua_type.unwrap(),
 			accessor_field: accessor_field.unwrap(),
+			convert_to: convert_to,
 		})
     }
 }

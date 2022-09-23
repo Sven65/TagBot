@@ -6,6 +6,8 @@ use serenity::{model::prelude::{Channel, ChannelId}, prelude::{Context as Sereni
 use tagbot_macro::ud_index;
 use tokio::runtime::{Handle};
 
+use crate::tags;
+
 /// Wrapper for serenity ChannelId
 #[derive(Clone)]
 pub struct TBChannelId(ChannelId, SerenityContext);
@@ -70,7 +72,7 @@ impl UserData for TBChannelId {
 
 
 // #[ud_index("third_field", AccessType::Field, "field3", LuaType::StringOrNil)]
-#[ud_index("category", AccessType::Function, "category", LuaType::Value)]
+#[ud_index("category", AccessType::Function, "category", LuaType::Convert, tags::lua::lua_modules::rs_lua::types::channel_category::TBChannelCategory)]
 // #[ud_index("another_field", AccessType::Field, "field_2", LuaType::StringOrNil)]
 impl UserData for TBChannel {
 	// fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
