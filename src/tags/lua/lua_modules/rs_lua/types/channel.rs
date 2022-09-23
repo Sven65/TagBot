@@ -71,9 +71,5 @@ trait Test {}
 
 #[ud_index("category", AccessType::Function, LuaType::StringOrNil)]
 impl UserData for TBChannel {
-	// fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
-	// 	// methods.add_meta_method(MetaMethod::Index, |ctx, this, value: String| {
-	// 	// 	let index = this.0.
-	// 	// });
-	// }
+
 }

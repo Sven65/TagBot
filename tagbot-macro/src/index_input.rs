@@ -4,21 +4,21 @@ use strum_macros::EnumString;
 use syn::{parse::Parse, punctuated::Punctuated, Expr, Error, Token};
 
 #[derive(Debug, EnumString)]
-enum AccessType {
+pub enum AccessType {
 	Function,
 	Field,
 }
 
 #[derive(Debug, EnumString)]
-enum LuaType {
+pub enum LuaType {
 	StringOrNil,
 }
 
 #[derive(Debug)]
 pub struct IndexInput {
-	field: String,
-	access_type: AccessType,
-	lua_type: LuaType,
+	pub field: String,
+	pub access_type: AccessType,
+	pub lua_type: LuaType,
 }
 
 impl std::fmt::Display for IndexInput {
@@ -34,14 +34,10 @@ impl Parse for IndexInput {
 		let attrs = syn::punctuated::Punctuated::<syn::Expr, syn::Token![,]>::parse_terminated(input)
 		.unwrap();
 
-		// let attrs = Punctuated::parse_separated_nonempty_with(input, Expr::parse)?;
-
-		println!("attrs {:#?}", attrs);
-
 		let field: syn::Result<String> = match &attrs[0] {
 			syn::Expr::Lit(pat) => {
 				let token = match &pat.lit {
-					syn::Lit::Str(p) => p.token().to_string(),
+					syn::Lit::Str(p) => p.token().to_string().replace("\"", ""),
 					_ => panic!("Invalid token type found for field")
 				};
 
@@ -84,29 +80,11 @@ impl Parse for IndexInput {
 			_ => panic!("Invalid token type for lua type.")
 		};
 
-		// let access_type = &attrs[1];
-		// let lua_type = &attrs[2];
-
-
-		// println!("old field {:#?}", &attrs[0]);
-
-		println!("field {:#?}", field);
-		println!("type {:#?}", access_type);
-		println!("lua type {:#?}", lua_type);
-
-
 		Ok(IndexInput {
 			field: field.unwrap(),
 			access_type: access_type.unwrap(),
 			lua_type: lua_type.unwrap(),
 		})
-        // if lookahead.peek(Token![struct]) {
-        //     input.parse().map(Item::Struct)
-        // } else if lookahead.peek(Token![enum]) {
-        //     input.parse().map(Item::Enum)
-        // } else {
-        //     Err(lookahead.error())
-        // }
     }
 }
 
