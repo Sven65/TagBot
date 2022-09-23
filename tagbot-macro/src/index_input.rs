@@ -12,6 +12,7 @@ pub enum AccessType {
 #[derive(Debug, EnumString)]
 pub enum LuaType {
 	StringOrNil,
+	Value,
 }
 
 #[derive(Debug)]
@@ -19,11 +20,12 @@ pub struct IndexInput {
 	pub field: String,
 	pub access_type: AccessType,
 	pub lua_type: LuaType,
+	pub accessor_field: String,
 }
 
 impl std::fmt::Display for IndexInput {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		write!(f, "({}, {:?}, {:?})", self.field, self.access_type, self.lua_type)
+		write!(f, "(field = {}, access_type = {:?}, lua_type = {:?}, accessor_field = {})", self.field, self.access_type, self.lua_type, self.accessor_field)
     }
 }
 
@@ -63,7 +65,19 @@ impl Parse for IndexInput {
 			_ => panic!("Invalid token type for access type.")
 		};
 
-		let lua_type: syn::Result<LuaType> = match &attrs[2] {
+		let accessor_field: syn::Result<String> = match &attrs[2] {
+			syn::Expr::Lit(pat) => {
+				let token = match &pat.lit {
+					syn::Lit::Str(p) => p.token().to_string().replace("\"", ""),
+					_ => panic!("Invalid token type found for accessor field")
+				};
+
+				Ok(token)
+			},
+			_ => panic!("Invalid literal type for accessor field. Received: {:#?}", &attrs[2])
+		};
+
+		let lua_type: syn::Result<LuaType> = match &attrs[3] {
 			syn::Expr::Path(pat) => {
 				let path_strings: Vec<String> = (&pat.path.segments).into_iter().map(|segment| {
 					segment.ident.to_string()
@@ -84,6 +98,7 @@ impl Parse for IndexInput {
 			field: field.unwrap(),
 			access_type: access_type.unwrap(),
 			lua_type: lua_type.unwrap(),
+			accessor_field: accessor_field.unwrap(),
 		})
     }
 }

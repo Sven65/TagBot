@@ -1,0 +1,45 @@
+use crate::index_input::{IndexInput, AccessType};
+use proc_macro2::TokenStream as TokenStream2;
+use quote::{quote, format_ident, ToTokens};
+
+pub fn string_or_nil(input: &IndexInput) -> TokenStream2 {
+	let accessor_field = &input.accessor_field;
+
+	let ident = format!("this.0.{}", accessor_field);
+
+	let expr: syn::Expr = syn::parse_str(&ident).expect("Unable to parse");
+
+	let value_getter: TokenStream2 = match input.access_type {
+		AccessType::Function => quote! { let gotten_value = #expr(); },
+		AccessType::Field => quote! { let gotten_value = #expr; },
+	};
+
+	quote! {
+		#value_getter
+
+		if gotten_value.is_none() {
+			Value::Nil
+		} else {
+			gotten_value.unwrap().to_lua(ctx)?
+		}
+	}
+}
+
+pub fn value(input: &IndexInput) -> TokenStream2 {
+	let accessor_field = &input.accessor_field;
+
+	let ident = format!("this.0.{}", accessor_field);
+
+	let expr: syn::Expr = syn::parse_str(&ident).expect("Unable to parse");
+
+	let value_getter: TokenStream2 = match input.access_type {
+		AccessType::Function => quote! { let gotten_value = #expr(); },
+		AccessType::Field => quote! { let gotten_value = #expr; },
+	};
+
+	quote! {
+		#value_getter
+
+		gotten_value.unwrap().to_lua(ctx)?
+	}
+}

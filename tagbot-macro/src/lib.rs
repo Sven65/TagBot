@@ -1,3 +1,4 @@
+use functions::string_or_nil;
 use proc_macro::{self, TokenStream};
 use proc_macro2::TokenStream as TokenStream2;
 use quote::{quote, format_ident};
@@ -6,7 +7,9 @@ use syn::{parse_macro_input};
 
 use index_input::IndexInput;
 
+use crate::{index_input::{AccessType, LuaType}, functions::value};
 mod index_input;
+mod functions;
 
 fn render_fields(fields: Vec::<IndexInput>) -> TokenStream2 {
 	let mut streams: Vec::<TokenStream2> = Vec::new();
@@ -14,8 +17,15 @@ fn render_fields(fields: Vec::<IndexInput>) -> TokenStream2 {
 	for (_, field) in fields.iter().enumerate() {
 		let field_name = &field.field;
 
+		let value_func = match &field.lua_type {
+			LuaType::StringOrNil =>  string_or_nil(field),
+			LuaType::Value => value(field),
+		};
+
+		println!("value func {:#?}", value_func.to_string());
+
 		let stream = quote! {
-			&#field_name => Value::Nil,
+			&#field_name => {#value_func},
 		};
 
 		streams.push(stream);
@@ -36,11 +46,10 @@ fn render_fields(fields: Vec::<IndexInput>) -> TokenStream2 {
 pub fn ud_index(args: TokenStream, item: TokenStream) -> TokenStream {
 	let cloned_item = item.clone();
 	let parsed_item = parse_macro_input!(cloned_item as syn::ItemImpl);
-	println!("item {:#?}", parsed_item);
 
 	let parsed_input = parse_macro_input!(args as IndexInput);
 
-	println!("parsed {}", parsed_input);
+	println!("parsed inp {:#?}", parsed_input);
 
 	let struct_name: syn::Result<String> = match *parsed_item.self_ty {
 		syn::Type::Path(path) => {

@@ -25,6 +25,7 @@ impl TBChannelId {
 #[derive(Clone, Debug)]
 pub struct TBChannel(Channel);
 
+
 impl TBChannel {
 	/// Creates a new wrapper
 	pub fn new(channel: Channel) -> TBChannel {
@@ -67,11 +68,17 @@ impl UserData for TBChannelId {
 	}
 }
 
-trait Test {}
 
-#[ud_index("category", AccessType::Function, LuaType::StringOrNil)]
-#[ud_index("another_field", AccessType::Field, LuaType::StringOrNil)]
-#[ud_index("third_field", AccessType::Field, LuaType::StringOrNil)]
+// #[ud_index("third_field", AccessType::Field, "field3", LuaType::StringOrNil)]
+#[ud_index("category", AccessType::Function, "category", LuaType::Value)]
+// #[ud_index("another_field", AccessType::Field, "field_2", LuaType::StringOrNil)]
 impl UserData for TBChannel {
+	// fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
+	// 	methods.add_meta_method(MetaMethod::Index, |ctx, this, value: String| {
+	// 		Ok(match &value.as_str() {
+	// 			&"c" => this.0.guild().unwrap()
+	// 		})
+	// 	})
+	// }
 
 }
