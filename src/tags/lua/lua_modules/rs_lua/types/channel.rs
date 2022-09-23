@@ -70,6 +70,8 @@ impl UserData for TBChannelId {
 trait Test {}
 
 #[ud_index("category", AccessType::Function, LuaType::StringOrNil)]
+#[ud_index("another_field", AccessType::Field, LuaType::StringOrNil)]
+#[ud_index("third_field", AccessType::Field, LuaType::StringOrNil)]
 impl UserData for TBChannel {
 
 }

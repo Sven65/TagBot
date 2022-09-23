@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use strum_macros::EnumString;
-use syn::{parse::Parse, punctuated::Punctuated, Expr, Error, Token};
+use syn::{parse::Parse, Error};
 
 #[derive(Debug, EnumString)]
 pub enum AccessType {
@@ -43,7 +43,7 @@ impl Parse for IndexInput {
 
 				Ok(token)
 			},
-			_ => panic!("Invalid literal type for field")
+			_ => panic!("Invalid literal type for field name. Received: {:#?}", &attrs[0])
 		};
 
 		let access_type: syn::Result<AccessType> = match &attrs[1] {
