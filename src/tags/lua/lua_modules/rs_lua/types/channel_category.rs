@@ -2,17 +2,24 @@ use serenity::model::prelude::ChannelCategory;
 use rlua::{UserData, MetaMethod, Value, ToLua, Error as LuaError};
 use tagbot_macro::ud_index;
 
+use super::channel::ConstructableFrom;
+
 /// Wrapper for a Serenity Channel
 #[derive(Clone, Debug)]
 pub struct TBChannelCategory(ChannelCategory);
 
 impl TBChannelCategory {
-	/// Creates a new wrapper
-	pub fn new(category: ChannelCategory) -> TBChannelCategory {
-		TBChannelCategory(category)
-	}
+	// / Creates a new wrapper
+	// pub fn new(category: ChannelCategory) -> TBChannelCategory {
+	// 	TBChannelCategory(category)
+	// }
 }
 
+impl ConstructableFrom<ChannelCategory> for TBChannelCategory {
+    fn new(value: ChannelCategory) -> Self {
+        TBChannelCategory(value)
+    }
+}
 
 // #[ud_index("name", AccessType::Field, "name", LuaType::String)]
 impl UserData for TBChannelCategory {
