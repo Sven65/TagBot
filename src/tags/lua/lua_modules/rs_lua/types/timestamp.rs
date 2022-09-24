@@ -2,13 +2,19 @@ use rlua::{UserData, MetaMethod, ToLua, Value, Error as LuaError};
 use serenity::model::timestamp::Timestamp;
 use chrono::prelude::*;
 
-use super::Requireable;
+use super::{Requireable, utils::types::ConstructableFrom};
 
 #[derive(Clone, Debug)]
 pub struct TBTimestamp(Timestamp);
 
 impl TBTimestamp {
 	pub fn new(timestamp: Timestamp) -> TBTimestamp {
+		TBTimestamp(timestamp)
+	}
+}
+
+impl ConstructableFrom<Timestamp> for TBTimestamp {
+	fn new(timestamp: Timestamp) -> TBTimestamp {
 		TBTimestamp(timestamp)
 	}
 }

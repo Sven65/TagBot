@@ -4,6 +4,7 @@ use serenity::{prelude::{Context as SerenityContext}, Error};
 use tokio::runtime::Handle;
 
 use super::channel::TBChannel;
+use super::utils::types::ConstructableFrom2;
 
 
 async fn get_channel(channel_id: ChannelId, s_ctx: SerenityContext) -> Result<Channel, Error> {
@@ -23,6 +24,17 @@ impl TBChannelId {
 	/// * `channel_id` - The serenity ChannelId to wrap
 	/// * `s_ctx` - SerenityContext to use when resolving channel
 	pub fn new(channel_id: ChannelId, s_ctx: SerenityContext) -> TBChannelId {
+		TBChannelId(channel_id, s_ctx)
+	}
+}
+
+impl ConstructableFrom2<ChannelId, SerenityContext> for TBChannelId {
+	/// Creates a new wrapper
+	/// 
+	/// # Arguments
+	/// * `channel_id` - The serenity ChannelId to wrap
+	/// * `s_ctx` - SerenityContext to use when resolving channel
+	fn new(channel_id: ChannelId, s_ctx: SerenityContext) -> TBChannelId {
 		TBChannelId(channel_id, s_ctx)
 	}
 }
