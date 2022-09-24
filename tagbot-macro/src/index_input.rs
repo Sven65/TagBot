@@ -12,8 +12,10 @@ pub enum AccessType {
 #[derive(Debug, EnumString)]
 pub enum LuaType {
 	StringOrNil,
+	String,
 	Value,
 	Convert,
+	ConvertOrNil,
 }
 
 #[derive(Debug)]
@@ -38,7 +40,7 @@ impl Parse for IndexInput {
 		let attrs = syn::punctuated::Punctuated::<syn::Expr, syn::Token![,]>::parse_terminated(input)
 		.unwrap();
 
-		println!("attrs {:#?}", attrs);
+		// println!("attrs {:#?}", attrs);
 
 		let field: syn::Result<String> = match &attrs[0] {
 			syn::Expr::Lit(pat) => {
@@ -100,6 +102,7 @@ impl Parse for IndexInput {
 
 		let mut convert_to: Option<syn::Type> = None;
 
+
 		if attrs.len() > 4 {
 			let convert_to_res: syn::Result<syn::Type> = match &attrs[4] {
 				syn::Expr::Path(pat) => {
@@ -113,7 +116,23 @@ impl Parse for IndexInput {
 
 					Ok(syn_type)
 				},
-				_ => panic!("Invalid token type for convert to type.")
+				syn::Expr::Type(typ) => {
+					let path_string: String = match &*typ.expr {
+						syn::Expr::Path(pat) => {
+							let path_strings: Vec<String> = (&pat.path.segments).into_iter().map(|segment| {
+								segment.ident.to_string()
+							}).collect();
+
+							path_strings.join("::")
+						},
+						_ => panic!("Unable to parse path for \"conversion to\" type."),
+					};
+
+					let t: syn::Type = syn::parse_str(path_string.as_str())?;
+
+					Ok(t)
+				}
+				_ => panic!("Invalid token type provided for \"conversion to\" type. Got {:#?}", &attrs[4])
 			};
 
 			convert_to = Some(convert_to_res.unwrap());

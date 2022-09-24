@@ -7,7 +7,7 @@ use syn::{parse_macro_input};
 
 use index_input::IndexInput;
 
-use crate::{index_input::{AccessType, LuaType}, functions::{value, convert}};
+use crate::{index_input::{AccessType, LuaType}, functions::{value, convert, string, convert_or_nil}};
 mod index_input;
 mod functions;
 
@@ -21,6 +21,8 @@ fn render_fields(fields: Vec::<IndexInput>) -> TokenStream2 {
 			LuaType::StringOrNil =>  string_or_nil(field),
 			LuaType::Value => value(field),
 			LuaType::Convert => convert(field),
+			LuaType::String => string(field),
+			LuaType::ConvertOrNil => convert_or_nil(field),
 		};
 
 		println!("value func {:#?}", value_func.to_string());

@@ -63,22 +63,32 @@ impl UserData for TBChannelId {
 				return Err(LuaError::external("Failed to get channel."));
 			}
 
-			//Ok(TBChannel(channel.unwrap()).to_lua(ctx)?)
+			Ok(TBChannel(channel.unwrap()).to_lua(ctx)?)
 			
-			Ok("sds".to_lua(ctx)?)
+			// Ok("sds".to_lua(ctx)?)
 		});
 	}
 }
 
 
 // #[ud_index("third_field", AccessType::Field, "field3", LuaType::StringOrNil)]
-#[ud_index("category", AccessType::Function, "category", LuaType::Convert, tags::lua::lua_modules::rs_lua::types::channel_category::TBChannelCategory)]
+#[ud_index("id", AccessType::Function, "id", LuaType::Convert, tags::lua::lua_modules::rs_lua::types::channel:TBChannelId)]
+#[ud_index("category", AccessType::Function, "category", LuaType::ConvertOrNil, tags::lua::lua_modules::rs_lua::types::channel_category::TBChannelCategory)]
 // #[ud_index("another_field", AccessType::Field, "field_2", LuaType::StringOrNil)]
 impl UserData for TBChannel {
 	// fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
 	// 	methods.add_meta_method(MetaMethod::Index, |ctx, this, value: String| {
 	// 		Ok(match &value.as_str() {
-	// 			&"c" => this.0.guild().unwrap()
+	// 			&"c" => {
+	// 				let gotten_value = this.0.to_owned().id();
+	// 				let cloned_value = gotten_value.clone().unwrap();
+
+	// 				let converted_value = tags::lua::lua_modules::rs_lua::types::channel_category::TBChannelCategory::new(
+	// 					cloned_value,
+	// 				);
+	// 				converted_value.to_lua(ctx)?
+	// 			},
+	// 			&_ => Value::Nil,
 	// 		})
 	// 	})
 	// }

@@ -14,12 +14,15 @@ impl TBChannelCategory {
 }
 
 
-#[ud_index("name", AccessType::Field, "name", LuaType::Value)]
+// #[ud_index("name", AccessType::Field, "name", LuaType::String)]
 impl UserData for TBChannelCategory {
 	// fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
 	// 	methods.add_meta_method(MetaMethod::Index, |ctx, this, value: String| {
 	// 		Ok(match &value.as_str() {
-	// 			&"c" => this.0.name
+	// 			&"c" => {
+	// 				let gotten_value = this.0.name().clone();
+    //                 gotten_value.to_lua(ctx)?
+	// 			}
 	// 		})
 	// 	})
 	// }
