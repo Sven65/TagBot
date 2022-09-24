@@ -15,6 +15,7 @@ impl TBMember {
 
 
 // This looks wild, but it's needed for indexing lol
+// TODO: Make this use the new util functions
 impl UserData for TBMember {
 	fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
 		methods.add_meta_method(MetaMethod::Index, |ctx, this, value: String| {

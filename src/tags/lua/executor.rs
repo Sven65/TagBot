@@ -3,7 +3,7 @@ use serenity::{model::prelude::interaction::application_command::{ApplicationCom
 use std::{io::{Read, ErrorKind, Error}};
 use gag::{BufferRedirect};
 
-use crate::{services::rethinkdb::tags::Tag, util::{command_options::FindOption}, tags::lua::lua_modules::rs_lua::types::{user::TBUser, member::TBMember, channel::TBChannelId}};
+use crate::{services::rethinkdb::tags::Tag, util::{command_options::FindOption}, tags::lua::lua_modules::rs_lua::types::{user::TBUser, member::TBMember, channel_id::TBChannelId}};
 
 use super::{user_require::user_require};
 

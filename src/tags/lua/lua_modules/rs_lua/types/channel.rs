@@ -1,134 +1,40 @@
 // Wraps a serenity channel as lua
 
 
-use rlua::{UserData, MetaMethod, Value, ToLua, Error as LuaError, Context, Result as LuaResult};
-use serenity::{model::prelude::{Channel, ChannelId}, prelude::{Context as SerenityContext}, Error};
-use tagbot_macro::ud_index;
-use tokio::runtime::{Handle};
+use rlua::{UserData, MetaMethod, Value, ToLua};
+use serenity::{model::prelude::{Channel}, prelude::{Context as SerenityContext}};
 
-use crate::tags;
+use super::{utils::{types::{ConstructableFrom2}, functions::{convert_constructable_option, convert_type_option, convert_constructable2_option}}, channel_category::TBChannelCategory, guild_channel::TBGuildChannel};
 
-use super::channel_category::TBChannelCategory;
 
-pub trait ConstructableFrom<T> {
-	/// Creates a new wrapper
-	fn new(value: T) -> Self;
-}
-
-/// Wrapper for serenity ChannelId
-#[derive(Clone)]
-pub struct TBChannelId(ChannelId, SerenityContext);
-
-impl TBChannelId {
-	/// Creates a new wrapper
-	/// 
-	/// # Arguments
-	/// * `channel_id` - The serenity ChannelId to wrap
-	/// * `s_ctx` - SerenityContext to use when resolving channel
-	pub fn new(channel_id: ChannelId, s_ctx: SerenityContext) -> TBChannelId {
-		TBChannelId(channel_id, s_ctx)
-	}
-}
 
 /// Wrapper for a Serenity Channel
-#[derive(Clone, Debug)]
-pub struct TBChannel(Channel);
+#[derive(Clone)]
+pub struct TBChannel(pub Channel, pub SerenityContext);
 
-
-impl ConstructableFrom<Channel> for TBChannel {
+impl ConstructableFrom2<Channel, SerenityContext> for TBChannel {
 	/// Creates a new wrapper
-    fn new(value: Channel) -> Self {
-        TBChannel(value)
+   	fn new(value: Channel, value2: SerenityContext) -> Self {
+        TBChannel(value, value2)
     }
 }
 
-// impl TBChannel {
-// 	/// Creates a new wrapper
-// 	pub fn new(channel: Channel) -> TBChannel {
-// 		TBChannel(channel)
-// 	}
-// }
 
-async fn get_channel(channel_id: ChannelId, s_ctx: SerenityContext) -> Result<Channel, Error> {
-	let channel = channel_id.to_channel(&s_ctx.http).await.unwrap();
-
-	Ok(channel)
-}
-
-impl UserData for TBChannelId {
+impl UserData for TBChannel {
 	fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
 		methods.add_meta_method(MetaMethod::ToString, |ctx, this, _: Value| {
 			Ok(this.0.to_string().to_lua(ctx)?)
 		});
 
-		methods.add_method("resolve", |ctx, this, _: Value| {
-			let channel_id = this.0.clone();
-			let s_ctx = this.1.clone();
-
-			let channel = tokio::task::block_in_place(move || {
-				return Handle::current().block_on(async move {
-					let channel = get_channel(channel_id, s_ctx).await;
-
-					return channel
-				});
-			});
-
-			if channel.is_err() {
-				return Err(LuaError::external("Failed to get channel."));
-			}
-
-			Ok(TBChannel(channel.unwrap()).to_lua(ctx)?)
-			
-			// Ok("sds".to_lua(ctx)?)
-		});
-	}
-}
-
-
-fn convert<'lua, T: ConstructableFrom<V> + ToLua<'lua>, V: Clone>(value: V, ctx: Context<'lua>) -> LuaResult<Value> {
-	let cloned_value = value.clone();
-
-	let converted_value = T::new(value);
-
-	Ok(converted_value.to_lua(ctx)?)
-}
-
-
-fn convert_option<'lua, T: ConstructableFrom<V> + ToLua<'lua>, V: Clone>(value: Option<V>, ctx: Context<'lua>) -> LuaResult<Value> {
-	let cloned_value = value.clone();
-
-	if cloned_value.is_none() {
-		return Ok(Value::Nil);
-	}
-
-	let converted_value = T::new(value.unwrap());
-
-	Ok(converted_value.to_lua(ctx)?)
-}
-
-// #[ud_index("third_field", AccessType::Field, "field3", LuaType::StringOrNil)]
-// #[ud_index("id", AccessType::Function, "id", LuaType::Convert, tags::lua::lua_modules::rs_lua::types::channel:TBChannelId)]
-// #[ud_index("category", AccessType::Function, "category", LuaType::ConvertOrNil, tags::lua::lua_modules::rs_lua::types::channel_category::TBChannelCategory)]
-// #[ud_index("another_field", AccessType::Field, "field_2", LuaType::StringOrNil)]
-impl UserData for TBChannel {
-	fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
 		methods.add_meta_method(MetaMethod::Index, |ctx, this, value: String| {
 			Ok(match &value.as_str() {
-				&"category" => convert_option::<TBChannelCategory, _>(this.0.to_owned().category(), ctx)?,
-				&"cock" => this.0.to_owned().is_nsfw().to_lua(ctx)?,
-
-				// {
-				// 	let gotten_value = this.0.to_owned().id();
-				// 	let cloned_value = gotten_value.clone().unwrap();
-
-				// 	let converted_value = tags::lua::lua_modules::rs_lua::types::channel_category::TBChannelCategory::new(
-				// 		cloned_value,
-				// 	);
-				// 	converted_value.to_lua(ctx)?
-				// },
-				&_ => Value::Nil,
+				&"category" => convert_constructable_option::<TBChannelCategory, _>(this.0.to_owned().category(), ctx)?,
+				&"is_nsfw" => this.0.to_owned().is_nsfw().to_lua(ctx)?,
+				// &"private" => this.0.private(),
+				&"guild" => convert_constructable2_option::<TBGuildChannel, _, SerenityContext>(this.0.to_owned().guild(), Some(this.1.clone()), ctx)?,
+				&"position" => convert_type_option::<i64>(this.0.position(), ctx)?,
+ 				&_ => Value::Nil,
 			})
 		})
 	}
-
 }
