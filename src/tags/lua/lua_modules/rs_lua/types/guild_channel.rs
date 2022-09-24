@@ -1,7 +1,7 @@
 use rlua::{UserData, MetaMethod, ToLua, Value};
 use serenity::{model::prelude::{GuildChannel, ChannelId}, prelude::{Context as SerenityContext}};
 
-use super::{utils::{types::{ConstructableFrom2}, functions::{convert_type_option, convert_type, convert_constructable2_option, convert_constructable_option}}, channel_id::TBChannelId, timestamp::TBTimestamp};
+use super::{utils::{types::{ConstructableFrom2}, functions::{convert_type_option, convert_type, convert_constructable2_option, convert_constructable_option, convert_constructable2}}, channel_id::TBChannelId, timestamp::TBTimestamp, guild_id::TBGuildId};
 
 /// Wrapper for a Serenity Guild Channel
 #[derive(Clone)]
@@ -24,7 +24,7 @@ impl UserData for TBGuildChannel {
 			Ok(match &value.as_str() {
 				&"bitrate" => convert_type_option::<u64>(this.0.bitrate, ctx)?,
 				&"parent_id" => convert_constructable2_option::<TBChannelId, _, SerenityContext>(this.0.parent_id, Some(this.1.clone()), ctx)?,
-				&"guild_id" => Value::Nil,
+				&"guild_id" => convert_constructable2::<TBGuildId, _, SerenityContext>(this.0.guild_id, this.1.clone(), ctx)?,
 				&"kind" => convert_type::<&str>(this.0.kind.name(), ctx)?,
 				&"last_message_id" => Value::Nil,
 				&"last_pin_timestamp" => convert_constructable_option::<TBTimestamp, _>(this.0.last_pin_timestamp, ctx)?,
