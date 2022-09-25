@@ -25,11 +25,12 @@ pub fn lua_enum(tokens: TokenStream) -> TokenStream {
         let ty = &field.ty;
         println!("Field type is {:#?}", ty);
 
+
         let path: syn::Result<String> = match &field.ty {
             syn::Type::Path(path) => {
                 let ident = path.path.get_ident();
                 println!("Type thing, {:#?}", ident.unwrap());
-                println!("type thing 2 {:#?}", ident.unwrap().)
+                println!("type thing 2 {:#?}", path.path);
                 println!("type path {:#?}", path);
                 let path_strings: Vec<String> = (&path.path.segments).into_iter().map(|segment| {
                     segment.ident.to_string()

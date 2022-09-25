@@ -35,4 +35,4 @@ impl ConstructableFrom<MfaLevel> for TBMfaLevel {
 
 
 #[derive(LuaEnum)]
-pub struct TBWrapper(pub MfaLevel, pub NsfwLevel);
+pub struct TBWrapper(pub MfaLevel);
