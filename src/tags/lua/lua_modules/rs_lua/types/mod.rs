@@ -8,14 +8,5 @@ pub trait Requireable {
 	fn create_module<'lua>(ctx: Context<'lua>) -> rlua::Value<'lua>;
 }
 
-
-pub mod user;
-pub mod member;
-pub mod timestamp;
-pub mod channel;
-pub mod channel_id;
-pub mod channel_category;
-pub mod guild_channel;
-pub mod guild_id;
-
 pub mod utils;
+pub mod serenity;

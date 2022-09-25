@@ -1,17 +1,11 @@
 use rlua::{UserData, MetaMethod, Value, ToLua};
-use serenity::model::prelude::{ChannelId, Channel, GuildId};
-use serenity::{prelude::{Context as SerenityContext}, Error};
+use serenity::model::prelude::{GuildId};
+use serenity::{prelude::{Context as SerenityContext}};
 
-use super::utils::types::ConstructableFrom2;
+use crate::tags::lua::lua_modules::rs_lua::types::utils::types::ConstructableFrom2;
 
 
-// async fn get_channel(channel_id: ChannelId, s_ctx: SerenityContext) -> Result<Channel, Error> {
-// 	let channel = channel_id.to_channel(&s_ctx.http).await.unwrap();
-
-// 	Ok(channel)
-// }
-
-/// Wrapper for serenity GuildId
+/// Wrapper for [`serenity::model::prelude::GuildId`]
 #[derive(Clone)]
 pub struct TBGuildId(pub GuildId, pub SerenityContext);
 

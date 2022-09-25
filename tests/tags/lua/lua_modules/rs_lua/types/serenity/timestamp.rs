@@ -1,6 +1,6 @@
 use rlua::{Lua};
 use serenity::model::Timestamp;
-use tagbot::tags::lua::{lua_modules::rs_lua::types::timestamp::TBTimestamp, user_require::{user_require}};
+use tagbot::tags::lua::{lua_modules::rs_lua::types::serenity::timestamp::TBTimestamp, user_require::{user_require}};
 
 fn create_timestamp() -> TBTimestamp {
 	TBTimestamp::new(Timestamp::from_unix_timestamp(1662796089).unwrap())

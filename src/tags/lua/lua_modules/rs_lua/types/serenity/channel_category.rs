@@ -1,7 +1,7 @@
 use serenity::model::prelude::ChannelCategory;
 use rlua::{UserData};
 
-use super::utils::types::ConstructableFrom;
+use crate::tags::lua::lua_modules::rs_lua::types::utils::types::ConstructableFrom;
 
 /// Wrapper for a Serenity Channel
 #[derive(Clone, Debug)]

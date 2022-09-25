@@ -2,7 +2,8 @@ use rlua::{UserData, MetaMethod, ToLua, Value, Error as LuaError};
 use serenity::model::timestamp::Timestamp;
 use chrono::prelude::*;
 
-use super::{Requireable, utils::types::ConstructableFrom};
+use crate::tags::lua::lua_modules::rs_lua::types::{utils::types::ConstructableFrom, Requireable};
+
 
 #[derive(Clone, Debug)]
 pub struct TBTimestamp(Timestamp);

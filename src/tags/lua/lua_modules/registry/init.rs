@@ -1,6 +1,6 @@
 use rlua::{Value, Context};
 
-use crate::{util::{paths::Paths}, tags::lua::lua_modules::rs_lua::types::{timestamp::TBTimestamp, Requireable}};
+use crate::{util::paths::Paths, tags::lua::lua_modules::rs_lua::types::{serenity::timestamp::TBTimestamp, Requireable}};
 
 use super::registry::LUA_MODULE_INDEX;
 

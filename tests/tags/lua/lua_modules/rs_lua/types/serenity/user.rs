@@ -1,6 +1,6 @@
 use rlua::{Lua};
 use serenity::model::user::User;
-use tagbot::tags::lua::lua_modules::rs_lua::types::user::TBUser;
+use tagbot::tags::lua::lua_modules::rs_lua::types::serenity::user::TBUser;
 use test_case::test_case;
 
 fn create_user() -> TBUser {

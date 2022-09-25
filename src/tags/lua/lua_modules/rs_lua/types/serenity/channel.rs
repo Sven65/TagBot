@@ -4,9 +4,9 @@
 use rlua::{UserData, MetaMethod, Value, ToLua};
 use serenity::{model::prelude::{Channel}, prelude::{Context as SerenityContext}};
 
-use super::{utils::{types::{ConstructableFrom2}, functions::{convert_constructable_option, convert_type_option, convert_constructable2_option}}, channel_category::TBChannelCategory, guild_channel::TBGuildChannel};
+use crate::tags::lua::lua_modules::rs_lua::types::utils::{types::ConstructableFrom2, functions::{convert_constructable_option, convert_constructable2_option, convert_type_option}};
 
-
+use super::{channel_category::TBChannelCategory, guild_channel::TBGuildChannel};
 
 /// Wrapper for a Serenity Channel
 #[derive(Clone)]

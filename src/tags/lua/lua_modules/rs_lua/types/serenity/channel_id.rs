@@ -3,8 +3,9 @@ use serenity::model::prelude::{ChannelId, Channel};
 use serenity::{prelude::{Context as SerenityContext}, Error};
 use tokio::runtime::Handle;
 
+use crate::tags::lua::lua_modules::rs_lua::types::utils::types::ConstructableFrom2;
+
 use super::channel::TBChannel;
-use super::utils::types::ConstructableFrom2;
 
 
 async fn get_channel(channel_id: ChannelId, s_ctx: SerenityContext) -> Result<Channel, Error> {
