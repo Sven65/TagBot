@@ -72,3 +72,4 @@ pub fn convert_type_option<'lua, T: ToLua<'lua>>(value: Option<T>, ctx: Context<
 
 	Ok(value.unwrap().to_lua(ctx)?)
 }
+

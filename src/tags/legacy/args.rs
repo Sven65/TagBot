@@ -29,20 +29,3 @@ pub fn parse_mentions (args: &str) -> Vec<UserId> {
 
 	return mention_ids;
 }
-
-
-
-#[cfg(test)]
-mod tests {
-    use crate::tags::legacy::args::parse_mentions;
-
-	#[test]
-	fn parse_mentions_test() {
-		let args = "<@!178790340289888264>";
-
-
-		let mentions = parse_mentions(args);
-
-		assert_eq!(mentions.len(), 1);
-	}
-}
