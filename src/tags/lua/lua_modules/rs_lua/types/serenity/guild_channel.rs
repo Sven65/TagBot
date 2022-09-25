@@ -3,7 +3,7 @@ use serenity::{model::prelude::{GuildChannel}, prelude::{Context as SerenityCont
 
 use crate::tags::lua::lua_modules::rs_lua::types::utils::{functions::{convert_type_option, convert_constructable2, convert_constructable2_option, convert_type, convert_constructable_option}, types::ConstructableFrom2};
 
-use super::{channel_id::TBChannelId, guild_id::TBGuildId, message_id::TBMessageId, timestamp::TBTimestamp};
+use super::{channel_id::TBChannelId, guild_id::TBGuildId, message_id::TBMessageId, timestamp::TBTimestamp, video_quality_mode::TBVideoQualityMode, thread_metadata::TBThreadMetadata, thread_member::TBThreadMember};
 
 /// Wrapper for a [`serenity::model::prelude::GuildChannel`]
 #[derive(Clone)]
@@ -37,11 +37,11 @@ impl UserData for TBGuildChannel {
 				&"nsfw" => convert_type(this.0.nsfw, ctx)?,
 				&"rate_limit_per_user" => convert_type_option(this.0.rate_limit_per_user, ctx)?,
 				&"rtc_region" => convert_type_option(this.0.rtc_region.clone(), ctx)?,
-				&"video_quality_mode" => Value::Nil,
+				&"video_quality_mode" => convert_constructable_option::<TBVideoQualityMode, _>(this.0.video_quality_mode, ctx)?,
 				&"message_count" => convert_type_option(this.0.message_count, ctx)?,
 				&"member_count" => convert_type_option(this.0.member_count, ctx)?,
-				&"thread_metadata" => Value::Nil,
-				&"member" => Value::Nil,
+				&"thread_metadata" => convert_constructable_option::<TBThreadMetadata, _>(this.0.thread_metadata, ctx)?,
+				&"member" => convert_constructable_option::<TBThreadMember, _>(this.0.member, ctx)?,
 				&"default_auto_archive_duration" => convert_type_option(this.0.default_auto_archive_duration, ctx)?,
 
  				&_ => Value::Nil,

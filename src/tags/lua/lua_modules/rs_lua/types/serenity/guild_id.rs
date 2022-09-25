@@ -1,9 +1,16 @@
-use rlua::{UserData, MetaMethod, Value, ToLua};
-use serenity::model::prelude::{GuildId};
-use serenity::{prelude::{Context as SerenityContext}};
+use rlua::{UserData, MetaMethod, Value, ToLua, Error as LuaError};
+use serenity::model::prelude::{GuildId, PartialGuild};
+use serenity::{prelude::{Context as SerenityContext}, Error};
+use tokio::runtime::Handle;
 
 use crate::tags::lua::lua_modules::rs_lua::types::utils::types::ConstructableFrom2;
 
+
+async fn get_guild(guild_id: GuildId, s_ctx: SerenityContext) -> Result<PartialGuild, Error> {
+	let guild = guild_id.to_partial_guild(&s_ctx.http).await.unwrap();
+
+	Ok(guild)
+}
 
 /// Wrapper for [`serenity::model::prelude::GuildId`]
 #[derive(Clone)]
@@ -37,23 +44,23 @@ impl UserData for TBGuildId {
 			Ok(this.0.to_string().to_lua(ctx)?)
 		});
 
-		// methods.add_method("resolve", |ctx, this, _: Value| {
-		// 	let channel_id = this.0.clone();
-		// 	let s_ctx = this.1.clone();
+		methods.add_method("resolve", |ctx, this, _: Value| {
+			let guild_id = this.0.clone();
+			let s_ctx = this.1.clone();
 
-		// 	let channel = tokio::task::block_in_place(move || {
-		// 		return Handle::current().block_on(async move {
-		// 			let channel = get_channel(channel_id, s_ctx).await;
+			let guild = tokio::task::block_in_place(move || {
+				return Handle::current().block_on(async move {
+					let guild = get_guild(guild_id, s_ctx).await;
 
-		// 			return channel
-		// 		});
-		// 	});
+					return guild
+				});
+			});
 
-		// 	if channel.is_err() {
-		// 		return Err(LuaError::external("Failed to get channel."));
-		// 	}
+			if guild.is_err() {
+				return Err(LuaError::external("Failed to get guild."));
+			}
 
-		// 	Ok(TBChannel(channel.unwrap(), this.1.clone()).to_lua(ctx)?)
-		// });
+			Ok(TBPartialGuild(guild.unwrap(), this.1.clone()).to_lua(ctx)?)
+		});
 	}
 }

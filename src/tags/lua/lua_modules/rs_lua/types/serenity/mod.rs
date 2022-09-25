@@ -8,3 +8,6 @@ pub mod guild_channel;
 pub mod guild_id;
 pub mod message_id;
 pub mod video_quality_mode;
+pub mod thread_metadata;
+pub mod thread_member;
+pub mod partial_guild;
