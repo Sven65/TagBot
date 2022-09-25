@@ -1,5 +1,5 @@
 use serenity::model::prelude::ChannelCategory;
-use rlua::{UserData, MetaMethod};
+use rlua::{UserData, MetaMethod, Value};
 use serenity::{prelude::{Context as SerenityContext}};
 
 
@@ -21,13 +21,14 @@ impl UserData for TBChannelCategory {
 	fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
 		methods.add_meta_method(MetaMethod::Index, |ctx, this, value: String| {
 			Ok(match &value.as_str() {
-				&"id" => convert_constructable2::<TBChannelId, _, SerenityContext>(this.0.id, this.1, ctx)?,
-				&"guild_id" => convert_constructable2::<TBGuildId, _, SerenityContext>(this.0.guild_id, this.1, ctx)?,
-				&"parent_id" => convert_constructable2_option::<TBChannelId, _, SerenityContext>(this.0.parent_id, Some(this.1), ctx)?,
+				&"id" => convert_constructable2::<TBChannelId, _, SerenityContext>(this.0.id, this.1.clone(), ctx)?,
+				&"guild_id" => convert_constructable2::<TBGuildId, _, SerenityContext>(this.0.guild_id, this.1.clone(), ctx)?,
+				&"parent_id" => convert_constructable2_option::<TBChannelId, _, SerenityContext>(this.0.parent_id, Some(this.1.clone()), ctx)?,
 				&"position" => convert_type::<i64>(this.0.position, ctx)?,
 				&"kind" => convert_type::<&str>(this.0.kind.name(), ctx)?,
-				&"name" => convert_type::<String>(this.0.name, ctx)?,
+				&"name" => convert_type(this.0.name.clone(), ctx)?,
 				&"nsfw" => convert_type::<bool>(this.0.nsfw, ctx)?,
+				&_ => Value::Nil,
 			})
 		})
 	}

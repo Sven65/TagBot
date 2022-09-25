@@ -41,7 +41,7 @@ impl UserData for TBGuildChannel {
 				&"message_count" => convert_type_option(this.0.message_count, ctx)?,
 				&"member_count" => convert_type_option(this.0.member_count, ctx)?,
 				&"thread_metadata" => convert_constructable_option::<TBThreadMetadata, _>(this.0.thread_metadata, ctx)?,
-				&"member" => convert_constructable_option::<TBThreadMember, _>(this.0.member, ctx)?,
+				&"member" => convert_constructable_option::<TBThreadMember, _>(this.0.member.clone(), ctx)?,
 				&"default_auto_archive_duration" => convert_type_option(this.0.default_auto_archive_duration, ctx)?,
 
  				&_ => Value::Nil,

@@ -5,6 +5,8 @@ use tokio::runtime::Handle;
 
 use crate::tags::lua::lua_modules::rs_lua::types::utils::types::ConstructableFrom2;
 
+use super::partial_guild::TBPartialGuild;
+
 
 async fn get_guild(guild_id: GuildId, s_ctx: SerenityContext) -> Result<PartialGuild, Error> {
 	let guild = guild_id.to_partial_guild(&s_ctx.http).await.unwrap();
