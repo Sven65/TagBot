@@ -1,10 +1,10 @@
 use rlua::{UserData, MetaMethod, Value, ToLua};
-use serenity::model::guild::MfaLevel;
+use serenity::model::{guild::MfaLevel, prelude::NsfwLevel};
+use tagbot_macros::LuaEnum;
 
 use crate::tags::lua::lua_modules::rs_lua::types::utils::types::ConstructableFrom;
-
-
 /// Wrapper for [`serenity::model::guild::MfaLevel`]
+
 #[derive(Clone)]
 pub struct TBMfaLevel(pub MfaLevel);
 
@@ -18,17 +18,21 @@ impl ConstructableFrom<MfaLevel> for TBMfaLevel {
 	}
 }
 
-impl UserData for TBMfaLevel {
-	fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
-		methods.add_meta_method(MetaMethod::ToString, |ctx, this, _: Value| {
-			let level = match this.0 {
-				MfaLevel::None => "None",
-				MfaLevel::Elevated => "Elevated",
-				MfaLevel::Unknown => "Unknown",
-				_ => "Unknown",
-			};
+// impl UserData for TBMfaLevel {
+// 	fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
+// 		methods.add_meta_method(MetaMethod::ToString, |ctx, this, _: Value| {
+// 			let level = match this.0 {
+// 				MfaLevel::None => "None",
+// 				MfaLevel::Elevated => "Elevated",
+// 				MfaLevel::Unknown => "Unknown",
+// 				_ => "Unknown",
+// 			};
 
-			Ok(level.to_lua(ctx)?)
-		});
-	}
-}
+// 			Ok(level.to_lua(ctx)?)
+// 		});
+// 	}
+// }
+
+
+#[derive(LuaEnum)]
+pub struct TBWrapper(pub MfaLevel, pub NsfwLevel);

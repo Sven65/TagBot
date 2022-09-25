@@ -1457,10 +1457,20 @@ dependencies = [
  "rlua",
  "serde",
  "serenity",
+ "tagbot-macros",
  "test-case",
  "tokio",
  "tracing",
  "tracing-subscriber",
+]
+
+[[package]]
+name = "tagbot-macros"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]

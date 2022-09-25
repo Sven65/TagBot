@@ -21,6 +21,7 @@ regex = "1"
 chrono = "0.4.22"
 rand = "0.8.5"
 gag = "1.0.0"
+tagbot-macros = { path = "tagbot-macros" }
 
 
 [dependencies.serenity]
