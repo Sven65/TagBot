@@ -1,70 +1,75 @@
 use proc_macro::TokenStream;
 use proc_macro2::Ident;
-use syn::{self, parse::{ParseStream, Parse}, Token, ItemEnum, token::{self, Token, Struct, Enum}, punctuated::Punctuated, Field, Result, braced, parse_macro_input, DataStruct};
+use syn::{self, DataStruct};
 use quote::quote;
 
-
+/// A trait that allows for a wrapped enum to be stringified
+/// with `tostring(...)` in a lua script.
+/// 
+/// ## Derivable
+/// 
+/// This trait is used with `#[derive]`, which adds the `[ConstructableFrom]` trait for constructing
+/// and the `[rlua::UserData]` trait for `tostring`.
+/// 
+/// ```
+/// // `derive` implements LuaEnum for TBWrapper.
+/// #[derive(LuaEnum)]
+/// pub struct TBWrapper(pub WrappedEnum);
+/// ```
+/// 
+/// [impls]: #implementors
 #[proc_macro_derive(LuaEnum)]
 pub fn lua_enum(tokens: TokenStream) -> TokenStream {
-    println!("Derive LuaEnum");
-    
-    let ast: syn::DeriveInput = syn::parse(tokens).unwrap();
+		let ast: syn::DeriveInput = syn::parse(tokens).unwrap();
 
-    println!("Ast is {:#?}", ast.data);
+	let name = ast.ident;
 
-    let name = ast.ident;
+	let data_struct: DataStruct = match ast.data {
+		syn::Data::Struct(data) => data,
+		_=> panic!("Failed to parse struct for LuaEnum Macro"),
+	};
 
-    let data_struct: DataStruct = match ast.data {
-        syn::Data::Struct(data) => data,
-        _=> panic!("Failed to parse struct for LuaEnum Macro"),
-    };
+	let mut tuple_fields: Vec<&Ident> = Vec::new();
 
-    println!("data_struct {:#?}", data_struct);
+	for field in data_struct.fields.iter() {
+		let ident: syn::Result<&Ident> = match &field.ty {
+			syn::Type::Path(path) => {
+				let ident = path.path.get_ident().unwrap();
 
-    for field in data_struct.fields.iter() {
-        let ty = &field.ty;
-        println!("Field type is {:#?}", ty);
+				Ok(ident)
+			},
+			_ => panic!("Failed to parse path and ident for struct member."),
+		};
 
+		let ident_uw = ident.unwrap();
 
-        let path: syn::Result<String> = match &field.ty {
-            syn::Type::Path(path) => {
-                let ident = path.path.get_ident();
-                println!("Type thing, {:#?}", ident.unwrap());
-                println!("type thing 2 {:#?}", path.path);
-                println!("type path {:#?}", path);
-                let path_strings: Vec<String> = (&path.path.segments).into_iter().map(|segment| {
-                    segment.ident.to_string()
-                }).collect();
-    
-                let final_string = path_strings.join("::");
-    
-                Ok(final_string)
-            },
-            _ => panic!("Failed to parse path for struct member."),
-        };
+		tuple_fields.push(ident_uw);
+	}
 
-        let parsed = syn::parse_str::<Enum>(path.unwrap().as_str());
+	let wrapped_ident = tuple_fields.get(0).unwrap();
 
-        println!("Parsed into {:#?}", parsed);
-    }
+	let gen = quote! {
+		impl ConstructableFrom<#wrapped_ident> for #name {
+			/// Creates a new wrapper
+			/// 
+			/// # Arguments
+			/// * `value` - The #wrapped_ident to wrap
+			fn new(value: #wrapped_ident) -> #name {
+				#name(value)
+			}
+		}
 
-    let gen = quote! {
-        impl UserData for #name {
-            fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
-                methods.add_meta_method(MetaMethod::ToString, |ctx, this, _: Value| {
-                    let level = match this.0 {
-                        MfaLevel::None => "None",
-                        MfaLevel::Elevated => "Elevated",
-                        MfaLevel::Unknown => "Unknown",
-                        _ => "Unknown",
-                    };
-        
-                    Ok(level.to_lua(ctx)?)
-                });
-            }
-        }
-    };
+		impl UserData for #name {
+			fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
+				methods.add_meta_method(MetaMethod::ToString, |ctx, this, _: Value| {
+					let formatted_enum = format!("{:?}", this.0);
+		
+					Ok(formatted_enum.to_lua(ctx)?)
+				});
+			}
+		}
+	};
 
-    gen.into()
+	gen.into()
 
 }
