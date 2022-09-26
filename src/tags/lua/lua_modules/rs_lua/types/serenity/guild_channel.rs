@@ -3,7 +3,7 @@ use serenity::{model::prelude::{GuildChannel}, prelude::{Context as SerenityCont
 
 use crate::tags::lua::lua_modules::rs_lua::types::utils::{functions::{convert_type_option, convert_constructable2, convert_constructable2_option, convert_type, convert_constructable_option}, types::ConstructableFrom2};
 
-use super::{channel_id::TBChannelId, guild_id::TBGuildId, message_id::TBMessageId, timestamp::TBTimestamp, video_quality_mode::TBVideoQualityMode, thread_metadata::TBThreadMetadata, thread_member::TBThreadMember};
+use super::{channel_id::TBChannelId, guild_id::TBGuildId, message_id::TBMessageId, timestamp::TBTimestamp, thread_metadata::TBThreadMetadata, thread_member::TBThreadMember, simple_enums::TBVideoQualityMode};
 
 /// Wrapper for a [`serenity::model::prelude::GuildChannel`]
 #[derive(Clone)]

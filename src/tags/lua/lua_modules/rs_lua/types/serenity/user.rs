@@ -3,13 +3,21 @@
 use rlua::{ToLua, UserData, MetaMethod, Value};
 use serenity::model::{prelude::User};
 
+use crate::tags::lua::lua_modules::rs_lua::types::utils::types::ConstructableFrom;
+
 #[derive(Clone, Debug)]
-pub struct TBUser(User);
+pub struct TBUser(pub User);
 
 impl TBUser {
 	pub fn new(user: User) -> TBUser {
 		TBUser(user)
 	}
+}
+
+impl ConstructableFrom<User> for TBUser {
+    fn new(value: User) -> Self {
+        Self(value)
+    }
 }
 
 
