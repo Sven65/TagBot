@@ -1,8 +1,6 @@
-use serenity::model::{user::User};
+use serenity::model::user::User;
 use tagbot::tags::legacy::executor::replace_sender_variables;
 use test_case::test_case;
-
-
 
 fn get_test_user() -> User {
 	let mut test_user = User::default();
@@ -12,8 +10,7 @@ fn get_test_user() -> User {
 	test_user.discriminator = 7196;
 	test_user.name = "Mackan".to_string();
 
-
-	return test_user;
+	test_user
 }
 
 #[test_case("{sname}", "Mackan"; "{sname} should be replaced by correct name")]

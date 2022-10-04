@@ -1,32 +1,32 @@
 use proc_macro::TokenStream;
 use proc_macro2::Ident;
-use syn::{self, DataStruct};
 use quote::quote;
+use syn::{self, DataStruct};
 
 /// A trait that allows for a wrapped enum to be stringified
 /// with `tostring(...)` in a lua script.
-/// 
+///
 /// ## Derivable
-/// 
+///
 /// This trait is used with `#[derive]`, which adds the `[ConstructableFrom]` trait for constructing
 /// and the `[rlua::UserData]` trait for `tostring`.
-/// 
+///
 /// ```
 /// // `derive` implements LuaEnum for TBWrapper.
 /// #[derive(LuaEnum)]
 /// pub struct TBWrapper(pub WrappedEnum);
 /// ```
-/// 
+///
 /// [impls]: #implementors
 #[proc_macro_derive(LuaEnum)]
 pub fn lua_enum(tokens: TokenStream) -> TokenStream {
-		let ast: syn::DeriveInput = syn::parse(tokens).unwrap();
+	let ast: syn::DeriveInput = syn::parse(tokens).unwrap();
 
 	let name = ast.ident;
 
 	let data_struct: DataStruct = match ast.data {
 		syn::Data::Struct(data) => data,
-		_=> panic!("Failed to parse struct for LuaEnum Macro"),
+		_ => panic!("Failed to parse struct for LuaEnum Macro"),
 	};
 
 	let mut tuple_fields: Vec<&Ident> = Vec::new();
@@ -37,7 +37,7 @@ pub fn lua_enum(tokens: TokenStream) -> TokenStream {
 				let ident = path.path.get_ident().unwrap();
 
 				Ok(ident)
-			},
+			}
 			_ => panic!("Failed to parse path and ident for struct member."),
 		};
 
@@ -51,7 +51,7 @@ pub fn lua_enum(tokens: TokenStream) -> TokenStream {
 	let gen = quote! {
 		impl ConstructableFrom<#wrapped_ident> for #name {
 			/// Creates a new wrapper
-			/// 
+			///
 			/// # Arguments
 			/// * `value` - The #wrapped_ident to wrap
 			fn new(value: #wrapped_ident) -> #name {
@@ -63,13 +63,12 @@ pub fn lua_enum(tokens: TokenStream) -> TokenStream {
 			fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
 				methods.add_meta_method(MetaMethod::ToString, |ctx, this, _: Value| {
 					let formatted_enum = format!("{:?}", this.0);
-		
-					Ok(formatted_enum.to_lua(ctx)?)
+
+					formatted_enum.to_lua(ctx)
 				});
 			}
 		}
 	};
 
 	gen.into()
-
 }

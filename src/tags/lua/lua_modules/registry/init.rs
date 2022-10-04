@@ -1,13 +1,16 @@
-use rlua::{Value, Context};
+use rlua::{Context, Value};
 
-use crate::{util::paths::Paths, tags::lua::lua_modules::rs_lua::types::{serenity::timestamp::TBTimestamp, Requireable}};
+use crate::{
+	tags::lua::lua_modules::rs_lua::types::{serenity::timestamp::TBTimestamp, Requireable},
+	util::paths::Paths,
+};
 
 use super::registry::LUA_MODULE_INDEX;
 
 fn resolve_path(module_path: &str) -> String {
 	let paths = Paths::new();
 
-	let mut path = paths.prefix.clone();
+	let mut path = paths.prefix;
 
 	path.push("data");
 	path.push("lua");
@@ -15,7 +18,7 @@ fn resolve_path(module_path: &str) -> String {
 
 	let path = path.to_str().unwrap().to_string();
 
-	return path;
+	path
 }
 
 fn get_value<'lua>(key: &str, ctx: Context<'lua>) -> rlua::Value<'lua> {
@@ -25,12 +28,10 @@ fn get_value<'lua>(key: &str, ctx: Context<'lua>) -> rlua::Value<'lua> {
 		return rlua::Nil;
 	}
 
-	let value = value.unwrap();
-
-	return value;
+	value.unwrap()
 }
 
-
+#[rustfmt::skip]
 pub fn init_modules() {
 	LUA_MODULE_INDEX.lock().unwrap().register_module_file("util", &resolve_path("util.lua"));
 	LUA_MODULE_INDEX.lock().unwrap().register_rust_module("variables/sender", |ctx| get_value("sender", ctx));
@@ -38,4 +39,3 @@ pub fn init_modules() {
 	LUA_MODULE_INDEX.lock().unwrap().register_rust_module("variables/channel_id", |ctx| get_value("channel_id", ctx));
 	LUA_MODULE_INDEX.lock().unwrap().register_rust_module("timestamp", |ctx| TBTimestamp::create_module(ctx));
 }
-
