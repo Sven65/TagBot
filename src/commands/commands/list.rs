@@ -1,8 +1,15 @@
-use serenity::{model::prelude::{interaction::{application_command::{ApplicationCommandInteraction}, InteractionResponseType}, AttachmentType}, prelude::Context};
+use serenity::{
+	model::prelude::{
+		interaction::{
+			application_command::ApplicationCommandInteraction, InteractionResponseType,
+		},
+		AttachmentType,
+	},
+	prelude::Context,
+};
 use std::io::Write;
 
-use crate::{services::rethinkdb::tags::TagsTable, handle_error};
-
+use crate::{handle_error, services::rethinkdb::tags::TagsTable};
 
 pub async fn list(interaction: ApplicationCommandInteraction, ctx: Context) -> String {
 	let tags = TagsTable::get_all_by_owner(interaction.user.id.to_string()).await;
@@ -13,22 +20,26 @@ pub async fn list(interaction: ApplicationCommandInteraction, ctx: Context) -> S
 		let mut file_data = Vec::new();
 
 		for tag in tags.iter() {
-			println!("Tag name {}", tag.id);
-			handle_error!(file_data.write_all(format!("{}\n", tag.id).as_bytes()), "Failed to write to temp file while creating user list");
+			handle_error!(
+				file_data.write_all(format!("{}\n", tag.id).as_bytes()),
+				"Failed to write to temp file while creating user list"
+			);
 		}
-		
-		let file = AttachmentType::Bytes { data: file_data.into(), filename: "tags.txt".to_string() };
 
+		let file =
+			AttachmentType::Bytes { data: file_data.into(), filename: "tags.txt".to_string() };
 
-		let result = interaction.create_interaction_response(&ctx.http, |response| {
-			response
-				.kind(InteractionResponseType::ChannelMessageWithSource)
-				.interaction_response_data(|message| {
-					message.content(format!("Found {} tags", tags.len()))
-						.add_file(file)
+		let result = interaction
+			.create_interaction_response(&ctx.http, |response| {
+				response
+					.kind(InteractionResponseType::ChannelMessageWithSource)
+					.interaction_response_data(|message| {
+						message
+							.content(format!("Found {} tags", tags.len()))
+							.add_file(file)
+					})
 			})
-		})
-		.await;
+			.await;
 
 		if result.is_err() {
 			println!("Failed sending response {}", result.err().unwrap());
@@ -36,18 +47,18 @@ pub async fn list(interaction: ApplicationCommandInteraction, ctx: Context) -> S
 	} else {
 		println!("Failed to get tags {}", tags.err().unwrap());
 
-		let result = interaction.create_interaction_response(&ctx.http, |response| {
-			response.kind(InteractionResponseType::ChannelMessageWithSource)
-			.interaction_response_data(|message| {
-				message.content("Failed to list tags")
+		let result = interaction
+			.create_interaction_response(&ctx.http, |response| {
+				response
+					.kind(InteractionResponseType::ChannelMessageWithSource)
+					.interaction_response_data(|message| message.content("Failed to list tags"))
 			})
-		}).await;
+			.await;
 
 		if result.is_err() {
 			println!("Failed sending response {}", result.err().unwrap());
 		}
 	}
 
-
-	return "".to_string();
+	"".to_string()
 }

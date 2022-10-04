@@ -1,4 +1,3 @@
 hard_tabs = true
 struct_lit_width = 100
-max_width = 180
 match_arm_blocks = false
