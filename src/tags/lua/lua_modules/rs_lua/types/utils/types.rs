@@ -4,7 +4,6 @@ pub trait ConstructableFrom<T> {
 	fn new(value: T) -> Self;
 }
 
-
 /// Trait for constructing struct from two given types
 pub trait ConstructableFrom2<T, T2> {
 	/// Creates a new wrapper
