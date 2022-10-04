@@ -1,8 +1,7 @@
-use rlua::{UserData, MetaMethod, Value, ToLua};
+use rlua::UserData;
 use serenity::model::channel::ThreadMetadata;
 
 use crate::tags::lua::lua_modules::rs_lua::types::utils::types::ConstructableFrom;
-
 
 /// Wrapper for [`serenity::model::channel::ThreadMetadata`]
 #[derive(Clone)]
@@ -10,7 +9,7 @@ pub struct TBThreadMetadata(pub ThreadMetadata);
 
 impl ConstructableFrom<ThreadMetadata> for TBThreadMetadata {
 	/// Creates a new wrapper
-	/// 
+	///
 	/// # Arguments
 	/// * `thread_metadata` - The serenity ThreadMetadata to wrap
 	fn new(thread_metadata: ThreadMetadata) -> TBThreadMetadata {
@@ -29,6 +28,5 @@ impl UserData for TBThreadMetadata {
 
 		// 	})
 		// })
-
 	}
 }
