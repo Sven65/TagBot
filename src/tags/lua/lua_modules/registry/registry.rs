@@ -1,12 +1,12 @@
-use std::{collections::HashMap, sync::Mutex, fs, io::ErrorKind};
-use lazy_static::lazy_static;
 use core::result::Result;
-use std::io::Error;
+use lazy_static::lazy_static;
 use rlua::{Context, Value};
+use std::io::Error;
+use std::{collections::HashMap, fs, io::ErrorKind, sync::Mutex};
 
 type RustModuleFn = fn(context: Context) -> Value;
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Eq)]
 pub enum LuaModuleType {
 	LuaFile,
 	RustSource,
@@ -19,7 +19,6 @@ pub struct LuaModule {
 	func: Option<RustModuleFn>,
 }
 
-
 #[derive(Clone)]
 pub struct LuaModuleRegistry {
 	pub modules: HashMap<String, LuaModule>,
@@ -27,9 +26,9 @@ pub struct LuaModuleRegistry {
 
 impl LuaModuleRegistry {
 	/// Registers a lua require module to load from disk
-	/// 
+	///
 	/// # Arguments
-	/// 
+	///
 	/// * `name` - The name of the module, used in `require()`
 	/// * `module_path` - The path of the file on disk
 	pub fn register_module_file(&mut self, name: &str, module_path: &str) {
@@ -45,34 +44,40 @@ impl LuaModuleRegistry {
 	}
 
 	/// Checks if the registry has a module
-	/// 
+	///
 	/// # Arguments
-	/// 
+	///
 	/// * `name` - Name of the module to check for
 	pub fn has_module(&self, name: &str) -> bool {
-		return self.modules.contains_key(&name.to_lowercase());
+		self.modules.contains_key(&name.to_lowercase())
 	}
 
 	pub fn get_module(&self, name: &str) -> Result<&LuaModule, Error> {
 		let module = self.modules.get(&name.to_lowercase());
 
 		if module.is_none() {
-			return Err(Error::new(ErrorKind::Other, format!("Module {} not found.", name)));
+			return Err(Error::new(
+				ErrorKind::Other,
+				format!("Module {} not found.", name),
+			));
 		}
 
 		Ok(module.unwrap())
 	}
 
 	/// Reads a registered module file from disk and returns it as a string
-	/// 
+	///
 	/// # Arguments
-	/// 
+	///
 	/// * `name` - The name of the module to read
 	pub fn load_module_to_string(&self, name: &str) -> Result<String, Error> {
 		let module_name = name.to_lowercase();
 
 		if !self.has_module(name) {
-			return Err(Error::new(ErrorKind::Other, format!("Module {} not found.", name)));
+			return Err(Error::new(
+				ErrorKind::Other,
+				format!("Module {} not found.", name),
+			));
 		}
 
 		let lua_module = self.modules.get(&module_name);
@@ -80,7 +85,10 @@ impl LuaModuleRegistry {
 		let lua_module = lua_module.unwrap();
 
 		if lua_module.module_type != LuaModuleType::LuaFile {
-			return Err(Error::new(ErrorKind::Other, format!("Module {} is not a loadable file.", name)));
+			return Err(Error::new(
+				ErrorKind::Other,
+				format!("Module {} is not a loadable file.", name),
+			));
 		}
 
 		let path = lua_module.path.as_ref().unwrap();
@@ -90,7 +98,11 @@ impl LuaModuleRegistry {
 		Ok(contents)
 	}
 
-	pub fn load_lua_module<'lua>(&self, name: &str, ctx: Context<'lua>) -> Result<Value<'lua>, Error> {
+	pub fn load_lua_module<'lua>(
+		&self,
+		name: &str,
+		ctx: Context<'lua>,
+	) -> Result<Value<'lua>, Error> {
 		let contents = self.load_module_to_string(name)?;
 
 		let chunk = ctx.load(contents.as_str());
@@ -107,28 +119,32 @@ impl LuaModuleRegistry {
 	}
 
 	/// Registers a lua require module with a rust struct
-	/// 
+	///
 	/// # Arguments
-	/// 
-	/// * `name` - The name of the module, used in `require()` 
-	pub fn register_rust_module<'lua>(&mut self, name: &str, f: RustModuleFn) {
+	///
+	/// * `name` - The name of the module, used in `require()`
+	pub fn register_rust_module(&mut self, name: &str, f: RustModuleFn) {
 		println!("Registering rust lua module \"{}\"", name);
 
-		let module = LuaModule {
-			module_type: LuaModuleType::RustSource,
-			path: None,
-			func: Some(f),
-		};
+		let module =
+			LuaModule { module_type: LuaModuleType::RustSource, path: None, func: Some(f) };
 
-		self.modules.insert(name.to_string(), module.clone());
+		self.modules.insert(name.to_string(), module);
 	}
 
-	pub fn load_rust_module<'lua>(&self, name: &str, ctx: Context<'lua>) -> Result<Value<'lua>, Error> {
+	pub fn load_rust_module<'lua>(
+		&self,
+		name: &str,
+		ctx: Context<'lua>,
+	) -> Result<Value<'lua>, Error> {
 		let name = name.to_lowercase();
 		let name = name.as_str();
 
 		if !self.has_module(name) {
-			return Err(Error::new(ErrorKind::Other, format!("Module {} not found.", &name)));
+			return Err(Error::new(
+				ErrorKind::Other,
+				format!("Module {} not found.", &name),
+			));
 		}
 
 		let module = self.modules.get(name);
@@ -136,11 +152,17 @@ impl LuaModuleRegistry {
 		let module = module.unwrap();
 
 		if module.module_type != LuaModuleType::RustSource {
-			return Err(Error::new(ErrorKind::Other, format!("Module {} is not a native module.", name)));
+			return Err(Error::new(
+				ErrorKind::Other,
+				format!("Module {} is not a native module.", name),
+			));
 		}
 
 		if module.func.is_none() {
-			return Err(Error::new(ErrorKind::Other, format!("Module {} does not provide implementation.", name)));
+			return Err(Error::new(
+				ErrorKind::Other,
+				format!("Module {} does not provide implementation.", name),
+			));
 		}
 
 		let func = module.func.unwrap();
@@ -157,14 +179,11 @@ impl LuaModuleRegistry {
 			return self.load_lua_module(name, ctx);
 		}
 
-		return self.load_rust_module(name, ctx);
+		self.load_rust_module(name, ctx)
 	}
 }
 
-
 lazy_static! {
-	pub static ref LUA_MODULE_INDEX: Mutex<LuaModuleRegistry> = Mutex::new(LuaModuleRegistry {
-		modules: HashMap::new(),
-	});
+	pub static ref LUA_MODULE_INDEX: Mutex<LuaModuleRegistry> =
+		Mutex::new(LuaModuleRegistry { modules: HashMap::new() });
 }
-
