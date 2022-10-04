@@ -13,7 +13,9 @@ use std::collections::HashMap;
 
 use crate::handle_error;
 
-use self::structures::{CommandComponentHandlerFn, CommandExecutorFn, CommandModalHandlerFn, OptionCreatorFn};
+use self::structures::{
+	CommandComponentHandlerFn, CommandExecutorFn, CommandModalHandlerFn, OptionCreatorFn,
+};
 
 const CREATE_COMMANDS: bool = false;
 
@@ -32,9 +34,20 @@ pub struct CommandIndex {
 	context: Option<Context>,
 }
 
+pub struct RegistrationMeta {
+	pub f: CommandExecutorFn,
+	pub desc: Option<String>,
+	pub option_creator: Option<OptionCreatorFn>,
+	pub sends_message: bool,
+	pub modal_handler: Option<CommandModalHandlerFn>,
+	pub component_handler: Option<CommandComponentHandlerFn>,
+}
+
 impl Debug for CommandIndex {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		f.debug_struct("CommandIndex").field("commands", &self.commands).finish()
+		f.debug_struct("CommandIndex")
+			.field("commands", &self.commands)
+			.finish()
 	}
 }
 
@@ -44,37 +57,38 @@ impl CommandIndex {
 		self.context = Some(ctx);
 	}
 
-	pub async fn register_command(
-		&mut self,
-		name: &str,
-		f: CommandExecutorFn,
-		desc: Option<&str>,
-		option_creator: Option<OptionCreatorFn>,
-		sends_message: bool,
-		modal_handler: Option<CommandModalHandlerFn>,
-		component_handler: Option<CommandComponentHandlerFn>,
-	) {
-		if let None = self.context {
+	pub async fn register_command(&mut self, name: &str, options: RegistrationMeta) {
+		if self.context.is_none() {
 			panic!("[CommandIndex] Unable to register commands: Context is None.");
 		}
 
 		if CREATE_COMMANDS {
-			let created = Command::create_global_application_command(&self.context.as_ref().unwrap().http, |command| {
-				command.name(name).description(desc.unwrap_or("Default description."));
+			let created = Command::create_global_application_command(
+				&self.context.as_ref().unwrap().http,
+				|command| {
+					command.name(name).description(
+						options
+							.desc
+							.unwrap_or_else(|| "Default description.".to_string()),
+					);
 
-				let data = match option_creator {
-					Some(option_creator) => option_creator(command),
-					None => command,
-				};
-
-				data
-			})
+					match options.option_creator {
+						Some(option_creator) => option_creator(command),
+						None => command,
+					}
+				},
+			)
 			.await;
 
 			println!("Created global command {:#?}", created.unwrap().name);
 		}
 
-		let tb_command = TBCommand { executor: f, sends_message, modal_handler, component_handler };
+		let tb_command = TBCommand {
+			executor: options.f,
+			sends_message: options.sends_message,
+			modal_handler: options.modal_handler,
+			component_handler: options.component_handler,
+		};
 
 		self.commands.insert(name.to_string(), tb_command);
 
@@ -83,17 +97,19 @@ impl CommandIndex {
 
 	#[allow(dead_code)]
 	pub async fn remove_command(&mut self, id: CommandId) {
-		if let None = self.context {
+		if self.context.is_none() {
 			panic!("[CommandIndex] Unable to remove commands: Context is None.");
 		}
 
 		handle_error!(
-			Command::delete_global_application_command(&self.context.as_ref().unwrap().http, id).await,
+			Command::delete_global_application_command(&self.context.as_ref().unwrap().http, id)
+				.await,
 			"Failed to delete command"
 		);
 	}
 }
 
 lazy_static! {
-	pub static ref COMMAND_INDEX: Mutex<CommandIndex> = Mutex::new(CommandIndex { commands: HashMap::new(), context: None });
+	pub static ref COMMAND_INDEX: Mutex<CommandIndex> =
+		Mutex::new(CommandIndex { commands: HashMap::new(), context: None });
 }
