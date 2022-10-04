@@ -18,7 +18,7 @@ impl ConstructableFrom<ThreadMetadata> for TBThreadMetadata {
 }
 
 impl UserData for TBThreadMetadata {
-	fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
+	fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(_methods: &mut T) {
 		// methods.add_meta_method(MetaMethod::ToString, |ctx, this, _: Value| {
 		// 	Ok(this.0.to_string().to_lua(ctx)?)
 		// });

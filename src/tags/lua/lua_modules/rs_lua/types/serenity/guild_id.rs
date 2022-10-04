@@ -17,17 +17,6 @@ async fn get_guild(guild_id: GuildId, s_ctx: SerenityContext) -> Result<PartialG
 #[derive(Clone)]
 pub struct TBGuildId(pub GuildId, pub SerenityContext);
 
-impl TBGuildId {
-	/// Creates a new wrapper
-	///
-	/// # Arguments
-	/// * `guild_id` - The serenity GuildId to wrap
-	/// * `s_ctx` - SerenityContext to use when resolving channel
-	pub fn new(guild_id: GuildId, s_ctx: SerenityContext) -> TBGuildId {
-		TBGuildId(guild_id, s_ctx)
-	}
-}
-
 impl ConstructableFrom2<GuildId, SerenityContext> for TBGuildId {
 	/// Creates a new wrapper
 	///
