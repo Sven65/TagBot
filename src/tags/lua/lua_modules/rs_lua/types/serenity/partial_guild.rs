@@ -2,7 +2,7 @@ use rlua::{MetaMethod, UserData, Value};
 use serenity::{
 	model::{
 		guild::PartialGuild,
-		prelude::{Emoji, EmojiId},
+		prelude::{Emoji, EmojiId, Role, RoleId},
 	},
 	prelude::Context as SerenityContext,
 };
@@ -10,7 +10,8 @@ use serenity::{
 use crate::tags::lua::lua_modules::rs_lua::types::utils::{
 	functions::{
 		convert_constructable, convert_constructable2, convert_constructable2_option,
-		convert_hashmap_types, convert_type, convert_type_option,
+		convert_constructable_option, convert_hashmap_types, convert_hashmap_types_with_new,
+		convert_type, convert_type_option,
 	},
 	types::ConstructableFrom2,
 };
@@ -20,11 +21,14 @@ use super::{
 	emoji::TBEmoji,
 	emoji_id::TBEmojiId,
 	guild_id::TBGuildId,
+	id::role_id::TBRoleId,
+	role::TBRole,
 	simple_enums::{
 		TBDefaultMessageNotificationLevel, TBMfaLevel, TBNsfwLevel, TBPremiumTier,
 		TBVerificationLevel,
 	},
 	user_id::TBUserId,
+	welcome_screen::TBWelcomeScreen,
 };
 
 /// Wrapper for [`serenity::model::guild::PartialGuild`]
@@ -62,7 +66,7 @@ impl UserData for TBPartialGuild {
 				"mfa_level" => convert_constructable::<TBMfaLevel, _>(this.0.mfa_level, ctx)?,
 				"name" => convert_type(this.0.name.clone(), ctx)?,
 				"owner_id" => convert_constructable2::<TBUserId, _, _>(this.0.owner_id, this.1.clone(), ctx)?,
-				"roles" => todo!(),
+				"roles" => convert_hashmap_types_with_new::<TBRoleId, TBRole, SerenityContext, RoleId, Role>(this.0.roles.clone(), this.1.clone(), ctx)?,
 				"splash" => convert_type_option(this.0.splash.clone(), ctx)?,
 				"discovery_splash" => convert_type_option(this.0.discovery_splash.clone(), ctx)?,
 				"system_channel_id" => convert_constructable2_option::<TBChannelId, _, _>(this.0.system_channel_id, Some(this.1.clone()), ctx)?,
@@ -75,7 +79,7 @@ impl UserData for TBPartialGuild {
 				"premium_subscription_count" => convert_type(this.0.premium_subscription_count, ctx)?,
 				"banner" => convert_type_option(this.0.banner.clone(), ctx)?,
 				"vanity_url_code" => convert_type_option(this.0.vanity_url_code.clone(), ctx)?,
-				"welcome_screen" => todo!(),
+				"welcome_screen" => convert_constructable_option::<TBWelcomeScreen, _>(this.0.welcome_screen, ctx)?,
 				"approximate_member_count" => convert_type_option(this.0.approximate_member_count, ctx)?,
 				"approximate_presence_count" => convert_type_option(this.0.approximate_presence_count, ctx)?,
 				"nsfw_level" => convert_constructable::<TBNsfwLevel, _>(this.0.nsfw_level, ctx)?,

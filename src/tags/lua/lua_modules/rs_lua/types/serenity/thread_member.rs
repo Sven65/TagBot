@@ -1,10 +1,9 @@
 use rlua::{MetaMethod, UserData, Value};
 use serenity::model::guild::ThreadMember;
-use serenity::model::prelude::ThreadMemberFlags;
 use serenity::prelude::Context as SerenityContext;
 
 use crate::tags::lua::lua_modules::rs_lua::types::utils::functions::{
-	convert_constructable, convert_constructable2_option, convert_constructable_option,
+	convert_constructable, convert_constructable2_option,
 };
 use crate::tags::lua::lua_modules::rs_lua::types::utils::types::ConstructableFrom2;
 

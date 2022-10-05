@@ -152,3 +152,32 @@ pub fn convert_hashmap_types<
 
 	table.to_lua(ctx)
 }
+
+/// Converts a [`HashMap<K2, V2>`] to a [`HashMap<K, V>`] using [`V::new`]
+///
+/// # Arguments
+/// * `from` - The map to convert from
+/// * `second`- The second argument to use when constructing
+/// * `ctx` - [`rlua::Context`] to use for converting to lua
+pub fn convert_hashmap_types_with_new<
+	'lua,
+	K: Eq + Hash + std::convert::From<K2> + ToLua<'lua>,
+	V: ConstructableFrom2<V2, S> + ToLua<'lua>,
+	S: Clone,
+	K2,
+	V2,
+>(
+	from: HashMap<K2, V2>,
+	second: S,
+	ctx: Context<'lua>,
+) -> LuaResult<Value> {
+	let mut map: HashMap<K, V> = HashMap::new();
+
+	for (k, v) in from {
+		map.insert(k.into(), V::new(v, second.clone()));
+	}
+
+	let table: Table = ctx.create_table_from(map)?;
+
+	table.to_lua(ctx)
+}
