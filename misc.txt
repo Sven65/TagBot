@@ -1,0 +1,9 @@
+Replace regex:
+	pub (.*): (bool|i64|u32|String|u8|u16|u32|u64|u128|f64|f32|),
+With:
+	"$1" => convert_type(this.0.$1, ctx)?,
+
+Replace regex:
+	pub (.*): Option<(bool|i64|u32|String|u8|u16|u32|u64|u128|f64|f32|)>,
+with:
+	"$1" => convert_type_option(this.0.$1, ctx)?,
