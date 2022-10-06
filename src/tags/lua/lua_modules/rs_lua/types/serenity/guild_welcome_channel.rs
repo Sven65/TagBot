@@ -1,10 +1,10 @@
-use rlua::{MetaMethod, ToLua, UserData, Value};
+use rlua::{MetaMethod, UserData, Value};
 use serenity::model::guild::GuildWelcomeChannel;
 use serenity::prelude::Context as SerenityContext;
 
 use crate::tags::lua::lua_modules::rs_lua::types::utils::{
 	functions::{convert_constructable2, convert_type},
-	types::{ConstructableFrom, ConstructableFrom2},
+	types::ConstructableFrom2,
 };
 
 use super::channel_id::TBChannelId;
@@ -32,8 +32,9 @@ impl UserData for TBGuildWelcomeChannel {
 		methods.add_meta_method(MetaMethod::Index, |ctx, this, value: String| {
 			Ok(match value.as_str() {
 				"channel_id" => convert_constructable2::<TBChannelId, _, SerenityContext>(this.0.channel_id, this.1.clone(), ctx)?,
-				"description" => convert_type(this.0.description, ctx)?,
+				"description" => convert_type(this.0.description.as_str(), ctx)?,
 				"emoji" => todo!(),
+				&_ => Value::Nil,
 			})
 		})
 	}

@@ -22,7 +22,7 @@ impl UserData for TBEmoji {
 				"animated" => convert_type(this.0.animated, ctx)?,
 				"available" => convert_type(this.0.available, ctx)?,
 				"id" => convert_constructable::<TBEmojiId, _>(this.0.id, ctx)?,
-				"name" => convert_type(this.0.name.clone(), ctx)?,
+				"name" => convert_type(this.0.name.as_str(), ctx)?,
 				"managed" => convert_type(this.0.managed, ctx)?,
 				"require_colons" => convert_type(this.0.require_colons, ctx)?,
                 "roles" => convert_vec::<TBRoleId, _>(this.0.roles.clone(), ctx)?,

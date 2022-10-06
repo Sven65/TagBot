@@ -90,7 +90,7 @@ pub fn convert_constructable2<
 /// # Arguments
 /// * `value` - The value to convert
 /// * `ctx` - [`rlua::Context`] to use for the conversion
-pub fn convert_type<'lua, T: ToLua<'lua>>(value: T, ctx: Context<'lua>) -> LuaResult<Value> {
+pub fn convert_type<'lua, T: ToLua<'lua>>(value: T, ctx: Context<'lua>) -> LuaResult<Value<'lua>> {
 	value.to_lua(ctx)
 }
 
@@ -123,6 +123,29 @@ pub fn convert_vec<'lua, T: std::convert::From<T2> + ToLua<'lua>, T2>(
 	ctx: Context<'lua>,
 ) -> LuaResult<Value> {
 	let vec2: Vec<T> = value.into_iter().map(|x| x.into()).collect();
+
+	vec2.to_lua(ctx)
+}
+
+#[rustfmt::skip]
+/// Converts a [`Vec<T2>`] to a [`Vec<T>`] using T::new
+///
+/// # Arguments
+///
+/// * `value` - The value to convert
+/// * `value2` - The second value to use
+/// * `ctx` - [`rlua::Context`] to use for converting to lua
+pub fn convert_vec_new<
+	'lua,
+	T: ConstructableFrom2<T2, S> + ToLua<'lua>,
+	T2,
+	S: Clone,
+>(
+	value: Vec<T2>,
+	value2: S,
+	ctx: Context<'lua>,
+) -> LuaResult<Value> {
+	let vec2: Vec<T> = value.into_iter().map(|x| T::new(x, value2.clone())).collect();
 
 	vec2.to_lua(ctx)
 }

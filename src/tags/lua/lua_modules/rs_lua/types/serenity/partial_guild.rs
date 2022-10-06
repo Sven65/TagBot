@@ -10,8 +10,7 @@ use serenity::{
 use crate::tags::lua::lua_modules::rs_lua::types::utils::{
 	functions::{
 		convert_constructable, convert_constructable2, convert_constructable2_option,
-		convert_constructable_option, convert_hashmap_types, convert_hashmap_types_with_new,
-		convert_type, convert_type_option,
+		convert_hashmap_types, convert_hashmap_types_with_new, convert_type, convert_type_option,
 	},
 	types::ConstructableFrom2,
 };
@@ -79,7 +78,7 @@ impl UserData for TBPartialGuild {
 				"premium_subscription_count" => convert_type(this.0.premium_subscription_count, ctx)?,
 				"banner" => convert_type_option(this.0.banner.clone(), ctx)?,
 				"vanity_url_code" => convert_type_option(this.0.vanity_url_code.clone(), ctx)?,
-				"welcome_screen" => convert_constructable_option::<TBWelcomeScreen, _>(this.0.welcome_screen, ctx)?,
+				"welcome_screen" => convert_constructable2_option::<TBWelcomeScreen, _, SerenityContext>(this.0.welcome_screen.clone(), Some(this.1.clone()), ctx)?,
 				"approximate_member_count" => convert_type_option(this.0.approximate_member_count, ctx)?,
 				"approximate_presence_count" => convert_type_option(this.0.approximate_presence_count, ctx)?,
 				"nsfw_level" => convert_constructable::<TBNsfwLevel, _>(this.0.nsfw_level, ctx)?,

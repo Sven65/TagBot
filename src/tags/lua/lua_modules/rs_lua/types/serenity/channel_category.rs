@@ -28,8 +28,8 @@ impl UserData for TBChannelCategory {
 				"guild_id" => convert_constructable2::<TBGuildId, _, SerenityContext>(this.0.guild_id, this.1.clone(), ctx)?,
 				"parent_id" => convert_constructable2_option::<TBChannelId, _, SerenityContext>(this.0.parent_id, Some(this.1.clone()), ctx)?,
 				"position" => convert_type::<i64>(this.0.position, ctx)?,
-				"kind" => convert_type::<&str>(this.0.kind.name(), ctx)?,
-				"name" => convert_type(this.0.name.clone(), ctx)?,
+				"kind" => convert_type(this.0.kind.name(), ctx)?,
+				"name" => convert_type(this.0.name.as_str(), ctx)?,
 				"nsfw" => convert_type::<bool>(this.0.nsfw, ctx)?,
 				&_ => Value::Nil,
 			})
