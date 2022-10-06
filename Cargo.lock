@@ -1456,6 +1456,7 @@ dependencies = [
  "reql",
  "rlua",
  "serde",
+ "serde_json",
  "serenity",
  "tagbot-macros",
  "test-case",
