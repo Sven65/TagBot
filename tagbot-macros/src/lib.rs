@@ -1,7 +1,7 @@
 use proc_macro::TokenStream;
 use proc_macro2::Ident;
 use quote::quote;
-use syn::{self, DataStruct};
+use syn::{self, parse_macro_input, DataStruct, Lit, LitStr};
 
 /// A trait that allows for a wrapped enum to be stringified
 /// with `tostring(...)` in a lua script.
@@ -111,6 +111,39 @@ pub fn tb_bitflag(tokens: TokenStream) -> TokenStream {
 				methods.add_meta_method(MetaMethod::ToString, |ctx, this, _: Value| {
 					this.0.bits().to_string().to_lua(ctx)
 				})
+			}
+		}
+	}
+	.into()
+}
+
+#[proc_macro_attribute]
+pub fn tb_names(args: TokenStream, tokens: TokenStream) -> TokenStream {
+	let args: syn::AttributeArgs = parse_macro_input!(args as syn::AttributeArgs);
+	let ast: syn::DeriveInput = syn::parse(tokens.clone()).unwrap();
+
+	let arg = args.get(0).unwrap();
+
+	let fn_name: String = match arg {
+		syn::NestedMeta::Lit(lit) => match lit {
+			syn::Lit::Str(litstr) => litstr.token().to_string(),
+			_ => panic!("Literal string not found"),
+		},
+		_ => panic!("String not found"),
+	};
+
+	println!("fn_name {:#?}", fn_name);
+
+	let name = ast.ident;
+
+	quote! {
+		trait GetNames {
+			fn get_names(&self) -> Vec::<String>;
+		}
+
+		impl GetNames for #name {
+			fn get_names(&self) -> Vec::<String> {
+				self.0. #fn_name ()
 			}
 		}
 	}
