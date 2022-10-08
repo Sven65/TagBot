@@ -1446,6 +1446,7 @@ dependencies = [
 name = "tagbot"
 version = "4.0.1"
 dependencies = [
+ "bitflags",
  "chrono",
  "dotenv",
  "futures",

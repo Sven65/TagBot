@@ -7,7 +7,10 @@ use crate::tags::lua::lua_modules::rs_lua::types::utils::{
 	types::ConstructableFrom2,
 };
 
-use super::{channel_id::TBChannelId, emoji::TBEmoji};
+use super::{
+	channel_id::TBChannelId, emoji::TBEmoji,
+	guild_welcome_channel_emoji::TBGuildWelcomeChannelEmoji,
+};
 
 /// Wrapper for [`serenity::model::guild::GuildWelcomeChannel`]
 #[derive(Clone)]
@@ -33,7 +36,7 @@ impl UserData for TBGuildWelcomeChannel {
 			Ok(match value.as_str() {
 				"channel_id" => convert_constructable2::<TBChannelId, _, SerenityContext>(this.0.channel_id, this.1.clone(), ctx)?,
 				"description" => convert_type(this.0.description.as_str(), ctx)?,
-				"emoji" => lua_todo(ctx)?,
+				"emoji" => convert_constructable_option::<TBGuildWelcomeChannelEmoji, _>(this.0.emoji.clone(), ctx)?,
 				&_ => Value::Nil,
 			})
 		})

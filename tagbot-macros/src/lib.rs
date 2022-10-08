@@ -72,3 +72,47 @@ pub fn lua_enum(tokens: TokenStream) -> TokenStream {
 
 	gen.into()
 }
+
+#[proc_macro_derive(TBBitflag)]
+pub fn tb_bitflag(tokens: TokenStream) -> TokenStream {
+	let ast: syn::DeriveInput = syn::parse(tokens.clone()).unwrap();
+
+	let name = ast.ident;
+
+	let data_struct: DataStruct = match ast.data {
+		syn::Data::Struct(data) => data,
+		_ => panic!("Failed to parse struct for TBBitflag Macro"),
+	};
+
+	let mut tuple_fields: Vec<&Ident> = Vec::new();
+
+	for field in data_struct.fields.iter() {
+		let ident: syn::Result<&Ident> = match &field.ty {
+			syn::Type::Path(path) => {
+				let ident = path.path.get_ident().unwrap();
+
+				Ok(ident)
+			}
+			_ => panic!("Failed to parse path and ident for struct wrapper."),
+		};
+
+		let ident_uw = ident.unwrap();
+
+		tuple_fields.push(ident_uw);
+	}
+
+	// TODO: Add other methods and struct consts of a bitflags object such as https://docs.rs/serenity/latest/serenity/model/permissions/struct.Permissions.html
+
+	quote! {
+		use rlua::{UserData, Value, MetaMethod, ToLua};
+
+		impl UserData for #name {
+			fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
+				methods.add_meta_method(MetaMethod::ToString, |ctx, this, _: Value| {
+					this.0.bits().to_string().to_lua(ctx)
+				})
+			}
+		}
+	}
+	.into()
+}

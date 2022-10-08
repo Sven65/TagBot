@@ -1,3 +1,4 @@
+pub mod bitflags;
 pub mod channel;
 pub mod channel_category;
 pub mod channel_id;
