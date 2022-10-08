@@ -4,7 +4,9 @@ use rlua::{MetaMethod, ToLua, UserData, Value};
 use serenity::{model::prelude::Channel, prelude::Context as SerenityContext};
 
 use crate::tags::lua::lua_modules::rs_lua::types::utils::{
-	functions::{convert_constructable2, convert_constructable2_option, convert_type_option},
+	functions::{
+		convert_constructable2, convert_constructable2_option, convert_type_option, lua_todo,
+	},
 	types::ConstructableFrom2,
 };
 
@@ -33,7 +35,7 @@ impl UserData for TBChannel {
 				"id" => convert_constructable2::<TBChannelId, _, SerenityContext>(this.0.id(), this.1.clone(), ctx)?,
 				"category" => convert_constructable2_option::<TBChannelCategory, _, SerenityContext>(this.0.to_owned().category(), Some(this.1.clone()), ctx)?,
 				"is_nsfw" => this.0.to_owned().is_nsfw().to_lua(ctx)?,
-				"private" => todo!(),
+				"private" => lua_todo(ctx)?,
 				"guild" => convert_constructable2_option::<TBGuildChannel, _, SerenityContext>(this.0.to_owned().guild(), Some(this.1.clone()), ctx)?,
 				"position" => convert_type_option::<i64>(this.0.position(), ctx)?,
 				&_ => Value::Nil,

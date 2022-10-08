@@ -3,7 +3,7 @@ use serenity::model::guild::ThreadMember;
 use serenity::prelude::Context as SerenityContext;
 
 use crate::tags::lua::lua_modules::rs_lua::types::utils::functions::{
-	convert_constructable, convert_constructable2_option,
+	convert_constructable, convert_constructable2_option, lua_todo,
 };
 use crate::tags::lua::lua_modules::rs_lua::types::utils::types::ConstructableFrom2;
 
@@ -39,7 +39,7 @@ impl UserData for TBThreadMember {
 				"id" => convert_constructable2_option::<TBChannelId , _, SerenityContext>(this.0.id, Some(this.1.clone()), ctx)?,
 				"user_id" => convert_constructable2_option::<TBUserId, _, SerenityContext>(this.0.user_id, Some(this.1.clone()), ctx)?,
 				"join_timestamp" => convert_constructable::<TBTimestamp, _>(this.0.join_timestamp, ctx)?,
-				"flags" => todo!(),
+				"flags" => lua_todo(ctx)?,
 				_ => Value::Nil,
 			})
 		})

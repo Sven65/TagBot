@@ -3,6 +3,10 @@ use rlua::{Context, Result as LuaResult, Table, ToLua, Value};
 use super::types::{ConstructableFrom, ConstructableFrom2};
 use std::{collections::HashMap, hash::Hash};
 
+pub fn lua_todo(ctx: Context) -> LuaResult<Value> {
+	"Not yet implemented.".to_string().to_lua(ctx)
+}
+
 /// Convert a given value to a lua value for a constructable type wrapper implementing ToLua
 ///
 /// # Arguments

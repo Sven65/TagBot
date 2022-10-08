@@ -3,7 +3,9 @@ use serenity::model::guild::Role;
 use serenity::prelude::Context as SerenityContext;
 
 use crate::tags::lua::lua_modules::rs_lua::types::utils::{
-	functions::{convert_constructable, convert_constructable2, convert_type, convert_type_option},
+	functions::{
+		convert_constructable, convert_constructable2, convert_type, convert_type_option, lua_todo,
+	},
 	types::ConstructableFrom2,
 };
 
@@ -34,14 +36,14 @@ impl UserData for TBRole {
 			Ok(match value.as_str() {
 				"id" => convert_constructable::<TBRoleId, _>(this.0.id, ctx)?,
 				"guild_id" => convert_constructable2::<TBGuildId, _, SerenityContext>(this.0.guild_id, this.1.clone(), ctx)?,
-				"colour" => todo!(),
+				"colour" => lua_todo(ctx)?,
 				"hoist" => convert_type(this.0.hoist, ctx)?,
 				"managed" => convert_type(this.0.managed, ctx)?,
 				"mentionable" => convert_type(this.0.mentionable, ctx)?,
 				"name" => convert_type(this.0.name.clone(), ctx)?,
-				"permissions" => todo!(),
+				"permissions" => lua_todo(ctx)?,
 				"position" => convert_type(this.0.hoist, ctx)?,
-				"tags" => todo!(),
+				"tags" => lua_todo(ctx)?,
 				"icon" => convert_type_option(this.0.icon.clone(), ctx)?,
 				"unicode_emoji" => convert_type_option(this.0.icon.clone(), ctx)?,
 				_ => Value::Nil,

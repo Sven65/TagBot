@@ -11,6 +11,7 @@ use crate::tags::lua::lua_modules::rs_lua::types::utils::{
 	functions::{
 		convert_constructable, convert_constructable2, convert_constructable2_option,
 		convert_hashmap_types, convert_hashmap_types_with_new, convert_type, convert_type_option,
+		lua_todo,
 	},
 	types::ConstructableFrom2,
 };
@@ -69,7 +70,7 @@ impl UserData for TBPartialGuild {
 				"splash" => convert_type_option(this.0.splash.clone(), ctx)?,
 				"discovery_splash" => convert_type_option(this.0.discovery_splash.clone(), ctx)?,
 				"system_channel_id" => convert_constructable2_option::<TBChannelId, _, _>(this.0.system_channel_id, Some(this.1.clone()), ctx)?,
-				"system_channel_flags" => todo!(),
+				"system_channel_flags" => lua_todo(ctx)?,
 				"rules_channel_id" => convert_constructable2_option::<TBChannelId, _, _>(this.0.rules_channel_id, Some(this.1.clone()), ctx)?,
 				"public_updates_channel_id" => convert_constructable2_option::<TBChannelId, _, _>(this.0.public_updates_channel_id, Some(this.1.clone()), ctx)?,
 				"verification_level" => convert_constructable::<TBVerificationLevel, _>(this.0.verification_level, ctx)?,
@@ -85,7 +86,7 @@ impl UserData for TBPartialGuild {
 				"max_video_channel_users" => convert_type_option(this.0.max_video_channel_users, ctx)?,
 				"max_presences" => convert_type_option(this.0.max_presences, ctx)?,
 				"max_members" => convert_type_option(this.0.max_members, ctx)?,
-				"stickers" => todo!(),
+				"stickers" => lua_todo(ctx)?,
 				&_ => Value::Nil,
 			})
 		})
