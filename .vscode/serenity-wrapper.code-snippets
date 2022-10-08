@@ -83,9 +83,10 @@
 	"TB Wrapper tester": {
 		"prefix": "test",
 		"body": [
-			"fn get_${1:str}(param: &str, expected: &${1:str}) {",
+			"#[rustfmt::skip]",
+			"fn get_${1:str}(param: &str, expected: &${2:str}) {",
 			"\tLua::new().context(|lua| {",
-			"\t\tlet userdata = lua.create_userdata(${2:my_userdata}).unwrap();",
+			"\t\tlet userdata = lua.create_userdata(${3:my_userdata}).unwrap();",
 			"\t\tlet globals = lua.globals();",
 			"\t\tglobals.set(\"userdata\", userdata).unwrap();",
 			"",
@@ -93,7 +94,7 @@
 			"\t\t\tformat!(r#\"",
 			"\t\t\t\treturn userdata.{}",
 			"\t\t\t\"#, param).as_str(),",
-			"\t\t).eval::<${1:str}>().unwrap();",
+			"\t\t).eval::<${4:str}>().unwrap();",
 			"",
 			"\t\tassert_eq!(data, expected)",
 			"\t})",

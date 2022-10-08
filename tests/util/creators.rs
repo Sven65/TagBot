@@ -2,78 +2,28 @@ use futures::channel::mpsc::unbounded;
 use serenity::{
 	client::bridge::gateway::ShardMessenger,
 	gateway::InterMessage,
-	model::{
-		prelude::{
-			Channel, ChannelCategory, ChannelId, ChannelType, GuildChannel, GuildId, MessageId,
-			PermissionOverwrite, ThreadMember, ThreadMetadata, VideoQualityMode,
-		},
-		Timestamp,
+	model::prelude::{
+		Channel, ChannelCategory, ChannelId, ChannelType, Emoji, EmojiId, GuildId, MessageId,
 	},
 };
 
 use tagbot::tags::lua::lua_modules::rs_lua::types::serenity::{
-	channel::TBChannel, channel_category::TBChannelCategory,
+	channel::TBChannel, channel_category::TBChannelCategory, emoji::TBEmoji,
 };
 
-use serde::Serialize;
 use serenity::prelude::Context as SerenityContext;
 use std::sync::Arc;
+
+use super::creator_types::{Category, SerenityChannel, SerenityEmoji};
 
 // CONSTS \\
 
 const DEFAULT_GUILD_ID: u64 = 355959445907570698;
 const DEFAULT_CHANNEL_ID: u64 = 172382467385196544;
 const DEFAULT_MESSAGE_ID: u64 = 1028233747717423174;
+const DEFAULT_EMOJI_ID: u64 = 1028239715465433118;
 
 // END CONSTS \\
-
-#[derive(Serialize)]
-struct Category {
-	pub guild_id: GuildId,
-	pub id: ChannelId,
-	#[serde(rename = "type")]
-	pub kind: ChannelType,
-	pub name: String,
-	pub nsfw: bool,
-	pub parent_id: Option<ChannelId>,
-	pub permission_overwrites: Vec<PermissionOverwrite>,
-	pub position: i64,
-}
-
-#[derive(Serialize)]
-struct SerenityChannel {
-	pub id: ChannelId,
-
-	pub bitrate: Option<u64>,
-	pub parent_id: Option<ChannelId>,
-	pub guild_id: GuildId,
-
-	#[serde(rename = "type")]
-	pub kind: ChannelType,
-	pub last_message_id: Option<MessageId>,
-	pub last_pin_timestamp: Option<Timestamp>,
-	pub name: String,
-	#[serde(default)]
-	pub permission_overwrites: Vec<PermissionOverwrite>,
-
-	#[serde(default)]
-	pub position: i64,
-	pub topic: Option<String>,
-	pub user_limit: Option<u64>,
-	#[serde(default)]
-	pub nsfw: bool,
-	#[serde(default)]
-	pub rate_limit_per_user: Option<u64>,
-	pub rtc_region: Option<String>,
-	pub video_quality_mode: Option<VideoQualityMode>,
-	#[serde(default, deserialize_with = "message_count_patch")]
-	pub message_count: Option<u8>,
-	pub member_count: Option<u8>,
-
-	pub thread_metadata: Option<ThreadMetadata>,
-	pub member: Option<ThreadMember>,
-	pub default_auto_archive_duration: Option<u64>,
-}
 
 pub fn create_context() -> SerenityContext {
 	serenity::prelude::Context {
@@ -135,4 +85,23 @@ pub fn create_guild_channel() -> TBChannel {
 	let guild_channel: Channel = serde_json::from_str(&serialized).unwrap();
 
 	TBChannel(guild_channel, create_context())
+}
+
+pub fn create_emoji() -> TBEmoji {
+	let emoji = SerenityEmoji {
+		animated: false,
+		available: true,
+		id: EmojiId(DEFAULT_EMOJI_ID),
+		name: "funny_emoji".to_string(),
+		managed: false,
+		require_colons: true,
+		roles: vec![],
+		user: None,
+	};
+
+	let serialized = serde_json::to_string(&emoji).unwrap();
+
+	let tb_emoji: Emoji = serde_json::from_str(&serialized).unwrap();
+
+	TBEmoji(tb_emoji)
 }
