@@ -16,6 +16,7 @@ pub mod private_channel;
 pub mod role;
 pub mod role_tags;
 pub mod simple_enums;
+pub mod sticker;
 pub mod thread_member;
 pub mod thread_metadata;
 pub mod timestamp;

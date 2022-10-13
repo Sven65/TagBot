@@ -126,3 +126,72 @@ pub fn tb_bitflag(tokens: TokenStream) -> TokenStream {
 	}
 	.into()
 }
+
+#[proc_macro_derive(WrappedId)]
+pub fn wrapped_id(tokens: TokenStream) -> TokenStream {
+	let ast: syn::DeriveInput = syn::parse(tokens.clone()).unwrap();
+
+	let name = ast.ident;
+
+	let data_struct: DataStruct = match ast.data {
+		syn::Data::Struct(data) => data,
+		_ => panic!("Failed to parse struct for WrappedId Macro"),
+	};
+
+	println!("struct {:#?}", data_struct);
+	println!("name {:#?}", name);
+
+	let mut tuple_fields: Vec<&Ident> = Vec::new();
+
+	for field in data_struct.fields.iter() {
+		println!("filed type: {:#?}", field.type_id());
+
+		let ident: syn::Result<&Ident> = match &field.ty {
+			syn::Type::Path(path) => {
+				let ident = path.path.get_ident().unwrap();
+
+				Ok(ident)
+			}
+			_ => panic!("Failed to parse path and ident for struct wrapper."),
+		};
+
+		let ident_uw = ident.unwrap();
+
+		tuple_fields.push(ident_uw);
+	}
+
+	let wrapped_ident = tuple_fields.get(0);
+
+	if wrapped_ident.is_none() {
+		panic!("Failed to get wrapped ident");
+	}
+
+	let wrapped_ident = wrapped_ident.unwrap();
+
+	quote! {
+		use crate::tags::lua::lua_modules::rs_lua::types::utils::types::ConstructableFrom;
+		use rlua::{UserData, Value, MetaMethod};
+
+
+		impl ConstructableFrom<#wrapped_ident> for #name {
+			fn new(value: #wrapped_ident) -> Self {
+				Self(value)
+			}
+		}
+
+		impl UserData for #name {
+			fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
+				methods.add_meta_method(MetaMethod::ToString, |ctx, this, _: Value| {
+					this.0.to_string().to_lua(ctx)
+				});
+			}
+		}
+
+		impl From<#wrapped_ident> for #name {
+			fn from(id: #wrapped_ident) -> Self {
+				Self(id)
+			}
+		}
+	}
+	.into()
+}

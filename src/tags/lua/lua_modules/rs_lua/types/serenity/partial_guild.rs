@@ -2,7 +2,8 @@ use rlua::{MetaMethod, UserData, Value};
 use serenity::{
 	model::{
 		guild::PartialGuild,
-		prelude::{Emoji, EmojiId, Role, RoleId},
+		prelude::{Emoji, EmojiId, Role, RoleId, StickerId},
+		sticker::Sticker,
 	},
 	prelude::Context as SerenityContext,
 };
@@ -21,12 +22,13 @@ use super::{
 	emoji::TBEmoji,
 	emoji_id::TBEmojiId,
 	guild_id::TBGuildId,
-	id::role_id::TBRoleId,
+	id::{ids::TBStickerId, role_id::TBRoleId},
 	role::TBRole,
 	simple_enums::{
 		TBDefaultMessageNotificationLevel, TBMfaLevel, TBNsfwLevel, TBPremiumTier,
 		TBVerificationLevel,
 	},
+	sticker::TBSticker,
 	user_id::TBUserId,
 	welcome_screen::TBWelcomeScreen,
 };
@@ -49,9 +51,6 @@ impl ConstructableFrom2<PartialGuild, SerenityContext> for TBPartialGuild {
 impl UserData for TBPartialGuild {
 	#[rustfmt::skip]
 	fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
-		// methods.add_meta_method(MetaMethod::ToString, |ctx, this, _: Value| {
-		// 	Ok(this.0. .to_lua(ctx)?)
-		// });
 		methods.add_meta_method(MetaMethod::Index, |ctx, this, value: String| {
 			Ok(match value.as_str() {
 				"id" => convert_constructable2::<TBGuildId, _, _>(this.0.id, this.1.clone(), ctx)?,
@@ -86,7 +85,7 @@ impl UserData for TBPartialGuild {
 				"max_video_channel_users" => convert_type_option(this.0.max_video_channel_users, ctx)?,
 				"max_presences" => convert_type_option(this.0.max_presences, ctx)?,
 				"max_members" => convert_type_option(this.0.max_members, ctx)?,
-				"stickers" => lua_todo(ctx)?, // TODO
+				"stickers" => convert_hashmap_types_with_new::<TBStickerId, TBSticker, SerenityContext, StickerId, Sticker>(this.0.stickers.clone(), this.1.clone(), ctx)?,
 				&_ => Value::Nil,
 			})
 		})

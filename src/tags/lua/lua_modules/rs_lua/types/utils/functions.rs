@@ -122,6 +122,15 @@ pub fn convert_type_option<'lua, T: ToLua<'lua>>(
 ///
 /// * `value` - The value to convert
 /// * `ctx` - [`rlua::Context`] to use for converting to lua
+///
+/// # Example
+///
+/// ```no_run
+/// // Convert a vec of strings
+///
+/// let data: Vec<String> = vec!["hello", "world"];
+/// convert_vec::<String, _>(data, ctx)?,
+/// ```
 pub fn convert_vec<'lua, T: std::convert::From<T2> + ToLua<'lua>, T2>(
 	value: Vec<T2>,
 	ctx: Context<'lua>,

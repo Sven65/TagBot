@@ -1,9 +1,12 @@
 use crate::tags::lua::lua_modules::rs_lua::types::utils::types::ConstructableFrom;
 use rlua::{MetaMethod, ToLua, UserData, Value};
 /// Wrappers for simple enums, that are really only `tostring(...)`
-use serenity::model::prelude::{
-	ChannelType, DefaultMessageNotificationLevel, MfaLevel, NsfwLevel, PremiumTier,
-	VerificationLevel, VideoQualityMode,
+use serenity::model::{
+	prelude::{
+		ChannelType, DefaultMessageNotificationLevel, MfaLevel, NsfwLevel, PremiumTier,
+		VerificationLevel, VideoQualityMode,
+	},
+	sticker::{StickerFormatType, StickerType},
 };
 use tagbot_macros::LuaEnum;
 
@@ -34,3 +37,11 @@ pub struct TBNsfwLevel(pub NsfwLevel);
 /// Wrapper for [`serenity::model::channel::ChannelType`]
 #[derive(Clone, LuaEnum)]
 pub struct TBChannelType(pub ChannelType);
+
+/// Wrapper for [`serenity::model::sticker::StickerType`]
+#[derive(Clone, LuaEnum)]
+pub struct TBStickerType(pub StickerType);
+
+/// Wrapper for [`serenity::model::sticker::StickerFormatType`]
+#[derive(Clone, LuaEnum)]
+pub struct TBStickerFormatType(pub StickerFormatType);
