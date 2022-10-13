@@ -42,7 +42,7 @@ impl UserData for TBPrivateChannel {
 				"last_message_id" => convert_constructable_option::<TBMessageId, _>(this.0.last_message_id, ctx)?,
 				"last_pin_timestamp" => convert_constructable_option::<TBTimestamp, _>(this.0.last_pin_timestamp, ctx)?,
 				"kind" => convert_constructable::<TBChannelType, _>(this.0.kind, ctx)?,
-				"recipient" => convert_constructable::<TBUser, _>(this.0.recipient, ctx)?,
+				"recipient" => convert_constructable::<TBUser, _>(this.0.clone().recipient, ctx)?,
 				_ => Value::Nil,
 			})
 		})

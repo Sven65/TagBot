@@ -1,7 +1,10 @@
 use rlua::{Context, Value};
 
 use crate::{
-	tags::lua::lua_modules::rs_lua::types::{serenity::timestamp::TBTimestamp, Requireable},
+	tags::lua::lua_modules::rs_lua::types::{
+		serenity::{colour::TBColour, timestamp::TBTimestamp},
+		Requireable,
+	},
 	util::paths::Paths,
 };
 
@@ -38,4 +41,5 @@ pub fn init_modules() {
 	LUA_MODULE_INDEX.lock().unwrap().register_rust_module("variables/sender_member", |ctx| get_value("sender_member", ctx));
 	LUA_MODULE_INDEX.lock().unwrap().register_rust_module("variables/channel_id", |ctx| get_value("channel_id", ctx));
 	LUA_MODULE_INDEX.lock().unwrap().register_rust_module("timestamp", |ctx| TBTimestamp::create_module(ctx));
+	LUA_MODULE_INDEX.lock().unwrap().register_rust_module("colour", |ctx| TBColour::create_module(ctx));
 }

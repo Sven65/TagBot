@@ -1,7 +1,7 @@
-pub mod bitflags;
 pub mod channel;
 pub mod channel_category;
 pub mod channel_id;
+pub mod colour;
 pub mod emoji;
 pub mod emoji_id;
 pub mod guild_channel;
@@ -14,6 +14,7 @@ pub mod message_id;
 pub mod partial_guild;
 pub mod private_channel;
 pub mod role;
+pub mod role_tags;
 pub mod simple_enums;
 pub mod thread_member;
 pub mod thread_metadata;

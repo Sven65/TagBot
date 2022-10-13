@@ -1,11 +1,11 @@
 use rlua::{MetaMethod, ToLua, UserData, Value};
-use serenity::model::prelude::Member;
+use serenity::model::prelude::{Member, RoleId};
 
 use crate::tags::lua::lua_modules::rs_lua::types::utils::functions::{
-	convert_constructable_option, convert_type_option, lua_todo,
+	convert_constructable_option, convert_type_option, convert_vec, lua_todo,
 };
 
-use super::timestamp::TBTimestamp;
+use super::{id::role_id::TBRoleId, timestamp::TBTimestamp};
 
 /// Wrapper for Serenity Member
 #[derive(Clone, Debug)]
@@ -27,7 +27,7 @@ impl UserData for TBMember {
 				"joined_at" => convert_constructable_option::<TBTimestamp, _>(this.0.joined_at, ctx)?,
 				"mute" => this.0.mute.to_lua(ctx)?,
 				"nick" => convert_type_option::<String>(this.0.nick.clone(), ctx)?,
-				"roles" => lua_todo(ctx)?, // TODO
+				"roles" => convert_vec::<TBRoleId, RoleId>(this.0.roles.clone(), ctx)?,
 				"pending" => this.0.pending.to_lua(ctx)?,
 				"premium_since" => convert_constructable_option::<TBTimestamp, _>(this.0.premium_since, ctx)?,
 				"permissions" => lua_todo(ctx)?, // TODO

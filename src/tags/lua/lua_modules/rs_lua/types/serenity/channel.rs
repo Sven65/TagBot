@@ -12,6 +12,7 @@ use crate::tags::lua::lua_modules::rs_lua::types::utils::{
 
 use super::{
 	channel_category::TBChannelCategory, channel_id::TBChannelId, guild_channel::TBGuildChannel,
+	private_channel::TBPrivateChannel,
 };
 
 /// Wrapper for a Serenity Channel
@@ -35,7 +36,7 @@ impl UserData for TBChannel {
 				"id" => convert_constructable2::<TBChannelId, _, SerenityContext>(this.0.id(), this.1.clone(), ctx)?,
 				"category" => convert_constructable2_option::<TBChannelCategory, _, SerenityContext>(this.0.to_owned().category(), Some(this.1.clone()), ctx)?,
 				"is_nsfw" => this.0.to_owned().is_nsfw().to_lua(ctx)?,
-				"private" => convert_constructable2_option::<TBPrivateChannel, _, SerenityContext>(this.0.private(), Some(this.1.clone()), ctx)?,
+				"private" => convert_constructable2_option::<TBPrivateChannel, _, SerenityContext>(this.0.to_owned().private(), Some(this.1.clone()), ctx)?,
 				"guild" => convert_constructable2_option::<TBGuildChannel, _, SerenityContext>(this.0.to_owned().guild(), Some(this.1.clone()), ctx)?,
 				"position" => convert_type_option::<i64>(this.0.position(), ctx)?,
 				&_ => Value::Nil,

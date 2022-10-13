@@ -25,18 +25,18 @@ impl ConstructableFrom<GuildWelcomeChannelEmoji> for TBGuildWelcomeChannelEmoji 
 impl UserData for TBGuildWelcomeChannelEmoji {
 	fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
 		methods.add_meta_method(MetaMethod::ToString, |ctx, this, _: Value| {
-			Ok(match this.0 {
-				GuildWelcomeChannelEmoji::Custom { name, id } => convert_type(name, ctx)?,
-				GuildWelcomeChannelEmoji::Unicode(name) => convert_type(name, ctx)?,
+			Ok(match &this.0 {
+				GuildWelcomeChannelEmoji::Custom { name, id } => convert_type(name.clone(), ctx)?,
+				GuildWelcomeChannelEmoji::Unicode(name) => convert_type(name.clone(), ctx)?,
 				_ => Value::Nil,
 			})
 		});
 
 		methods.add_meta_method(MetaMethod::Index, |ctx, this, value: String| {
-			let data = match this.0 {
+			let data = match &this.0 {
 				GuildWelcomeChannelEmoji::Custom { id, name } => match value.as_str() {
-					"id" => convert_constructable::<TBEmojiId, _>(id, ctx)?,
-					"name" => convert_type(name, ctx)?,
+					"id" => convert_constructable::<TBEmojiId, _>(id.clone(), ctx)?,
+					"name" => convert_type(name.clone(), ctx)?,
 					_ => Value::Nil,
 				},
 				_ => Value::Nil,
