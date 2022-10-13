@@ -1,8 +1,12 @@
 use proc_macro::TokenStream;
 use syn::{
-	parse_macro_input, token::Semi, Arm, AttributeArgs, Block, Expr, ExprBlock, ExprClosure,
-	ExprMethodCall, Lit, Local, NestedMeta, PatLit, Path, Stmt,
+	parse_macro_input, token::Semi, Arm, AttributeArgs, Block, Expr, ExprBlock, ExprCall,
+	ExprClosure, ExprMethodCall, Lit, Local, NestedMeta, PatLit, Path, Stmt,
 };
+
+use crate::luadoc::convert_parser::parse_convert_type;
+
+mod convert_parser;
 
 #[derive(Debug)]
 struct ParsedArm {
@@ -11,7 +15,7 @@ struct ParsedArm {
 	optional: bool,
 }
 
-fn parse_path(path: &Path) -> String {
+pub fn parse_path(path: &Path) -> String {
 	path.segments
 		.clone()
 		.into_iter()
@@ -102,6 +106,28 @@ fn parse_index_body(body: &ExprBlock) {
 	println!("Arms {:#?}", arms);
 }
 
+fn parse_arm_body(expr: Expr) -> String {
+	let method = match expr.clone() {
+		Expr::Try(tryexp) => match &*tryexp.expr {
+			Expr::Call(call) => match &*call.func {
+				Expr::Path(path) => parse_path(&path.path),
+				_ => panic!("Call func is not path"),
+			},
+			_ => panic!("try expr is not call"),
+		},
+		_ => panic!("Expr is not call"),
+	};
+
+	println!("path is {:#?}", method);
+
+	let typ = match method.as_str() {
+		"convert_type" => parse_convert_type(expr.clone()),
+		&_ => "".to_string(),
+	};
+
+	typ
+}
+
 fn parse_arm(arm: &Arm) -> Option<ParsedArm> {
 	let name = match &arm.pat {
 		syn::Pat::Lit(lit) => match &*lit.expr {
@@ -119,9 +145,11 @@ fn parse_arm(arm: &Arm) -> Option<ParsedArm> {
 		return None;
 	}
 
+	let typ = parse_arm_body(*arm.body.clone());
+
 	let name = name.unwrap();
 
-	return Some(ParsedArm { name, optional: false, typ: "".to_string() });
+	return Some(ParsedArm { name, optional: false, typ });
 }
 
 fn parse_index_method(tokens: TokenStream) {
