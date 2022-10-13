@@ -2,10 +2,7 @@ use rlua::{MetaMethod, ToLua, UserData, Value};
 use serenity::{model::channel::PrivateChannel, prelude::Context as SerenityContext};
 
 use crate::tags::lua::lua_modules::rs_lua::types::utils::{
-	functions::{
-		convert_constructable, convert_constructable2, convert_constructable2_option,
-		convert_constructable_option,
-	},
+	functions::{convert_constructable, convert_constructable2, convert_constructable_option},
 	types::ConstructableFrom2,
 };
 

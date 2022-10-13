@@ -1,4 +1,4 @@
-use rlua::{MetaMethod, ToLua, UserData, Value};
+use rlua::{MetaMethod, UserData, Value};
 use serenity::{model::sticker::Sticker, prelude::Context as SerenityContext};
 
 use crate::tags::lua::lua_modules::rs_lua::types::utils::{
@@ -6,7 +6,7 @@ use crate::tags::lua::lua_modules::rs_lua::types::utils::{
 		convert_constructable, convert_constructable2_option, convert_constructable_option,
 		convert_type, convert_type_option, convert_vec,
 	},
-	types::{ConstructableFrom, ConstructableFrom2},
+	types::ConstructableFrom2,
 };
 
 use super::{

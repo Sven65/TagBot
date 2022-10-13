@@ -4,9 +4,7 @@ use rlua::{MetaMethod, ToLua, UserData, Value};
 use serenity::{model::prelude::Channel, prelude::Context as SerenityContext};
 
 use crate::tags::lua::lua_modules::rs_lua::types::utils::{
-	functions::{
-		convert_constructable2, convert_constructable2_option, convert_type_option, lua_todo,
-	},
+	functions::{convert_constructable2, convert_constructable2_option, convert_type_option},
 	types::ConstructableFrom2,
 };
 

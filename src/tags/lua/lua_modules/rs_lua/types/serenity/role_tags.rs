@@ -1,9 +1,9 @@
-use rlua::{MetaMethod, ToLua, UserData, Value};
+use rlua::{MetaMethod, UserData, Value};
 use serenity::{model::guild::RoleTags, prelude::Context as SerenityContext};
 
 use crate::tags::lua::lua_modules::rs_lua::types::utils::{
 	functions::{convert_constructable2_option, convert_constructable_option, convert_type},
-	types::{ConstructableFrom, ConstructableFrom2},
+	types::ConstructableFrom2,
 };
 
 use super::{id::integration_id::TBIntegrationId, user_id::TBUserId};

@@ -3,14 +3,11 @@ use serenity::model::guild::GuildWelcomeChannel;
 use serenity::prelude::Context as SerenityContext;
 
 use crate::tags::lua::lua_modules::rs_lua::types::utils::{
-	functions::{convert_constructable2, convert_constructable_option, convert_type, lua_todo},
+	functions::{convert_constructable2, convert_constructable_option, convert_type},
 	types::ConstructableFrom2,
 };
 
-use super::{
-	channel_id::TBChannelId, emoji::TBEmoji,
-	guild_welcome_channel_emoji::TBGuildWelcomeChannelEmoji,
-};
+use super::{channel_id::TBChannelId, guild_welcome_channel_emoji::TBGuildWelcomeChannelEmoji};
 
 /// Wrapper for [`serenity::model::guild::GuildWelcomeChannel`]
 #[derive(Clone)]

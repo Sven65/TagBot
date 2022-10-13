@@ -1,5 +1,5 @@
 use rlua::{MetaMethod, ToLua, UserData, Value};
-use serenity::model::prelude::{IntegrationId, RoleId};
+use serenity::model::prelude::IntegrationId;
 
 use crate::tags::lua::lua_modules::rs_lua::types::utils::types::ConstructableFrom;
 

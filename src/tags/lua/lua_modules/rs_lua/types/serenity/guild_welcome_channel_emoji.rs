@@ -1,5 +1,5 @@
-use rlua::{MetaMethod, ToLua, UserData, Value};
-use serenity::model::{guild::GuildWelcomeChannelEmoji, prelude::EmojiId};
+use rlua::{MetaMethod, UserData, Value};
+use serenity::model::guild::GuildWelcomeChannelEmoji;
 
 use crate::tags::lua::lua_modules::rs_lua::types::utils::{
 	functions::{convert_constructable, convert_type},
