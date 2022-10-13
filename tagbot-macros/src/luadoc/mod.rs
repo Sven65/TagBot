@@ -79,7 +79,7 @@ fn find_meta_method<'a>(expr: &Expr, method: &str) -> Option<ExprMethodCall> {
 	}
 }
 
-fn parse_index_body(body: &ExprBlock) {
+fn parse_index_body(body: &ExprBlock) -> Vec<ParsedArm> {
 	let call = body.block.stmts.get(0).unwrap();
 
 	let call = match call {
@@ -103,7 +103,7 @@ fn parse_index_body(body: &ExprBlock) {
 		.map(|arm| arm.unwrap())
 		.collect();
 
-	println!("Arms {:#?}", arms);
+	arms
 }
 
 fn parse_arm_body(expr: Expr) -> (String, bool) {
