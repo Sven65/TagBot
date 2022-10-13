@@ -112,8 +112,6 @@ pub fn tb_bitflag(tokens: TokenStream) -> TokenStream {
 	// TODO: Add other methods and struct consts of a bitflags object such as https://docs.rs/serenity/latest/serenity/model/permissions/struct.Permissions.html
 
 	quote! {
-		use rlua::{UserData, Value, MetaMethod, ToLua};
-
 		impl UserData for #name {
 			fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
 				methods.add_meta_method(MetaMethod::ToString, |ctx, this, _: Value| {
@@ -138,14 +136,9 @@ pub fn wrapped_id(tokens: TokenStream) -> TokenStream {
 		_ => panic!("Failed to parse struct for WrappedId Macro"),
 	};
 
-	println!("struct {:#?}", data_struct);
-	println!("name {:#?}", name);
-
 	let mut tuple_fields: Vec<&Ident> = Vec::new();
 
 	for field in data_struct.fields.iter() {
-		println!("filed type: {:#?}", field.type_id());
-
 		let ident: syn::Result<&Ident> = match &field.ty {
 			syn::Type::Path(path) => {
 				let ident = path.path.get_ident().unwrap();
@@ -169,10 +162,6 @@ pub fn wrapped_id(tokens: TokenStream) -> TokenStream {
 	let wrapped_ident = wrapped_ident.unwrap();
 
 	quote! {
-		use crate::tags::lua::lua_modules::rs_lua::types::utils::types::ConstructableFrom;
-		use rlua::{UserData, Value, MetaMethod};
-
-
 		impl ConstructableFrom<#wrapped_ident> for #name {
 			fn new(value: #wrapped_ident) -> Self {
 				Self(value)

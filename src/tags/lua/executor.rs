@@ -10,8 +10,9 @@ use std::io::{Error, ErrorKind, Read};
 
 use crate::{
 	services::rethinkdb::tags::Tag,
-	tags::lua::lua_modules::rs_lua::types::serenity::{
-		channel_id::TBChannelId, member::TBMember, user::TBUser,
+	tags::lua::lua_modules::rs_lua::types::{
+		serenity::{channel_id::TBChannelId, guild_id::TBGuildId, member::TBMember, user::TBUser},
+		utils::types::ConstructableFrom2,
 	},
 	util::command_options::FindOption,
 };
@@ -73,6 +74,11 @@ fn execute_code(
 		}
 
 		globals.set("channel_id", TBChannelId::new(channel_id, _ctx))?;
+
+		let guild_id = interaction.clone().guild_id;
+		if let Some(id) = guild_id {
+			globals.set("guild_id", TBGuildId::new(id, _ctx))?;
+		}
 
 		Ok(())
 	})?;
