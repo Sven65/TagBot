@@ -1,5 +1,7 @@
 <!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
+
 <a name="readme-top"></a>
+
 <!--
 *** Thanks for checking out the Best-README-Template. If you have a suggestion
 *** that would make this better, please fork the repo and create a pull request
@@ -7,8 +9,6 @@
 *** Don't forget to give the project a star!
 *** Thanks again! Now go create something AMAZING! :D
 -->
-
-
 
 <!-- PROJECT SHIELDS -->
 <!--
@@ -18,10 +18,9 @@
 *** for contributors-url, forks-url, etc. This is an optional, concise syntax you may use.
 *** https://www.markdownguide.org/basic-syntax/#reference-style-links
 -->
+
 [![Issues][issues-shield]][issues-url]
 [![OSL-3.0 License][license-shield]][license-url]
-
-
 
 <!-- PROJECT LOGO -->
 <br />
@@ -43,8 +42,6 @@
     <a href="https://github.com/Sven65/TagBot/issues">Request Feature</a>
   </p>
 </div>
-
-
 
 <!-- TABLE OF CONTENTS -->
 <details>
@@ -68,17 +65,16 @@
   </ol>
 </details>
 
-
-
 <!-- ABOUT THE PROJECT -->
+
 ## About The Project
 
 [![TagBot Screen Shot][product-screenshot]](https://github.com/Sven65/TagBot)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
 <!-- GETTING STARTED -->
+
 ## Getting Started
 
 To get a local copy up and running follow these simple example steps.
@@ -86,15 +82,17 @@ To get a local copy up and running follow these simple example steps.
 ### Prerequisites
 
 This is an example of how to list things you need to use the software and how to install them.
-* cargo
+
+- cargo
+
   ```sh
   cargo run
   ```
 
-* [rethinkdb](https://rethinkdb.com/)
-	```sh
-		docker run --name some-rethink -v "$PWD:/data" -d rethinkdb
-	```
+- [rethinkdb](https://rethinkdb.com/)
+  ```sh
+  	docker run --name some-rethink -v "$PWD:/data" -d rethinkdb
+  ```
 
 ### Installation
 
@@ -104,6 +102,7 @@ This is an example of how to list things you need to use the software and how to
    git clone https://github.com/Sven65/TagBot.git
    ```
 3. Enter your bot token and RethinkDB credentials in `.env`
+
    ```env
    BOT_TOKEN=my_bot_token
 
@@ -113,9 +112,8 @@ This is an example of how to list things you need to use the software and how to
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
 <!-- USAGE EXAMPLES -->
+
 ## Usage
 
 This bot has some commands that can be used in discord, the most prominent being `/tag`. For more, check the [`commands`](https://github.com/Sven65/TagBot/tree/master/src/commands/commands) directory.
@@ -124,23 +122,26 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
 <!-- ROADMAP -->
+
 ## Roadmap
 
 - [x] Legacy tag support
 - [ ] Lua scripting
-    - [ ] Serenity userdata
-	- [ ] Serenity userdata functions
+  - [x] Serenity userdata
+    - [x] [interaction](https://docs.rs/serenity/latest/serenity/model/application/interaction/application_command/struct.ApplicationCommandInteraction.html) guild_id
+    - [x] [interaction](https://docs.rs/serenity/latest/serenity/model/application/interaction/application_command/struct.ApplicationCommandInteraction.html) channel_id
+    - [x] [interaction](https://docs.rs/serenity/latest/serenity/model/application/interaction/application_command/struct.ApplicationCommandInteraction.html) member
+    - [x] [interaction](https://docs.rs/serenity/latest/serenity/model/application/interaction/application_command/struct.ApplicationCommandInteraction.html) user
+  - [ ] Serenity userdata functions
+  - [ ] Automatic luadoc generation
 
 See the [open issues](https://github.com/Sven65/TagBot/issues) for a full list of proposed features (and known issues).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
 <!-- CONTRIBUTING -->
+
 ## Contributing
 
 Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
@@ -156,34 +157,29 @@ Don't forget to give the project a star! Thanks again!
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
 <!-- LICENSE -->
+
 ## License
 
 Distributed under the OSL-3.0 License. See `LICENSE` for more information.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
 <!-- CONTACT -->
+
 ## Contact
 
 Project Link: [https://github.com/Sven65/TagBot](https://github.com/Sven65/TagBot)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
 <!-- ACKNOWLEDGMENTS -->
+
 ## Acknowledgments
 
-* [Best Readme Template](https://github.com/othneildrew/Best-README-Template)
+- [Best Readme Template](https://github.com/othneildrew/Best-README-Template)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
