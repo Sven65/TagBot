@@ -2,8 +2,8 @@ use crate::tags::lua::lua_modules::rs_lua::types::utils::types::ConstructableFro
 use rlua::{MetaMethod, ToLua, UserData, Value};
 /// Wrappers for simple enums, that are really only `tostring(...)`
 use serenity::model::prelude::{
-	DefaultMessageNotificationLevel, MfaLevel, NsfwLevel, PremiumTier, VerificationLevel,
-	VideoQualityMode,
+	ChannelType, DefaultMessageNotificationLevel, MfaLevel, NsfwLevel, PremiumTier,
+	VerificationLevel, VideoQualityMode,
 };
 use tagbot_macros::LuaEnum;
 
@@ -30,3 +30,7 @@ pub struct TBPremiumTier(pub PremiumTier);
 /// Wrapper for [`serenity::model::prelude::NsfwLevel`]
 #[derive(Clone, LuaEnum)]
 pub struct TBNsfwLevel(pub NsfwLevel);
+
+/// Wrapper for [`serenity::model::channel::ChannelType`]
+#[derive(Clone, LuaEnum)]
+pub struct TBChannelType(pub ChannelType);

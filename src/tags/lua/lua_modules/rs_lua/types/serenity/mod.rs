@@ -12,6 +12,7 @@ pub mod id;
 pub mod member;
 pub mod message_id;
 pub mod partial_guild;
+pub mod private_channel;
 pub mod role;
 pub mod simple_enums;
 pub mod thread_member;
