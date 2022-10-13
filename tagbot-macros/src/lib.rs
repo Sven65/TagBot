@@ -1,9 +1,12 @@
 use std::{any::Any, collections::HashMap};
 
+use luadoc::lua_doc_generator;
 use proc_macro::TokenStream;
 use proc_macro2::Ident;
 use quote::quote;
 use syn::{self, parse_macro_input, DataStruct, Lit, LitStr};
+
+mod luadoc;
 
 /// A trait that allows for a wrapped enum to be stringified
 /// with `tostring(...)` in a lua script.
@@ -168,6 +171,7 @@ pub fn wrapped_id(tokens: TokenStream) -> TokenStream {
 			}
 		}
 
+		// #[lua_document]
 		impl UserData for #name {
 			fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
 				methods.add_meta_method(MetaMethod::ToString, |ctx, this, _: Value| {
@@ -183,4 +187,9 @@ pub fn wrapped_id(tokens: TokenStream) -> TokenStream {
 		}
 	}
 	.into()
+}
+
+#[proc_macro_attribute]
+pub fn lua_document(args: TokenStream, tokens: TokenStream) -> TokenStream {
+	lua_doc_generator(args, tokens)
 }
