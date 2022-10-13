@@ -41,7 +41,7 @@ impl UserData for TBRole {
 				"managed" => convert_type(this.0.managed, ctx)?,
 				"mentionable" => convert_type(this.0.mentionable, ctx)?,
 				"name" => convert_type(this.0.name.clone(), ctx)?,
-				"permissions" => lua_todo(ctx)?, // TODO
+				"permissions" => lua_todo(ctx)?, // TODO(bitflags)
 				"position" => convert_type(this.0.hoist, ctx)?,
 				"tags" => convert_constructable2::<TBRoleTags, _, SerenityContext>(this.0.tags.clone(), this.1.clone(), ctx)?,
 				"icon" => convert_type_option(this.0.icon.clone(), ctx)?,

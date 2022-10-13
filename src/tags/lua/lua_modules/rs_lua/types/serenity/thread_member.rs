@@ -39,7 +39,7 @@ impl UserData for TBThreadMember {
 				"id" => convert_constructable2_option::<TBChannelId , _, SerenityContext>(this.0.id, Some(this.1.clone()), ctx)?,
 				"user_id" => convert_constructable2_option::<TBUserId, _, SerenityContext>(this.0.user_id, Some(this.1.clone()), ctx)?,
 				"join_timestamp" => convert_constructable::<TBTimestamp, _>(this.0.join_timestamp, ctx)?,
-				"flags" => lua_todo(ctx)?, // TODO
+				"flags" => lua_todo(ctx)?, // TODO(bitflags)
 				_ => Value::Nil,
 			})
 		})

@@ -69,7 +69,7 @@ impl UserData for TBPartialGuild {
 				"splash" => convert_type_option(this.0.splash.clone(), ctx)?,
 				"discovery_splash" => convert_type_option(this.0.discovery_splash.clone(), ctx)?,
 				"system_channel_id" => convert_constructable2_option::<TBChannelId, _, _>(this.0.system_channel_id, Some(this.1.clone()), ctx)?,
-				"system_channel_flags" => lua_todo(ctx)?, // TODO
+				"system_channel_flags" => lua_todo(ctx)?, // TODO(bitflags)
 				"rules_channel_id" => convert_constructable2_option::<TBChannelId, _, _>(this.0.rules_channel_id, Some(this.1.clone()), ctx)?,
 				"public_updates_channel_id" => convert_constructable2_option::<TBChannelId, _, _>(this.0.public_updates_channel_id, Some(this.1.clone()), ctx)?,
 				"verification_level" => convert_constructable::<TBVerificationLevel, _>(this.0.verification_level, ctx)?,
