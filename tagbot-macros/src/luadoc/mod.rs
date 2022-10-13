@@ -106,7 +106,7 @@ fn parse_index_body(body: &ExprBlock) {
 	println!("Arms {:#?}", arms);
 }
 
-fn parse_arm_body(expr: Expr) -> String {
+fn parse_arm_body(expr: Expr) -> (String, bool) {
 	let method = match expr.clone() {
 		Expr::Try(tryexp) => match &*tryexp.expr {
 			Expr::Call(call) => match &*call.func {
@@ -120,12 +120,15 @@ fn parse_arm_body(expr: Expr) -> String {
 
 	println!("path is {:#?}", method);
 
-	let typ = match method.as_str() {
-		"convert_type" => parse_convert_type(expr.clone()),
-		&_ => "".to_string(),
+	let (typ, optional) = match method.as_str() {
+		"convert_type" => parse_convert_type(expr.clone(), false),
+		"convert_constructable2" => parse_convert_type(expr.clone(), false),
+		"convert_constructable2_option" => parse_convert_type(expr.clone(), true),
+		"convert_type_option" => parse_convert_type(expr.clone(), true),
+		&_ => ("".to_string(), false),
 	};
 
-	typ
+	(typ, optional)
 }
 
 fn parse_arm(arm: &Arm) -> Option<ParsedArm> {
@@ -145,11 +148,11 @@ fn parse_arm(arm: &Arm) -> Option<ParsedArm> {
 		return None;
 	}
 
-	let typ = parse_arm_body(*arm.body.clone());
+	let (typ, optional) = parse_arm_body(*arm.body.clone());
 
 	let name = name.unwrap();
 
-	return Some(ParsedArm { name, optional: false, typ });
+	return Some(ParsedArm { name, optional, typ });
 }
 
 fn parse_index_method(tokens: TokenStream) {
