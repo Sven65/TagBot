@@ -2,6 +2,7 @@
 
 use rlua::{MetaMethod, ToLua, UserData, Value};
 use serenity::{model::prelude::Channel, prelude::Context as SerenityContext};
+use tagbot_macros::lua_document;
 
 use crate::tags::lua::lua_modules::rs_lua::types::utils::{
 	functions::{convert_constructable2, convert_constructable2_option, convert_type_option},
@@ -26,6 +27,7 @@ impl ConstructableFrom2<Channel, SerenityContext> for TBChannel {
 
 impl UserData for TBChannel {
 	#[rustfmt::skip]
+	#[lua_document(tostring, index)]
 	fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
 		methods.add_meta_method(MetaMethod::ToString, |ctx, this, _: Value| Ok(this.0.to_string().to_lua(ctx)));
 
