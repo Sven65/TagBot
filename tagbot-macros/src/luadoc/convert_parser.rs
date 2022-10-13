@@ -25,7 +25,7 @@ pub fn get_arguments(expr: Expr) -> Vec<syn::PathArguments> {
 	};
 }
 
-pub fn parse_convert_type(expr: Expr) -> String {
+pub fn parse_convert_type(expr: Expr, optional: bool) -> (String, bool) {
 	let args = get_arguments(expr);
 
 	println!("args {:#?}", args);
@@ -47,5 +47,5 @@ pub fn parse_convert_type(expr: Expr) -> String {
 		_ => panic!("Args is not angle"),
 	};
 
-	return typ;
+	return (typ, optional);
 }
