@@ -189,3 +189,6 @@ Project Link: [https://github.com/Sven65/TagBot](https://github.com/Sven65/TagBo
 [license-shield]: https://img.shields.io/github/license/Sven65/TagBot.svg?style=for-the-badge
 [license-url]: https://github.com/Sven65/TagBot/blob/master/LICENSE
 [product-screenshot]: images/screenshot.png
+
+Generating docs:
+Set env var "GENERATE_DOCS" to "true"
