@@ -1,4 +1,7 @@
-use std::io::{BufWriter, Write};
+use std::{
+	collections::{hash_map::Entry, HashMap},
+	io::{BufWriter, Write},
+};
 
 use darling::ToTokens;
 use proc_macro::TokenStream;
@@ -302,7 +305,7 @@ fn generate_class_doc(tokens: TokenStream) -> DocTitle {
 	DocTitle { title, note: docs }
 }
 
-thread_local!(static CURRENT_DOC: RefCell<Document> = RefCell::new(Document::new()));
+thread_local!(static CURRENT_DOC: RefCell<HashMap<String, Document>> = RefCell::new(HashMap::new()));
 
 pub fn lua_doc_generator(args: TokenStream, tokens: TokenStream) -> TokenStream {
 	let should_generate = match env::var("GENERATE_DOCS") {
@@ -325,17 +328,30 @@ pub fn lua_doc_generator(args: TokenStream, tokens: TokenStream) -> TokenStream 
 
 	let parsed_args = parse_args(input);
 
+	let (class_name, parsed_second) = parsed_args.split_first().unwrap();
+
+	let class_name = class_name.to_string();
+
 	if parsed_args.contains(&"index".to_string()) {
 		// generate_index_doc(tokens.clone(), &mut stream);
 
 		let parsed_index = parse_index_method(tokens.clone());
 
-		CURRENT_DOC.with(|doc| {
-			doc.borrow_mut().attributes = parsed_index;
+		CURRENT_DOC.with(|map| {
+			let mut borrowed = map.borrow_mut();
+
+			let doc = match borrowed.entry(class_name.clone()) {
+				Entry::Occupied(o) => o.into_mut(),
+				Entry::Vacant(v) => v.insert(Document::new()),
+			};
+
+			doc.attributes = parsed_index;
 		});
 
 		// CURRENT_DOC.attributes = parsed_index;
 	};
+
+	let parsed_args = parsed_second;
 
 	if parsed_args.contains(&"class".to_string()) {
 		if parsed_args.len() > 1 {
@@ -345,10 +361,19 @@ pub fn lua_doc_generator(args: TokenStream, tokens: TokenStream) -> TokenStream 
 		let title = generate_class_doc(tokens.clone());
 
 		// CURRENT_DOC.title = title;
-		CURRENT_DOC.with(|doc| {
-			doc.borrow_mut().title = title;
+		CURRENT_DOC.with(|map| {
+			let mut borrowed = map.borrow_mut();
+
+			let doc = match borrowed.entry(class_name.clone()) {
+				Entry::Occupied(o) => o.into_mut(),
+				Entry::Vacant(v) => v.insert(Document::new()),
+			};
+
+			doc.title = title;
 		});
 	}
+
+	if parsed_args.contains(&"custom_methods".to_string()) {}
 
 	let bytes = stream.into_inner().unwrap();
 	let string = String::from_utf8(bytes).unwrap();
