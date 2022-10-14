@@ -13,13 +13,25 @@ use crate::luadoc::convert_parser::parse_convert_type;
 
 mod convert_parser;
 
+/// A parsed match statement arm
 #[derive(Debug)]
 struct ParsedArm {
+	/// The value being matched
+	/// `"my_value" => {}` would be "my_value"
 	name: String,
+	/// The type that the match arm returns
+	/// Parsed from conversion functions in [`tagbot::tags::lua::lua_modules::rs_lua::types::utils::functions`]
 	typ: String,
+	/// If the conversion can return [`rlua::Value::Nil`]
+	/// Parsed from option converters
 	optional: bool,
 }
 
+/// Parses the segments of a [`syn::Path`] into a string
+///
+/// # Arguments
+///
+/// * `path` - The [`syn::Path`] whose segments to parse
 pub fn parse_path(path: &Path) -> String {
 	path.segments
 		.clone()
@@ -29,6 +41,11 @@ pub fn parse_path(path: &Path) -> String {
 		.unwrap()
 }
 
+/// Parses the arguments to the macro into a vec of strings
+///
+/// # Arguments
+///
+/// * `input` - A vec of [`syn::NestedMeta`] to parse
 fn parse_args(input: Vec<NestedMeta>) -> Vec<String> {
 	let mut args: Vec<String> = Vec::new();
 
@@ -51,6 +68,11 @@ fn parse_args(input: Vec<NestedMeta>) -> Vec<String> {
 	args
 }
 
+/// Finds a meta method by name from a [`syn::Expr`] containing a [`syn::Expr::MethodCall`]
+///
+/// # Arguments
+/// * `expr` - The [`syn::Expr`] to parse
+/// * `method` - The rlua metamethod name to find
 fn find_meta_method<'a>(expr: &Expr, method: &str) -> Option<ExprMethodCall> {
 	match expr {
 		Expr::MethodCall(call) => {
@@ -82,6 +104,10 @@ fn find_meta_method<'a>(expr: &Expr, method: &str) -> Option<ExprMethodCall> {
 	}
 }
 
+/// Parses the body of a MetaMethod::Index closure
+///
+/// # Arguments
+/// * `body` - The [`syn::ExprBlock`] to parse
 fn parse_index_body(body: &ExprBlock) -> Vec<ParsedArm> {
 	let call = body.block.stmts.get(0).unwrap();
 
@@ -109,6 +135,10 @@ fn parse_index_body(body: &ExprBlock) -> Vec<ParsedArm> {
 	arms
 }
 
+/// Parses the body of a single match arm
+///
+/// # Arguments
+/// * `expr` - The [`syn::Expr`] to parse
 fn parse_arm_body(expr: Expr) -> (String, bool) {
 	let method = match expr.clone() {
 		Expr::Try(tryexp) => match &*tryexp.expr {
@@ -132,6 +162,10 @@ fn parse_arm_body(expr: Expr) -> (String, bool) {
 	(typ, optional)
 }
 
+/// Parses a single match arm
+///
+/// # Arguments
+/// * `arm` - The [`syn::Arm`] to parse
 fn parse_arm(arm: &Arm) -> Option<ParsedArm> {
 	let name = match &arm.pat {
 		syn::Pat::Lit(lit) => match &*lit.expr {
@@ -156,6 +190,10 @@ fn parse_arm(arm: &Arm) -> Option<ParsedArm> {
 	return Some(ParsedArm { name, optional, typ });
 }
 
+/// Parses a `add_meta_method(MetaMethod::Index)` call
+///
+/// # Arguments
+/// * `tokens` - The TokenStream from the macro to parse
 fn parse_index_method(tokens: TokenStream) -> Vec<ParsedArm> {
 	let ast: syn::ItemFn = syn::parse(tokens.clone()).unwrap();
 
@@ -199,6 +237,10 @@ fn parse_index_method(tokens: TokenStream) -> Vec<ParsedArm> {
 }
 
 /// Generates docs for MetaMethod::Index
+///
+/// # Arguments
+/// * `tokens` - The TokenStream from the macro to parse
+/// * `stream` - The BufWriter to write to
 fn generate_index_doc(tokens: TokenStream, stream: &mut BufWriter<Vec<u8>>) {
 	let arms = parse_index_method(tokens.clone());
 
