@@ -1,5 +1,6 @@
 use std::io::{BufWriter, Write};
 
+use darling::ToTokens;
 use proc_macro::TokenStream;
 use quote::TokenStreamExt;
 use syn::{
@@ -9,23 +10,12 @@ use syn::{
 
 use std::env;
 
-use crate::luadoc::convert_parser::parse_convert_type;
+use crate::luadoc::{convert_parser::parse_convert_type, document::Document};
+
+use self::document::{Attribute, DocTitle};
 
 mod convert_parser;
-
-/// A parsed match statement arm
-#[derive(Debug)]
-struct ParsedArm {
-	/// The value being matched
-	/// `"my_value" => {}` would be "my_value"
-	name: String,
-	/// The type that the match arm returns
-	/// Parsed from conversion functions in [`tagbot::tags::lua::lua_modules::rs_lua::types::utils::functions`]
-	typ: String,
-	/// If the conversion can return [`rlua::Value::Nil`]
-	/// Parsed from option converters
-	optional: bool,
-}
+mod document;
 
 /// Parses the segments of a [`syn::Path`] into a string
 ///
@@ -108,7 +98,7 @@ fn find_meta_method<'a>(expr: &Expr, method: &str) -> Option<ExprMethodCall> {
 ///
 /// # Arguments
 /// * `body` - The [`syn::ExprBlock`] to parse
-fn parse_index_body(body: &ExprBlock) -> Vec<ParsedArm> {
+fn parse_index_body(body: &ExprBlock) -> Vec<Attribute> {
 	let call = body.block.stmts.get(0).unwrap();
 
 	let call = match call {
@@ -124,7 +114,7 @@ fn parse_index_body(body: &ExprBlock) -> Vec<ParsedArm> {
 		_ => panic!("First arg is not match"),
 	};
 
-	let arms: Vec<ParsedArm> = match_arg
+	let arms: Vec<Attribute> = match_arg
 		.arms
 		.iter()
 		.map(parse_arm)
@@ -166,7 +156,7 @@ fn parse_arm_body(expr: Expr) -> (String, bool) {
 ///
 /// # Arguments
 /// * `arm` - The [`syn::Arm`] to parse
-fn parse_arm(arm: &Arm) -> Option<ParsedArm> {
+fn parse_arm(arm: &Arm) -> Option<Attribute> {
 	let name = match &arm.pat {
 		syn::Pat::Lit(lit) => match &*lit.expr {
 			Expr::Lit(lit) => match &lit.lit {
@@ -187,14 +177,14 @@ fn parse_arm(arm: &Arm) -> Option<ParsedArm> {
 
 	let name = name.unwrap();
 
-	return Some(ParsedArm { name, optional, typ });
+	return Some(Attribute { name, optional, typ });
 }
 
 /// Parses a `add_meta_method(MetaMethod::Index)` call
 ///
 /// # Arguments
 /// * `tokens` - The TokenStream from the macro to parse
-fn parse_index_method(tokens: TokenStream) -> Vec<ParsedArm> {
+fn parse_index_method(tokens: TokenStream) -> Vec<Attribute> {
 	let ast: syn::ItemFn = syn::parse(tokens.clone()).unwrap();
 
 	// let stmt = ast.block.stmts.get(0).unwrap();
@@ -257,8 +247,58 @@ fn generate_index_doc(tokens: TokenStream, stream: &mut BufWriter<Vec<u8>>) {
 	});
 }
 
-fn generate_class_doc(tokens: TokenStream, stream: &mut BufWriter<Vec<u8>>) {
-	println!("tokens {:#?}", tokens);
+fn get_doc_groups(tokens: TokenStream) -> Vec<String> {
+	let ast: syn::ItemStruct = syn::parse(tokens.clone()).unwrap();
+
+	let docs: Vec<String> = ast
+		.attrs
+		.into_iter()
+		.filter(|attr| {
+			let ppath = parse_path(&attr.path);
+
+			ppath == "doc"
+		})
+		.map(|args| {
+			args.tokens
+				.into_iter()
+				.map(|arg| match arg {
+					proc_macro2::TokenTree::Literal(lit) => {
+						let lit: syn::Lit = syn::parse2(lit.to_token_stream()).unwrap();
+
+						Some(lit)
+					}
+					_ => None,
+				})
+				.filter(|arg| arg.is_some())
+				.filter(|arg| match arg.as_ref().unwrap() {
+					syn::Lit::Str(_) => true,
+					_ => false,
+				})
+				.map(|arg| match arg.unwrap() {
+					syn::Lit::Str(str) => Some(str),
+					_ => None,
+				})
+				.filter(|arg| arg.is_some())
+				.map(|arg| arg.unwrap().value())
+				.collect()
+		})
+		.collect();
+
+	docs
+}
+
+fn get_doc_title(tokens: TokenStream) -> String {
+	let ast: syn::ItemStruct = syn::parse(tokens.clone()).unwrap();
+
+	ast.ident.to_string()
+}
+
+fn generate_class_doc(tokens: TokenStream) -> DocTitle {
+	let docs = get_doc_groups(tokens.clone());
+
+	let title = get_doc_title(tokens.clone());
+
+	DocTitle { title, note: docs }
 }
 
 pub fn lua_doc_generator(args: TokenStream, tokens: TokenStream) -> TokenStream {
@@ -271,6 +311,8 @@ pub fn lua_doc_generator(args: TokenStream, tokens: TokenStream) -> TokenStream 
 		return tokens;
 	}
 
+	let mut doc = Document::new();
+
 	// println!("tokens {:#?}", tokens);
 	// println!("args {:#?}", args);
 
@@ -281,7 +323,11 @@ pub fn lua_doc_generator(args: TokenStream, tokens: TokenStream) -> TokenStream 
 	let parsed_args = parse_args(input);
 
 	if parsed_args.contains(&"index".to_string()) {
-		generate_index_doc(tokens.clone(), &mut stream);
+		// generate_index_doc(tokens.clone(), &mut stream);
+
+		let parsed_index = parse_index_method(tokens.clone());
+
+		doc.attributes = parsed_index;
 	};
 
 	if parsed_args.contains(&"class".to_string()) {
@@ -289,13 +335,15 @@ pub fn lua_doc_generator(args: TokenStream, tokens: TokenStream) -> TokenStream 
 			panic!("Error! `Class` cannot be used with other doc types.")
 		}
 
-		generate_class_doc(tokens.clone(), &mut stream);
+		let title = generate_class_doc(tokens.clone());
+
+		doc.title = title;
 	}
 
 	let bytes = stream.into_inner().unwrap();
 	let string = String::from_utf8(bytes).unwrap();
 
-	println!("stream {}", string);
+	println!("doc is {:#?}", doc);
 
 	tokens
 }
