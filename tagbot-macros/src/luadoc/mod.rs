@@ -1,12 +1,20 @@
-use std::io::{BufWriter, Write};
+use std::{
+	borrow::Borrow,
+	io::{BufWriter, Write},
+	ops::DerefMut,
+};
 
 use darling::ToTokens;
+use lazy_static::lazy_static;
 use proc_macro::TokenStream;
 use quote::TokenStreamExt;
 use syn::{
 	parse_macro_input, token::Semi, Arm, AttributeArgs, Block, Expr, ExprBlock, ExprCall,
 	ExprClosure, ExprMethodCall, Lit, Local, NestedMeta, PatLit, Path, Stmt,
 };
+
+use std::cell::RefCell;
+use std::thread;
 
 use std::env;
 
@@ -301,6 +309,8 @@ fn generate_class_doc(tokens: TokenStream) -> DocTitle {
 	DocTitle { title, note: docs }
 }
 
+thread_local!(static CURRENT_DOC: RefCell<Document> = RefCell::new(Document::new()));
+
 pub fn lua_doc_generator(args: TokenStream, tokens: TokenStream) -> TokenStream {
 	let should_generate = match env::var("GENERATE_DOCS") {
 		Ok(val) => val.to_lowercase() == "true",
@@ -311,7 +321,7 @@ pub fn lua_doc_generator(args: TokenStream, tokens: TokenStream) -> TokenStream 
 		return tokens;
 	}
 
-	let mut doc = Document::new();
+	// let mut doc = Document::new();
 
 	// println!("tokens {:#?}", tokens);
 	// println!("args {:#?}", args);
@@ -327,7 +337,11 @@ pub fn lua_doc_generator(args: TokenStream, tokens: TokenStream) -> TokenStream 
 
 		let parsed_index = parse_index_method(tokens.clone());
 
-		doc.attributes = parsed_index;
+		CURRENT_DOC.with(|doc| {
+			doc.borrow_mut().attributes = parsed_index;
+		});
+
+		// CURRENT_DOC.attributes = parsed_index;
 	};
 
 	if parsed_args.contains(&"class".to_string()) {
@@ -337,13 +351,18 @@ pub fn lua_doc_generator(args: TokenStream, tokens: TokenStream) -> TokenStream 
 
 		let title = generate_class_doc(tokens.clone());
 
-		doc.title = title;
+		// CURRENT_DOC.title = title;
+		CURRENT_DOC.with(|doc| {
+			doc.borrow_mut().title = title;
+		});
 	}
 
 	let bytes = stream.into_inner().unwrap();
 	let string = String::from_utf8(bytes).unwrap();
 
-	println!("doc is {:#?}", doc);
+	CURRENT_DOC.with(|doc| {
+		println!("doc is {:#?}", doc.borrow());
+	});
 
 	tokens
 }
