@@ -1,8 +1,13 @@
+use std::io::{BufWriter, Write};
+
 use proc_macro::TokenStream;
+use quote::TokenStreamExt;
 use syn::{
 	parse_macro_input, token::Semi, Arm, AttributeArgs, Block, Expr, ExprBlock, ExprCall,
 	ExprClosure, ExprMethodCall, Lit, Local, NestedMeta, PatLit, Path, Stmt,
 };
+
+use std::env;
 
 use crate::luadoc::convert_parser::parse_convert_type;
 
@@ -42,8 +47,6 @@ fn parse_args(input: Vec<NestedMeta>) -> Vec<String> {
 
 		args.push(data);
 	});
-
-	println!("finished parsing");
 
 	args
 }
@@ -118,8 +121,6 @@ fn parse_arm_body(expr: Expr) -> (String, bool) {
 		_ => panic!("Expr is not call"),
 	};
 
-	println!("path is {:#?}", method);
-
 	let (typ, optional) = match method.as_str() {
 		"convert_type" => parse_convert_type(expr.clone(), false),
 		"convert_constructable2" => parse_convert_type(expr.clone(), false),
@@ -155,7 +156,7 @@ fn parse_arm(arm: &Arm) -> Option<ParsedArm> {
 	return Some(ParsedArm { name, optional, typ });
 }
 
-fn parse_index_method(tokens: TokenStream) {
+fn parse_index_method(tokens: TokenStream) -> Vec<ParsedArm> {
 	let ast: syn::ItemFn = syn::parse(tokens.clone()).unwrap();
 
 	// let stmt = ast.block.stmts.get(0).unwrap();
@@ -193,21 +194,66 @@ fn parse_index_method(tokens: TokenStream) {
 		syn::Expr::Block(block) => parse_index_body(block),
 		_ => panic!("Closure body has wrong type"),
 	};
+
+	body
+}
+
+/// Generates docs for MetaMethod::Index
+fn generate_index_doc(tokens: TokenStream, stream: &mut BufWriter<Vec<u8>>) {
+	let arms = parse_index_method(tokens.clone());
+
+	writeln!(stream, "# Index").unwrap();
+
+	arms.iter().for_each(|arm| {
+		let optional_char: String = if arm.optional {
+			"?".to_string()
+		} else {
+			"".to_string()
+		};
+
+		writeln!(stream, "{} -> {}{}", arm.name, arm.typ, optional_char).unwrap();
+	});
+}
+
+fn generate_class_doc(tokens: TokenStream, stream: &mut BufWriter<Vec<u8>>) {
+	println!("tokens {:#?}", tokens);
 }
 
 pub fn lua_doc_generator(args: TokenStream, tokens: TokenStream) -> TokenStream {
+	let should_generate = match env::var("GENERATE_DOCS") {
+		Ok(val) => val.to_lowercase() == "true",
+		Err(_e) => false,
+	};
+
+	if !should_generate {
+		return tokens;
+	}
+
 	// println!("tokens {:#?}", tokens);
 	// println!("args {:#?}", args);
+
+	let mut stream = BufWriter::new(Vec::new());
 
 	let input: AttributeArgs = parse_macro_input!(args as AttributeArgs);
 
 	let parsed_args = parse_args(input);
 
 	if parsed_args.contains(&"index".to_string()) {
-		parse_index_method(tokens.clone())
+		generate_index_doc(tokens.clone(), &mut stream);
+	};
+
+	if parsed_args.contains(&"class".to_string()) {
+		if parsed_args.len() > 1 {
+			panic!("Error! `Class` cannot be used with other doc types.")
+		}
+
+		generate_class_doc(tokens.clone(), &mut stream);
 	}
 
-	println!("parsed {:#?}", parsed_args);
+	let bytes = stream.into_inner().unwrap();
+	let string = String::from_utf8(bytes).unwrap();
+
+	println!("stream {}", string);
 
 	tokens
 }

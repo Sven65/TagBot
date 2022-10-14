@@ -28,8 +28,6 @@ pub fn get_arguments(expr: Expr) -> Vec<syn::PathArguments> {
 pub fn parse_convert_type(expr: Expr, optional: bool) -> (String, bool) {
 	let args = get_arguments(expr);
 
-	println!("args {:#?}", args);
-
 	let typ = match args.get(0).unwrap() {
 		syn::PathArguments::AngleBracketed(args) => match args {
 			AngleBracketedGenericArguments { args, .. } => {
