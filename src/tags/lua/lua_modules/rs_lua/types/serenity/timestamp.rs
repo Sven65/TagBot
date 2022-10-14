@@ -30,7 +30,8 @@ impl std::ops::Deref for TBTimestamp {
 }
 
 impl UserData for TBTimestamp {
-	#[lua_document("TBTimestamp", tostring, custom_methods)]
+	#[lua_document("TBTimestamp", tostring, parse_comments)]
+	#[allow(unused_doc_comments)]
 	fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
 		// methods.add_meta_method(MetaMethod::Index, )
 
@@ -38,6 +39,10 @@ impl UserData for TBTimestamp {
 			this.0.to_string().to_lua(ctx)
 		});
 
+		/// Formats the timestamp with with the specified format string.
+		/// @method
+		/// @param {string} value The [format string](https://docs.rs/chrono/latest/chrono/format/strftime/index.html) to use when formatting
+		/// @return {string} Formatted timestamp
 		methods.add_method("format", |ctx, this, value: String| {
 			let time = Utc.timestamp(this.unix_timestamp(), 0);
 
@@ -46,7 +51,10 @@ impl UserData for TBTimestamp {
 			Ok(formatted.to_string().to_lua(ctx))
 		});
 
-		// Formats with discord timestamp tag (https://gist.github.com/LeviSnoot/d9147767abeef2f770e9ddcd91eb85aa)
+		/// Formats with discord timestamp tag (https://gist.github.com/LeviSnoot/d9147767abeef2f770e9ddcd91eb85aa)
+		/// @method
+		/// @param {string} specifier The [specifier](https://gist.github.com/LeviSnoot/d9147767abeef2f770e9ddcd91eb85aa) to use when formatting
+		/// @return {string} Discord formatted timestamp
 		methods.add_method("d_format", |_ctx, this, specifier: String| {
 			let is_valid_specifier =
 				["", "t", "T", "d", "D", "f", "F", "R"].contains(&specifier.as_str());

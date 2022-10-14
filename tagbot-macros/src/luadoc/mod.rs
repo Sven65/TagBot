@@ -16,8 +16,12 @@ use std::env;
 
 use crate::luadoc::{convert_parser::parse_convert_type, document::Document};
 
-use self::document::{Attribute, DocTitle};
+use self::{
+	comments::parse_comments,
+	document::{Attribute, DocTitle},
+};
 
+mod comments;
 mod convert_parser;
 mod document;
 
@@ -251,7 +255,7 @@ fn generate_index_doc(tokens: TokenStream, stream: &mut BufWriter<Vec<u8>>) {
 	});
 }
 
-fn get_doc_groups(tokens: TokenStream) -> Vec<String> {
+pub fn get_doc_groups(tokens: TokenStream) -> Vec<String> {
 	let ast: syn::ItemStruct = syn::parse(tokens.clone()).unwrap();
 
 	let docs: Vec<String> = ast
@@ -373,14 +377,16 @@ pub fn lua_doc_generator(args: TokenStream, tokens: TokenStream) -> TokenStream 
 		});
 	}
 
-	if parsed_args.contains(&"custom_methods".to_string()) {}
+	if parsed_args.contains(&"parse_comments".to_string()) {
+		parse_comments(tokens.clone());
+	}
 
 	let bytes = stream.into_inner().unwrap();
 	let string = String::from_utf8(bytes).unwrap();
 
-	CURRENT_DOC.with(|doc| {
-		println!("doc is {:#?}", doc.borrow());
-	});
+	// CURRENT_DOC.with(|doc| {
+	// 	println!("doc is {:#?}", doc.borrow());
+	// });
 
 	tokens
 }
