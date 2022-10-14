@@ -1,20 +1,13 @@
-use std::{
-	borrow::Borrow,
-	io::{BufWriter, Write},
-	ops::DerefMut,
-};
+use std::io::{BufWriter, Write};
 
 use darling::ToTokens;
-use lazy_static::lazy_static;
 use proc_macro::TokenStream;
-use quote::TokenStreamExt;
 use syn::{
-	parse_macro_input, token::Semi, Arm, AttributeArgs, Block, Expr, ExprBlock, ExprCall,
-	ExprClosure, ExprMethodCall, Lit, Local, NestedMeta, PatLit, Path, Stmt,
+	parse_macro_input, Arm, AttributeArgs, Expr, ExprBlock, ExprMethodCall, Lit, NestedMeta, Path,
+	Stmt,
 };
 
 use std::cell::RefCell;
-use std::thread;
 
 use std::env;
 
@@ -76,7 +69,7 @@ fn find_meta_method<'a>(expr: &Expr, method: &str) -> Option<ExprMethodCall> {
 		Expr::MethodCall(call) => {
 			if call.method.to_string() == "add_meta_method" {
 				let mut method_call: Option<ExprMethodCall> = None;
-				let found = call.args.clone().into_iter().find(|arg| match arg {
+				call.args.clone().into_iter().find(|arg| match arg {
 					Expr::Path(path) => {
 						let parsed_path = parse_path(&path.path);
 
@@ -199,7 +192,7 @@ fn parse_index_method(tokens: TokenStream) -> Vec<Attribute> {
 
 	let mut expr: Option<ExprMethodCall> = None;
 
-	let stmt = ast.block.stmts.iter().find(|stmt| {
+	ast.block.stmts.iter().find(|stmt| {
 		let data = match stmt {
 			syn::Stmt::Expr(expr) => find_meta_method(&expr, "MetaMethod::Index"),
 			syn::Stmt::Semi(expr, _semi) => find_meta_method(&expr, "MetaMethod::Index"),
