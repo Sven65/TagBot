@@ -17,6 +17,9 @@ use super::{
 };
 
 /// Wrapper for a Serenity Channel
+/// does gay sex
+///
+/// lmao
 #[derive(Clone)]
 #[lua_document(class)]
 pub struct TBChannel(pub Channel, pub SerenityContext);
@@ -30,7 +33,7 @@ impl ConstructableFrom2<Channel, SerenityContext> for TBChannel {
 
 impl UserData for TBChannel {
 	#[rustfmt::skip]
-	// #[lua_document(tostring, index)]
+	#[lua_document(tostring, index)]
 	fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
 		methods.add_meta_method(MetaMethod::ToString, |ctx, this, _: Value| Ok(this.0.to_string().to_lua(ctx)));
 
