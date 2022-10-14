@@ -17,7 +17,7 @@ use super::{
 };
 
 /// Wrapper for a Serenity Channel
-/// does gay sex
+/// does the wrapping
 ///
 /// lmao
 #[derive(Clone)]

@@ -50,4 +50,6 @@ impl Document {
 			operators: Vec::new(),
 		}
 	}
+
+	pub fn set_attrib() {}
 }
