@@ -1,10 +1,12 @@
 use chrono::prelude::*;
 use rlua::{Error as LuaError, MetaMethod, ToLua, UserData, Value};
 use serenity::model::timestamp::Timestamp;
+use tagbot_macros::lua_document;
 
 use crate::tags::lua::lua_modules::rs_lua::types::{utils::types::ConstructableFrom, Requireable};
 
 #[derive(Clone, Debug)]
+#[lua_document("TBTimestamp", class)]
 pub struct TBTimestamp(Timestamp);
 
 impl TBTimestamp {
@@ -28,6 +30,7 @@ impl std::ops::Deref for TBTimestamp {
 }
 
 impl UserData for TBTimestamp {
+	#[lua_document("TBTimestamp", tostring, custom_methods)]
 	fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
 		// methods.add_meta_method(MetaMethod::Index, )
 
