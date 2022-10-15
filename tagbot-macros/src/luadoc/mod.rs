@@ -14,10 +14,13 @@ use std::cell::RefCell;
 
 use std::env;
 
-use crate::luadoc::{convert_parser::parse_convert_type, document::Document};
+use crate::luadoc::{
+	convert_parser::parse_convert_type,
+	document::{Document, Method},
+};
 
 use self::{
-	comments::parse_comments,
+	comments::{parse_comments, Annotation},
 	document::{Attribute, DocTitle},
 };
 
@@ -378,15 +381,33 @@ pub fn lua_doc_generator(args: TokenStream, tokens: TokenStream) -> TokenStream 
 	}
 
 	if parsed_args.contains(&"parse_comments".to_string()) {
-		parse_comments(tokens.clone());
+		let comment_tree = parse_comments(tokens.clone());
+
+		let methods: HashMap<String, Method> = comment_tree
+			.iter()
+			.filter(|(_, b)| b.contains(&comments::Annotation::Method))
+			.map(|(a, b)| {
+				let method = Method::from(b);
+
+				(a.to_string(), method)
+			})
+			.collect::<HashMap<String, Method>>();
+
+		CURRENT_DOC.with(|map| {
+			let mut borrowed = map.borrow_mut();
+
+			let doc = match borrowed.entry(class_name.clone()) {
+				Entry::Occupied(o) => o.into_mut(),
+				Entry::Vacant(v) => v.insert(Document::new()),
+			};
+
+			doc.methods = methods.into();
+		});
 	}
 
-	let bytes = stream.into_inner().unwrap();
-	let string = String::from_utf8(bytes).unwrap();
-
-	// CURRENT_DOC.with(|doc| {
-	// 	println!("doc is {:#?}", doc.borrow());
-	// });
+	CURRENT_DOC.with(|doc| {
+		println!("doc is {:#?}", doc.borrow());
+	});
 
 	tokens
 }

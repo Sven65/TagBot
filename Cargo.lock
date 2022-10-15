@@ -1518,8 +1518,10 @@ name = "tagbot-macros"
 version = "0.1.0"
 dependencies = [
  "darling",
+ "lazy_static",
  "proc-macro2",
  "quote",
+ "regex",
  "syn",
 ]
 
