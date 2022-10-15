@@ -1,5 +1,6 @@
 use rlua::{MetaMethod, ToLua, UserData, Value};
 use serenity::{model::channel::PrivateChannel, prelude::Context as SerenityContext};
+use tagbot_macros::lua_document;
 
 use crate::tags::lua::lua_modules::rs_lua::types::utils::{
 	functions::{convert_constructable, convert_constructable2, convert_constructable_option},
@@ -13,6 +14,7 @@ use super::{
 
 /// Wrapper for [`serenity::model::channel::PrivateChannel`]
 #[derive(Clone)]
+#[lua_document("TBPrivateChannel", class)]
 pub struct TBPrivateChannel(pub PrivateChannel, pub SerenityContext);
 
 impl ConstructableFrom2<PrivateChannel, SerenityContext> for TBPrivateChannel {
@@ -28,6 +30,7 @@ impl ConstructableFrom2<PrivateChannel, SerenityContext> for TBPrivateChannel {
 
 impl UserData for TBPrivateChannel {
 	#[rustfmt::skip]
+	#[lua_document("TBPrivateChannel", index)]
 	fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
 		methods.add_meta_method(MetaMethod::ToString, |ctx, this, _: Value| {
 			this.0.to_string().to_lua(ctx)

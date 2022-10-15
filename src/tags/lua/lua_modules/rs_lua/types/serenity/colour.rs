@@ -1,5 +1,6 @@
 use rlua::{MetaMethod, ToLua, UserData, Value};
 use serenity::utils::Colour;
+use tagbot_macros::lua_document;
 
 use crate::tags::lua::lua_modules::rs_lua::types::{
 	utils::{functions::convert_type, types::ConstructableFrom},
@@ -8,6 +9,7 @@ use crate::tags::lua::lua_modules::rs_lua::types::{
 
 /// Wrapper for [`serenity::utils::Colour`]
 #[derive(Clone)]
+#[lua_document("TBColour", class)]
 pub struct TBColour(pub Colour);
 
 impl ConstructableFrom<Colour> for TBColour {
@@ -22,6 +24,8 @@ impl ConstructableFrom<Colour> for TBColour {
 
 impl UserData for TBColour {
 	#[rustfmt::skip]
+	#[allow(unused_doc_comments)]
+	#[lua_document("TBColour", parse_comments, index)]
 	fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
 		methods.add_meta_method(MetaMethod::ToString, |ctx, this, _: Value| {
 			this.0.hex().to_string().to_lua(ctx)
@@ -36,6 +40,9 @@ impl UserData for TBColour {
 			})
 		});
 
+		/// @desc Converts the color to a hex color string
+		/// @method
+		/// @return {string} The converted hex color
 		methods.add_method("hex", |ctx, this, _: Value| {
 			this.0.hex().to_lua(ctx)
 		});

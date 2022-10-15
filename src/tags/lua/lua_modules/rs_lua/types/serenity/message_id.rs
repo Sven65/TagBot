@@ -1,10 +1,12 @@
 use rlua::{MetaMethod, ToLua, UserData, Value};
 use serenity::model::id::MessageId;
+use tagbot_macros::lua_document;
 
 use crate::tags::lua::lua_modules::rs_lua::types::utils::types::ConstructableFrom;
 
 /// Wrapper for [`serenity::model::id::MessageId`]
 #[derive(Clone)]
+#[lua_document("TBMessageId", class)]
 pub struct TBMessageId(pub MessageId);
 
 impl ConstructableFrom<MessageId> for TBMessageId {

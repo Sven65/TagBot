@@ -210,8 +210,6 @@ fn parse_param(line: &String) -> Annotation {
 /// # Arguments
 /// * `line` - The line to parse
 fn parse_desc(line: &String) -> Annotation {
-	println!("line {}", line);
-
 	let parsed = parse_simple_annotation(line);
 
 	if parsed.is_none() {
@@ -252,10 +250,6 @@ fn parse_comment_line(line: &String) -> Option<Annotation> {
 pub fn parse_comments(tokens: TokenStream) -> HashMap<String, Vec<Annotation>> {
 	let comments = get_doc_groups(tokens.clone());
 
-	println!("comments {:#?}", comments);
-
-	// let tree:
-
 	let tree: HashMap<String, Vec<Annotation>> = comments
 		.iter()
 		.map(|(name, lines)| {
@@ -271,8 +265,6 @@ pub fn parse_comments(tokens: TokenStream) -> HashMap<String, Vec<Annotation>> {
 			(name.to_string(), converted)
 		})
 		.collect();
-
-	println!("tree {:#?}", tree);
 
 	tree
 }

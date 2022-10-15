@@ -115,7 +115,5 @@ pub fn generate_markdown(doc: &Document) -> String {
 
 	let string = String::from_utf8(stream).unwrap();
 
-	println!("Generated\n{}", string);
-
 	string
 }

@@ -1,5 +1,6 @@
 use rlua::{MetaMethod, ToLua, UserData, Value};
 use serenity::model::prelude::IntegrationId;
+use tagbot_macros::lua_document;
 
 use crate::tags::lua::lua_modules::rs_lua::types::utils::types::ConstructableFrom;
 

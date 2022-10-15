@@ -1,9 +1,11 @@
 use rlua::{MetaMethod, ToLua, UserData, Value};
 use serenity::model::prelude::EmojiId;
+use tagbot_macros::lua_document;
 
 use crate::tags::lua::lua_modules::rs_lua::types::utils::types::ConstructableFrom;
 
 #[derive(Clone, Hash, PartialEq, Eq)]
+#[lua_document("TBEmojiId", class)]
 pub struct TBEmojiId(pub EmojiId);
 
 impl ConstructableFrom<EmojiId> for TBEmojiId {
