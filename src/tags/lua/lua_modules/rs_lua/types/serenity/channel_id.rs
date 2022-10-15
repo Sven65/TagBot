@@ -1,6 +1,7 @@
 use rlua::{Error as LuaError, MetaMethod, ToLua, UserData, Value};
 use serenity::model::prelude::{Channel, ChannelId};
 use serenity::{prelude::Context as SerenityContext, Error};
+use tagbot_macros::lua_document;
 use tokio::runtime::Handle;
 
 use crate::tags::lua::lua_modules::rs_lua::types::utils::types::ConstructableFrom2;
@@ -15,6 +16,7 @@ async fn get_channel(channel_id: ChannelId, s_ctx: SerenityContext) -> Result<Ch
 
 /// Wrapper for serenity ChannelId
 #[derive(Clone)]
+#[lua_document("TBChannelId", class)]
 pub struct TBChannelId(pub ChannelId, pub SerenityContext);
 
 impl TBChannelId {
@@ -40,11 +42,16 @@ impl ConstructableFrom2<ChannelId, SerenityContext> for TBChannelId {
 }
 
 impl UserData for TBChannelId {
+	#[lua_document("TBChannelId", parse_comments)]
+	#[allow(unused_doc_comments)]
 	fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
 		methods.add_meta_method(MetaMethod::ToString, |ctx, this, _: Value| {
 			this.0.to_string().to_lua(ctx)
 		});
 
+		/// @desc Resolves the ID to a channel.
+		/// @method
+		/// @return {TBChannel} A discord channel
 		methods.add_method("resolve", |ctx, this, _: Value| {
 			let channel_id = this.0;
 			let s_ctx = this.1.clone();

@@ -1,6 +1,7 @@
 use rlua::{MetaMethod, UserData, Value};
 use serenity::model::guild::ThreadMember;
 use serenity::prelude::Context as SerenityContext;
+use tagbot_macros::lua_document;
 
 use crate::tags::lua::lua_modules::rs_lua::types::utils::functions::{
 	convert_constructable, convert_constructable2_option, lua_todo,
@@ -13,6 +14,7 @@ use super::user_id::TBUserId;
 
 /// Wrapper for [`serenity::model::guild::ThreadMember`]
 #[derive(Clone)]
+#[lua_document("TBThreadMember", class)]
 pub struct TBThreadMember(pub ThreadMember, pub SerenityContext);
 
 impl ConstructableFrom2<ThreadMember, SerenityContext> for TBThreadMember {
@@ -27,6 +29,7 @@ impl ConstructableFrom2<ThreadMember, SerenityContext> for TBThreadMember {
 
 impl UserData for TBThreadMember {
 	#[rustfmt::skip]
+	#[lua_document("TBThreadMember", index)]
 	fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
 		// methods.add_meta_method(MetaMethod::ToString, |ctx, this, _: Value| {
 		// 	Ok(this.0.to_string().to_lua(ctx)?)

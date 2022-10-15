@@ -1,6 +1,7 @@
 use rlua::{Error as LuaError, MetaMethod, ToLua, UserData, Value};
 use serenity::model::prelude::{GuildId, PartialGuild};
 use serenity::{prelude::Context as SerenityContext, Error};
+use tagbot_macros::lua_document;
 use tokio::runtime::Handle;
 
 use crate::tags::lua::lua_modules::rs_lua::types::utils::types::ConstructableFrom2;
@@ -15,6 +16,7 @@ async fn get_guild(guild_id: GuildId, s_ctx: SerenityContext) -> Result<PartialG
 
 /// Wrapper for [`serenity::model::prelude::GuildId`]
 #[derive(Clone)]
+#[lua_document("TBGuildId", class)]
 pub struct TBGuildId(pub GuildId, pub SerenityContext);
 
 impl ConstructableFrom2<GuildId, SerenityContext> for TBGuildId {
@@ -29,11 +31,16 @@ impl ConstructableFrom2<GuildId, SerenityContext> for TBGuildId {
 }
 
 impl UserData for TBGuildId {
+	#[lua_document("TBGuildId", parse_comments)]
+	#[allow(unused_doc_comments)]
 	fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
 		methods.add_meta_method(MetaMethod::ToString, |ctx, this, _: Value| {
 			this.0.to_string().to_lua(ctx)
 		});
 
+		/// @desc Resolves the ID to a guild.
+		/// @method
+		/// @return {TBGuild} A discord guild
 		methods.add_method("resolve", |ctx, this, _: Value| {
 			let guild_id = this.0;
 			let s_ctx = this.1.clone();

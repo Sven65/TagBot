@@ -157,10 +157,30 @@ fn parse_arm_body(expr: Expr) -> (String, bool) {
 
 	let (typ, optional) = match method.as_str() {
 		"convert_type" => parse_convert_type(expr.clone(), false),
+		"convert_constructable" => parse_convert_type(expr.clone(), false),
 		"convert_constructable2" => parse_convert_type(expr.clone(), false),
 		"convert_constructable2_option" => parse_convert_type(expr.clone(), true),
 		"convert_type_option" => parse_convert_type(expr.clone(), true),
-		&_ => ("".to_string(), false),
+		"convert_constructable_option" => parse_convert_type(expr.clone(), true),
+		"convert_vec" => {
+			let (typ, optional) = parse_convert_type(expr.clone(), false);
+
+			(format!("array[{}]", typ), optional)
+		}
+		"lua_todo" => ("<!> Unknown (Not implemented) <!>".to_string(), false),
+		"convert_hashmap_types_with_new" => (
+			"<!> Error: parser not implemented for hashmap new type <!>".to_string(),
+			false,
+		),
+		"convert_hashmap_types" => (
+			"<!> Error: parser not implemented for hashmap type <!>".to_string(),
+			false,
+		),
+		"convert_vec_new" => (
+			"<!> Error: parser not implemented for hashmap type <!>".to_string(),
+			false,
+		),
+		&_ => panic!("Handling for converter in {:#?} is not implemented.", expr),
 	};
 
 	(typ, optional)
@@ -180,7 +200,8 @@ fn parse_arm(arm: &Arm) -> Option<Attribute> {
 			_ => panic!("lit is not expr"),
 		},
 		syn::Pat::Reference(_) => None,
-		_ => panic!("arm pat is invalid"),
+		syn::Pat::Wild(_) => None,
+		_ => panic!("arm pat is invalid. {:#?}", arm.pat),
 	};
 
 	if name.is_none() {
@@ -398,8 +419,6 @@ pub fn lua_doc_generator(args: TokenStream, tokens: TokenStream) -> TokenStream 
 	}
 
 	CURRENT_DOC.with(|doc| {
-		println!("doc is {:#?}", doc.borrow());
-
 		let borrowed = doc.borrow();
 
 		borrowed.iter().for_each(|(name, b)| {

@@ -1,5 +1,6 @@
 use rlua::{MetaMethod, UserData, Value};
 use serenity::model::guild::GuildWelcomeChannelEmoji;
+use tagbot_macros::lua_document;
 
 use crate::tags::lua::lua_modules::rs_lua::types::utils::{
 	functions::{convert_constructable, convert_type},
@@ -10,6 +11,7 @@ use super::emoji_id::TBEmojiId;
 
 /// Wrapper for [`serenity::model::guild::GuildWelcomeChannelEmoji`]
 #[derive(Clone)]
+#[lua_document("TBGuildWelcomeChannelEmoji", class)]
 pub struct TBGuildWelcomeChannelEmoji(pub GuildWelcomeChannelEmoji);
 
 impl ConstructableFrom<GuildWelcomeChannelEmoji> for TBGuildWelcomeChannelEmoji {
@@ -23,6 +25,7 @@ impl ConstructableFrom<GuildWelcomeChannelEmoji> for TBGuildWelcomeChannelEmoji 
 }
 
 impl UserData for TBGuildWelcomeChannelEmoji {
+	// #[lua_document("TBGuildWelcomeChannelEmoji", index)]
 	fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
 		methods.add_meta_method(MetaMethod::ToString, |ctx, this, _: Value| {
 			Ok(match &this.0 {

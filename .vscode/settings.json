@@ -12,6 +12,10 @@
 		"Struct replace option types": {
 			"find": "pub (.*): Option<(bool|i64|u32|String|u8|u16|u32|u64|u128|f64|f32|)>,",
 			"replace": "\"$1\" => convert_type_option(this.0.$1, ctx)?,"
+		},
+		"Index match replace": {
+			"find": "this\\.0\\.(.*)\\.to_lua\\(ctx\\)\\?",
+			"replace": "convert_type::<_>(this.0.$1, ctx)?"
 		}
 	},
 	"replacerules.rulesets": {

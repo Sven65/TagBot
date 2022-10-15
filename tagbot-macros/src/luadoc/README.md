@@ -2,6 +2,14 @@
 
 Macro for generating LuaDoc files.
 
+## Todo:
+
+- [ ] Doc generation for Requireable (user_require)
+- [ ] Doc comments for errors
+- [ ] Document generation for TBGuildWelcomeChannelEmoji index
+- [ ] Parsing of comments inside match statements of index
+  - Should be treated as a desc of the attribute
+
 ## Usage
 
 The macro is used with `#[lua_document("name", attribs)]`, where "name" is the unique name of the struct being documented and attribs is one or more attriobutes.
@@ -52,7 +60,7 @@ Currently implements `@method`, `@param`, `@return` and `@doc`.
 
 ```rs
 impl UserData for TBTimestamp {
-	#[lua_document("TBTimestamp", tostring, parse_comments)]
+	#[lua_document("TBTimestamp", parse_comments)]
 	#[allow(unused_doc_comments)]
 	fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
 
