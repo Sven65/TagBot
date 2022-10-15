@@ -11,6 +11,3 @@
 - private :: TBPrivateChannel?
 - guild :: TBGuildChannel?
 - position :: i64?
-# Methods
-
-# Operators

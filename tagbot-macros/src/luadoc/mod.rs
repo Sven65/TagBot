@@ -22,7 +22,7 @@ use crate::luadoc::{
 };
 
 use self::{
-	comments::{parse_comments, Annotation},
+	comments::parse_comments,
 	document::{Attribute, DocTitle},
 };
 
@@ -327,11 +327,6 @@ pub fn lua_doc_generator(args: TokenStream, tokens: TokenStream) -> TokenStream 
 		return tokens;
 	}
 
-	// let mut doc = Document::new();
-
-	// println!("tokens {:#?}", tokens);
-	// println!("args {:#?}", args);
-
 	let input: AttributeArgs = parse_macro_input!(args as AttributeArgs);
 
 	let parsed_args = parse_args(input);
@@ -341,8 +336,6 @@ pub fn lua_doc_generator(args: TokenStream, tokens: TokenStream) -> TokenStream 
 	let class_name = class_name.to_string();
 
 	if parsed_args.contains(&"index".to_string()) {
-		// generate_index_doc(tokens.clone(), &mut stream);
-
 		let parsed_index = parse_index_method(tokens.clone());
 
 		CURRENT_DOC.with(|map| {
@@ -355,8 +348,6 @@ pub fn lua_doc_generator(args: TokenStream, tokens: TokenStream) -> TokenStream 
 
 			doc.attributes = parsed_index;
 		});
-
-		// CURRENT_DOC.attributes = parsed_index;
 	};
 
 	let parsed_args = parsed_second;
