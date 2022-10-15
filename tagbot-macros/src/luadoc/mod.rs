@@ -1,5 +1,6 @@
 use std::{
 	collections::{hash_map::Entry, HashMap},
+	fs::File,
 	io::{BufWriter, Write},
 };
 
@@ -410,8 +411,16 @@ pub fn lua_doc_generator(args: TokenStream, tokens: TokenStream) -> TokenStream 
 
 		let borrowed = doc.borrow();
 
-		borrowed.iter().for_each(|(a, b)| {
-			generate_markdown(b);
+		borrowed.iter().for_each(|(name, b)| {
+			let generated_md = generate_markdown(b);
+
+			let dir_path = "docs/lua";
+			let path = format!("{}/{}.md", dir_path, name);
+			std::fs::create_dir_all(dir_path.clone()).unwrap();
+
+			let mut output = File::create(path).unwrap();
+
+			write!(output, "{}", generated_md).unwrap();
 		});
 	});
 
