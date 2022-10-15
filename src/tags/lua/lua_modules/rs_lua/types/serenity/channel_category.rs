@@ -11,6 +11,7 @@ use super::{channel_id::TBChannelId, guild_id::TBGuildId};
 
 /// Wrapper for a Serenity Channel
 #[derive(Clone)]
+#[lua_document("TBChannelCategory", class)]
 pub struct TBChannelCategory(pub ChannelCategory, pub SerenityContext);
 
 impl ConstructableFrom2<ChannelCategory, SerenityContext> for TBChannelCategory {
@@ -21,6 +22,7 @@ impl ConstructableFrom2<ChannelCategory, SerenityContext> for TBChannelCategory 
 
 impl UserData for TBChannelCategory {
 	#[rustfmt::skip]
+	#[lua_document("TBChannelCategory", index)]
 	fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
 		methods.add_meta_method(MetaMethod::Index, |ctx, this, value: String| {
 			Ok(match value.as_str() {
