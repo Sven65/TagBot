@@ -1,5 +1,49 @@
+use std::{collections::HashMap, hash::Hash};
+
+use super::comments::Annotation;
+
 #[derive(Debug)]
-pub struct Method {}
+pub struct Method {
+	pub desc: Vec<Annotation>,
+	pub params: HashMap<String, Annotation>,
+	pub returns: Vec<Annotation>,
+}
+
+impl From<&Vec<Annotation>> for Method {
+	fn from(annotations: &Vec<Annotation>) -> Self {
+		let mut method = Self { desc: Vec::new(), params: HashMap::new(), returns: Vec::new() };
+
+		method.desc = annotations
+			.iter()
+			.cloned()
+			.filter_map(|annot| match annot {
+				Annotation::Description(_) => Some(annot),
+				_ => None,
+			})
+			.collect::<Vec<Annotation>>();
+
+		method.params = annotations
+			.iter()
+			.cloned()
+			.filter_map(|annot| match annot.to_owned() {
+				Annotation::Param(param) => Some((annot, param)),
+				_ => None,
+			})
+			.map(|(annot, param)| (param.param, annot))
+			.collect::<HashMap<String, Annotation>>();
+
+		method.returns = annotations
+			.iter()
+			.cloned()
+			.filter_map(|annot| match annot {
+				Annotation::Return(_) => Some(annot),
+				_ => None,
+			})
+			.collect::<Vec<Annotation>>();
+
+		method
+	}
+}
 
 #[derive(Debug)]
 pub struct Attribute {
@@ -34,7 +78,7 @@ pub struct Document {
 	/// Title of the class
 	pub title: DocTitle,
 	/// Methods the class hass
-	pub methods: Vec<Method>,
+	pub methods: HashMap<String, Method>,
 	/// Attributes of the class
 	pub attributes: Vec<Attribute>,
 	/// Operators that the class supports
@@ -45,7 +89,7 @@ impl Document {
 	pub fn new() -> Self {
 		Self {
 			title: DocTitle::new(),
-			methods: Vec::new(),
+			methods: HashMap::new(),
 			attributes: Vec::new(),
 			operators: Vec::new(),
 		}

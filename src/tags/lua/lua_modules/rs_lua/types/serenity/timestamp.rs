@@ -39,7 +39,7 @@ impl UserData for TBTimestamp {
 			this.0.to_string().to_lua(ctx)
 		});
 
-		/// Formats the timestamp with with the specified format string.
+		/// @desc Formats the timestamp with with the specified format string.
 		/// @method
 		/// @param {string} value The [format string](https://docs.rs/chrono/latest/chrono/format/strftime/index.html) to use when formatting
 		/// @return {string} Formatted timestamp
@@ -51,7 +51,7 @@ impl UserData for TBTimestamp {
 			Ok(formatted.to_string().to_lua(ctx))
 		});
 
-		/// Formats with discord timestamp tag (https://gist.github.com/LeviSnoot/d9147767abeef2f770e9ddcd91eb85aa)
+		/// @desc Formats with discord timestamp tag (https://gist.github.com/LeviSnoot/d9147767abeef2f770e9ddcd91eb85aa)
 		/// @method
 		/// @param {string} specifier The [specifier](https://gist.github.com/LeviSnoot/d9147767abeef2f770e9ddcd91eb85aa) to use when formatting
 		/// @return {string} Discord formatted timestamp
