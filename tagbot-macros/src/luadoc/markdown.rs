@@ -1,9 +1,7 @@
-use std::io::BufWriter;
 use std::io::Write;
 use std::vec::Vec;
 
 use super::comments::Annotation;
-use super::comments::ParamValueAnnotation;
 use super::document::Attribute;
 use super::document::Document;
 use super::document::Method;
@@ -95,19 +93,25 @@ pub fn generate_markdown(doc: &Document) -> String {
 		writeln!(&mut stream, "{}", note).unwrap();
 	});
 
-	writeln!(&mut stream, "# Attributes").unwrap();
+	if doc.attributes.len() > 0 {
+		writeln!(&mut stream, "# Attributes").unwrap();
 
-	doc.attributes
-		.iter()
-		.for_each(|attribute| write_attribute(&mut stream, attribute));
+		doc.attributes
+			.iter()
+			.for_each(|attribute| write_attribute(&mut stream, attribute));
+	}
 
-	writeln!(&mut stream, "# Methods\n").unwrap();
+	if doc.methods.len() > 0 {
+		writeln!(&mut stream, "# Methods\n").unwrap();
 
-	doc.methods
-		.iter()
-		.for_each(|(name, method)| write_method(&mut stream, name, method));
+		doc.methods
+			.iter()
+			.for_each(|(name, method)| write_method(&mut stream, name, method));
+	}
 
-	writeln!(&mut stream, "# Operators").unwrap();
+	if doc.operators.len() > 0 {
+		writeln!(&mut stream, "# Operators").unwrap();
+	}
 
 	let string = String::from_utf8(stream).unwrap();
 
