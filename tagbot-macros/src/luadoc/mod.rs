@@ -1,7 +1,7 @@
 use std::{
 	collections::{hash_map::Entry, HashMap},
 	fs::File,
-	io::{BufWriter, Write},
+	io::Write,
 };
 
 use darling::ToTokens;
@@ -63,7 +63,6 @@ fn parse_args(input: Vec<NestedMeta>) -> Vec<String> {
 				syn::Meta::Path(path) => parse_path(path),
 				_ => panic!("Invalid non-path supplied to meta"),
 			},
-			_ => panic!("Invalid literal type supplied"),
 		};
 
 		args.push(data);
@@ -259,27 +258,6 @@ fn parse_index_method(tokens: TokenStream) -> Vec<Attribute> {
 	};
 
 	body
-}
-
-/// Generates docs for MetaMethod::Index
-///
-/// # Arguments
-/// * `tokens` - The TokenStream from the macro to parse
-/// * `stream` - The BufWriter to write to
-fn generate_index_doc(tokens: TokenStream, stream: &mut BufWriter<Vec<u8>>) {
-	let arms = parse_index_method(tokens.clone());
-
-	writeln!(stream, "# Index").unwrap();
-
-	arms.iter().for_each(|arm| {
-		let optional_char: String = if arm.optional {
-			"?".to_string()
-		} else {
-			"".to_string()
-		};
-
-		writeln!(stream, "{} -> {}{}", arm.name, arm.typ, optional_char).unwrap();
-	});
 }
 
 pub fn get_doc_groups(tokens: TokenStream) -> Vec<String> {

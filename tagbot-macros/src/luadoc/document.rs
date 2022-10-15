@@ -1,4 +1,4 @@
-use std::{collections::HashMap, hash::Hash};
+use std::collections::HashMap;
 
 use super::comments::Annotation;
 
@@ -98,6 +98,4 @@ impl Document {
 			operators: Vec::new(),
 		}
 	}
-
-	pub fn set_attrib() {}
 }

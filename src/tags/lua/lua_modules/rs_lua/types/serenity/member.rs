@@ -1,4 +1,4 @@
-use rlua::{MetaMethod, ToLua, UserData, Value};
+use rlua::{MetaMethod, UserData, Value};
 use serenity::model::prelude::{Member, RoleId};
 use tagbot_macros::lua_document;
 
