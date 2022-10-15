@@ -6,12 +6,13 @@ use super::comments::Annotation;
 pub struct Method {
 	pub desc: Vec<Annotation>,
 	pub params: HashMap<String, Annotation>,
-	pub returns: Vec<Annotation>,
+	pub returns: Annotation,
 }
 
 impl From<&Vec<Annotation>> for Method {
 	fn from(annotations: &Vec<Annotation>) -> Self {
-		let mut method = Self { desc: Vec::new(), params: HashMap::new(), returns: Vec::new() };
+		let mut method =
+			Self { desc: Vec::new(), params: HashMap::new(), returns: Annotation::None };
 
 		method.desc = annotations
 			.iter()
@@ -39,7 +40,10 @@ impl From<&Vec<Annotation>> for Method {
 				Annotation::Return(_) => Some(annot),
 				_ => None,
 			})
-			.collect::<Vec<Annotation>>();
+			.collect::<Vec<Annotation>>()
+			.get(0)
+			.unwrap()
+			.to_owned();
 
 		method
 	}

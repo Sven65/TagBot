@@ -43,6 +43,7 @@ pub enum Annotation {
 	Param(ParamValueAnnotation),
 	Return(ParamAnnotation),
 	Description(String),
+	None,
 }
 
 /// Gets the comments for a method call from a TokenStream and returns it as a HashMap<K, V> where

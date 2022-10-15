@@ -17,6 +17,7 @@ use std::env;
 use crate::luadoc::{
 	convert_parser::parse_convert_type,
 	document::{Document, Method},
+	markdown::generate_markdown,
 };
 
 use self::{
@@ -27,6 +28,7 @@ use self::{
 mod comments;
 mod convert_parser;
 mod document;
+mod markdown;
 
 /// Parses the segments of a [`syn::Path`] into a string
 ///
@@ -329,8 +331,6 @@ pub fn lua_doc_generator(args: TokenStream, tokens: TokenStream) -> TokenStream 
 	// println!("tokens {:#?}", tokens);
 	// println!("args {:#?}", args);
 
-	let mut stream = BufWriter::new(Vec::new());
-
 	let input: AttributeArgs = parse_macro_input!(args as AttributeArgs);
 
 	let parsed_args = parse_args(input);
@@ -407,6 +407,12 @@ pub fn lua_doc_generator(args: TokenStream, tokens: TokenStream) -> TokenStream 
 
 	CURRENT_DOC.with(|doc| {
 		println!("doc is {:#?}", doc.borrow());
+
+		let borrowed = doc.borrow();
+
+		borrowed.iter().for_each(|(a, b)| {
+			generate_markdown(b);
+		});
 	});
 
 	tokens
