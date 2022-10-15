@@ -1,10 +1,10 @@
-use std::{any::Any, collections::HashMap};
+use std::any::Any;
 
 use luadoc::lua_doc_generator;
 use proc_macro::TokenStream;
 use proc_macro2::Ident;
 use quote::quote;
-use syn::{self, parse_macro_input, DataStruct, Lit, LitStr};
+use syn::{self, DataStruct};
 
 mod luadoc;
 

@@ -1,4 +1,4 @@
-use syn::{token::And, AngleBracketedGenericArguments, Expr, Path, PathArguments, TypeReference};
+use syn::{AngleBracketedGenericArguments, Expr, Path, TypeReference};
 
 use crate::luadoc::parse_path;
 

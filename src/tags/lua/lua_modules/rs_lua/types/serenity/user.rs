@@ -1,6 +1,6 @@
 // Wraps a serenity user as a lua variable
 
-use rlua::{MetaMethod, ToLua, UserData, Value};
+use rlua::{MetaMethod, UserData, Value};
 use serenity::model::prelude::User;
 use tagbot_macros::lua_document;
 
