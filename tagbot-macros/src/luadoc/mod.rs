@@ -26,10 +26,10 @@ use self::{
 	document::{Attribute, DocTitle},
 };
 
-mod comments;
-mod convert_parser;
-mod document;
-mod markdown;
+pub mod comments;
+pub mod convert_parser;
+pub mod document;
+pub mod markdown;
 
 /// Parses the segments of a [`syn::Path`] into a string
 ///

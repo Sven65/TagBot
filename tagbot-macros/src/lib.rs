@@ -190,6 +190,7 @@ pub fn wrapped_id(tokens: TokenStream) -> TokenStream {
 }
 
 #[proc_macro_attribute]
+#[doc = include_str!("./luadoc/README.md")]
 pub fn lua_document(args: TokenStream, tokens: TokenStream) -> TokenStream {
 	lua_doc_generator(args, tokens)
 }

@@ -36,6 +36,7 @@ pub struct ParamValueAnnotation {
 	pub param: String,
 }
 
+/// Annotation
 #[derive(Debug, PartialEq, Clone)]
 pub enum Annotation {
 	// Function,
