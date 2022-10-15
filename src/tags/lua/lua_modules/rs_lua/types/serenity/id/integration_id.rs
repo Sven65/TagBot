@@ -4,6 +4,7 @@ use serenity::model::prelude::IntegrationId;
 use crate::tags::lua::lua_modules::rs_lua::types::utils::types::ConstructableFrom;
 
 #[derive(Clone, Hash, PartialEq, Eq)]
+#[lua_document("TBIntegrationId", class)]
 pub struct TBIntegrationId(pub IntegrationId);
 
 impl ConstructableFrom<IntegrationId> for TBIntegrationId {

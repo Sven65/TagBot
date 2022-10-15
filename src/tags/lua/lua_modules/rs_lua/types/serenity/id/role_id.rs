@@ -4,6 +4,7 @@ use serenity::model::prelude::RoleId;
 use crate::tags::lua::lua_modules::rs_lua::types::utils::types::ConstructableFrom;
 
 #[derive(Clone, Hash, PartialEq, Eq)]
+#[lua_document("TBRoleId", class)]
 pub struct TBRoleId(pub RoleId);
 
 impl ConstructableFrom<RoleId> for TBRoleId {
