@@ -58,3 +58,31 @@ pub fn parse_convert_type(expr: Expr, optional: bool) -> (String, bool) {
 
 	return (typ, optional);
 }
+
+pub fn parse_convert_dual_type(expr: Expr, optional: bool) -> (String, String, bool) {
+	let args = get_arguments(expr.clone());
+
+	let types: Vec<String> = match args.get(0).unwrap() {
+		syn::PathArguments::AngleBracketed(args) => match args {
+			AngleBracketedGenericArguments { args, .. } => args
+				.iter()
+				.filter_map(|ty| match ty {
+					syn::GenericArgument::Type(ty) => match ty {
+						syn::Type::Path(path) => Some(parse_path(&path.path)),
+						syn::Type::Reference(t_ref) => Some(parse_type_reference(t_ref)),
+						_ => panic!("Type is not path. {:#?}", ty),
+					},
+					_ => None,
+				})
+				.collect(),
+		},
+		syn::PathArguments::None => panic!("Failed to find type for index."),
+		_ => panic!("Args is not angle."),
+	};
+
+	return (
+		types.get(0).unwrap().to_string(),
+		types.get(1).unwrap().to_string(),
+		optional,
+	);
+}

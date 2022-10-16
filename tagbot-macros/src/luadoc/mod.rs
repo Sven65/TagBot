@@ -23,6 +23,7 @@ use crate::luadoc::{
 
 use self::{
 	comments::parse_comments,
+	convert_parser::parse_convert_dual_type,
 	document::{Attribute, DocTitle},
 };
 
@@ -167,18 +168,21 @@ fn parse_arm_body(expr: Expr) -> (String, bool) {
 			(format!("array[{}]", typ), optional)
 		}
 		"lua_todo" => ("<!> Unknown (Not implemented) <!>".to_string(), false),
-		"convert_hashmap_types_with_new" => (
-			"<!> Error: parser not implemented for hashmap new type <!>".to_string(),
-			false,
-		),
-		"convert_hashmap_types" => (
-			"<!> Error: parser not implemented for hashmap type <!>".to_string(),
-			false,
-		),
-		"convert_vec_new" => (
-			"<!> Error: parser not implemented for hashmap type <!>".to_string(),
-			false,
-		),
+		"convert_hashmap_types_with_new" => {
+			let (typ1, typ2, optional) = parse_convert_dual_type(expr.clone(), false);
+
+			(format!("HashMap<{}, {}>", typ1, typ2), optional)
+		}
+		"convert_hashmap_types" => {
+			let (typ1, typ2, optional) = parse_convert_dual_type(expr.clone(), false);
+
+			(format!("HashMap<{}, {}>", typ1, typ2), optional)
+		}
+		"convert_vec_new" => {
+			let (typ, optional) = parse_convert_type(expr.clone(), false);
+
+			(format!("array[{}]", typ), optional)
+		}
 		&_ => panic!("Handling for converter in {:#?} is not implemented.", expr),
 	};
 

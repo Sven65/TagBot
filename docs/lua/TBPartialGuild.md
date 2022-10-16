@@ -8,13 +8,13 @@
 - default_message_notifications :: TBDefaultMessageNotificationLevel
 - widget_enabled :: bool?
 - widget_channel_id :: TBChannelId?
-- emojis :: <!> Error: parser not implemented for hashmap type <!>
+- emojis :: HashMap<TBEmojiId, TBEmoji>
 - features :: array[String]
 - icon :: String?
 - mfa_level :: TBMfaLevel
 - name :: String
 - owner_id :: TBUserId
-- roles :: <!> Error: parser not implemented for hashmap new type <!>
+- roles :: HashMap<TBRoleId, TBRole>
 - splash :: String?
 - discovery_splash :: String?
 - system_channel_id :: TBChannelId?
@@ -34,4 +34,4 @@
 - max_video_channel_users :: u64?
 - max_presences :: u64?
 - max_members :: u64?
-- stickers :: <!> Error: parser not implemented for hashmap new type <!>
+- stickers :: HashMap<TBStickerId, TBSticker>
