@@ -49,7 +49,11 @@ impl UserData for TBColour {
 	}
 }
 
+#[lua_document("TBColour", requireable)]
+#[allow(unused_doc_comments)]
 impl Requireable for TBColour {
+	/// @desc Creates a requireable module
+	/// @return {table} The colour module
 	fn create_module(ctx: rlua::Context) -> rlua::Value {
 		let value = ctx.create_table();
 
@@ -59,6 +63,10 @@ impl Requireable for TBColour {
 
 		let value = value.unwrap();
 
+		/// @desc Creates a new colour
+		/// @function
+		/// @param {u32} params The u32 value to create the colour with
+		/// @return {TBColour} The new timestamp
 		let func = ctx.create_function(|_, params: u32| {
 			let value = params;
 
@@ -67,6 +75,12 @@ impl Requireable for TBColour {
 
 		value.set("new", func.unwrap()).unwrap();
 
+		/// @desc Creates a new colour with rgb values
+		/// @function
+		/// @param {u8} r The red value of the color between 0 and 255
+		/// @param {u8} g The green value of the color between 0 and 255
+		/// @param {u8} b The blue value of the color between 0 and 255
+		/// @return {TBColour} The new timestamp
 		let from_rgb = ctx.create_function(|_, (r, g, b): (u8, u8, u8)| {
 			Ok(TBColour::new(Colour::from_rgb(r, g, b)))
 		});

@@ -224,7 +224,7 @@ fn parse_desc(line: &String) -> Annotation {
 ///
 /// # Arguments
 /// * `line` - The line to parse
-fn parse_comment_line(line: &String) -> Option<Annotation> {
+pub fn parse_comment_line(line: &String) -> Option<Annotation> {
 	let captures = ANNOTATION_REGEX.captures(line.as_str());
 
 	if captures.is_none() {

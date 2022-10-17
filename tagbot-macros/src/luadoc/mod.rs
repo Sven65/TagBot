@@ -25,12 +25,14 @@ use self::{
 	comments::parse_comments,
 	convert_parser::parse_convert_dual_type,
 	document::{Attribute, DocTitle},
+	requireable::parse_requireable,
 };
 
 pub mod comments;
 pub mod convert_parser;
 pub mod document;
 pub mod markdown;
+pub mod requireable;
 
 /// Parses the segments of a [`syn::Path`] into a string
 ///
@@ -264,6 +266,10 @@ fn parse_index_method(tokens: TokenStream) -> Vec<Attribute> {
 	body
 }
 
+/// Gets groups that have the type "doc" and returns a vec of strings
+///
+/// # Arguments
+/// * `tokens` - The tokens to parse
 pub fn get_doc_groups(tokens: TokenStream) -> Vec<String> {
 	let ast: syn::ItemStruct = syn::parse(tokens.clone()).unwrap();
 
@@ -304,12 +310,14 @@ pub fn get_doc_groups(tokens: TokenStream) -> Vec<String> {
 	docs
 }
 
+/// Parses out the title for a doc
 fn get_doc_title(tokens: TokenStream) -> String {
 	let ast: syn::ItemStruct = syn::parse(tokens.clone()).unwrap();
 
 	ast.ident.to_string()
 }
 
+/// Generates a [`DocTitle`] for a doc
 fn generate_class_doc(tokens: TokenStream) -> DocTitle {
 	let docs = get_doc_groups(tokens.clone());
 
@@ -398,6 +406,10 @@ pub fn lua_doc_generator(args: TokenStream, tokens: TokenStream) -> TokenStream 
 
 			doc.methods = methods.into();
 		});
+	}
+
+	if parsed_args.contains(&"requireable".to_string()) {
+		parse_requireable(tokens.clone());
 	}
 
 	CURRENT_DOC.with(|doc| {
