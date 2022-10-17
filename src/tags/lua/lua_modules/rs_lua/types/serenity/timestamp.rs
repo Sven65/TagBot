@@ -75,7 +75,11 @@ impl UserData for TBTimestamp {
 	}
 }
 
+// #[lua_document("TBTimestamp", requireable)]
+#[allow(unused_doc_comments)]
 impl Requireable for TBTimestamp {
+	/// @desc Creates a requireable module
+	/// @return {table} The timestamp module
 	fn create_module<'lua>(ctx: rlua::Context<'lua>) -> rlua::Value<'lua> {
 		let value = ctx.create_table();
 
@@ -85,6 +89,11 @@ impl Requireable for TBTimestamp {
 
 		let value = value.unwrap();
 
+		/// @desc Creates a new timestamp
+		/// @function
+		/// @param {table} params The params to create the timestamp with
+		/// @param {i64} params.secs The unix timestamp to create the timestamp from
+		/// @return {TBTimestamp} The new timestamp
 		let func = ctx.create_function(|_, params: rlua::Table| {
 			let secs = params.get::<&str, i64>("secs")?;
 
