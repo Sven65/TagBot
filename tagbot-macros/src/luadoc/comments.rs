@@ -39,7 +39,7 @@ pub struct ParamValueAnnotation {
 /// Annotation
 #[derive(Debug, PartialEq, Clone)]
 pub enum Annotation {
-	// Function,
+	Function,
 	Method,
 	Param(ParamValueAnnotation),
 	Return(ParamAnnotation),
@@ -244,6 +244,7 @@ pub fn parse_comment_line(line: &String) -> Option<Annotation> {
 		"param" => Some(parse_param(line)),
 		"return" => Some(parse_return(line)),
 		"method" => Some(Annotation::Method),
+		"function" => Some(Annotation::Function),
 		_ => None,
 	}
 }

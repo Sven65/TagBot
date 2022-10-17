@@ -64,7 +64,19 @@ fn parse_args(input: Vec<NestedMeta>) -> Vec<String> {
 			},
 			NestedMeta::Meta(meta) => match meta {
 				syn::Meta::Path(path) => parse_path(path),
-				_ => panic!("Invalid non-path supplied to meta"),
+				syn::Meta::NameValue(name) => {
+					let path = parse_path(&name.path);
+
+					let value = match &name.lit {
+						Lit::Str(str) => str.value(),
+						_ => panic!("Value of attribute is not string."),
+					};
+
+					format!("{}={}", path, value)
+				}
+				_ => {
+					panic!("Invalid non-path supplied to meta");
+				}
 			},
 		};
 
@@ -408,8 +420,58 @@ pub fn lua_doc_generator(args: TokenStream, tokens: TokenStream) -> TokenStream 
 		});
 	}
 
-	if parsed_args.contains(&"requireable".to_string()) {
-		parse_requireable(tokens.clone());
+	let contains_requireable = parsed_args.iter().any(|arg| {
+		let split: Vec<&str> = arg.split("=").collect();
+
+		if split.len() != 2 {
+			return false;
+		}
+
+		let first = split.get(0).unwrap().to_string();
+		let value = split.get(1).unwrap().to_string();
+
+		let is_requireable = first == "requireable";
+
+		if is_requireable {
+			CURRENT_DOC.with(|map| {
+				let mut borrowed = map.borrow_mut();
+
+				let doc = match borrowed.entry(class_name.clone()) {
+					Entry::Occupied(o) => o.into_mut(),
+					Entry::Vacant(v) => v.insert(Document::new()),
+				};
+
+				doc.requireable_as = Some(value);
+			});
+		}
+
+		is_requireable
+	});
+
+	if (contains_requireable) {
+		let function_tree = parse_requireable(tokens.clone());
+
+		let functions: HashMap<String, Method> = function_tree
+			.iter()
+			.filter(|(_, b)| b.contains(&comments::Annotation::Function))
+			.map(|(a, b)| {
+				let method = Method::from(b);
+
+				(a.to_string(), method)
+			})
+			.collect::<HashMap<String, Method>>();
+
+		CURRENT_DOC.with(|map| {
+			let mut borrowed = map.borrow_mut();
+
+			let doc = match borrowed.entry(class_name.clone()) {
+				Entry::Occupied(o) => o.into_mut(),
+				Entry::Vacant(v) => v.insert(Document::new()),
+			};
+
+			doc.requireable = true;
+			doc.requireable_functions = functions.into();
+		});
 	}
 
 	CURRENT_DOC.with(|doc| {
