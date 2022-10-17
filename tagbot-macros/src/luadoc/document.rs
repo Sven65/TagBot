@@ -87,6 +87,14 @@ pub struct Document {
 	pub attributes: Vec<Attribute>,
 	/// Operators that the class supports
 	pub operators: Vec<Operator>,
+
+	/// If the doc has a requireable module.
+	pub requireable: bool,
+
+	pub requireable_as: Option<String>,
+
+	/// Functions exposed through requireable
+	pub requireable_functions: HashMap<String, Method>,
 }
 
 impl Document {
@@ -96,6 +104,9 @@ impl Document {
 			methods: HashMap::new(),
 			attributes: Vec::new(),
 			operators: Vec::new(),
+			requireable: false,
+			requireable_as: None,
+			requireable_functions: HashMap::new(),
 		}
 	}
 }

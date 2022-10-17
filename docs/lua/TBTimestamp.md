@@ -24,3 +24,21 @@ Formats the timestamp with with the specified format string.
 ### Return Values
 - :: string | Formatted timestamp
 
+# Requireable
+
+This module is requireable as `timestamp`.
+
+## Functions
+
+## new(params,params.secs) -> TBTimestamp
+
+Creates a new timestamp
+
+### Params
+- params :: table | The params to create the timestamp with
+- params.secs :: i64 | The unix timestamp to create the timestamp from
+
+
+### Return Values
+- :: TBTimestamp | The new timestamp
+

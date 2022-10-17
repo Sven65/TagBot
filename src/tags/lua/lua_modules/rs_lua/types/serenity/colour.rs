@@ -49,7 +49,7 @@ impl UserData for TBColour {
 	}
 }
 
-#[lua_document("TBColour", requireable)]
+#[lua_document("TBColour", requireable = "colour")]
 #[allow(unused_doc_comments)]
 impl Requireable for TBColour {
 	/// @desc Creates a requireable module

@@ -113,6 +113,24 @@ pub fn generate_markdown(doc: &Document) -> String {
 		writeln!(&mut stream, "# Operators").unwrap();
 	}
 
+	if doc.requireable {
+		writeln!(&mut stream, "# Requireable\n").unwrap();
+		writeln!(
+			&mut stream,
+			"This module is requireable as `{}`.\n",
+			doc.requireable_as.as_ref().unwrap(),
+		)
+		.unwrap();
+
+		if doc.requireable_functions.len() > 0 {
+			writeln!(&mut stream, "## Functions\n").unwrap();
+
+			doc.requireable_functions
+				.iter()
+				.for_each(|(name, method)| write_method(&mut stream, name, method));
+		}
+	}
+
 	let string = String::from_utf8(stream).unwrap();
 
 	string

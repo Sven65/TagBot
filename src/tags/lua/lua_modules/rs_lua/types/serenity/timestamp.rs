@@ -75,7 +75,7 @@ impl UserData for TBTimestamp {
 	}
 }
 
-// #[lua_document("TBTimestamp", requireable)]
+#[lua_document("TBTimestamp", requireable = "timestamp")]
 #[allow(unused_doc_comments)]
 impl Requireable for TBTimestamp {
 	/// @desc Creates a requireable module

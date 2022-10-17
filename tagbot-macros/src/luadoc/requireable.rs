@@ -258,7 +258,14 @@ fn find_function_creator_docs(
 		.map(|(name, local)| {
 			let docs = parse_attributes_to_doc(local.attrs.clone());
 
-			(name, docs)
+			let method: Vec<&ValueSetParams> = methods
+				.iter()
+				.filter(|m| m.func == name.to_string())
+				.collect();
+
+			let method = method.get(0).unwrap();
+
+			(method.index.to_string(), docs)
 		})
 		.collect();
 
@@ -283,7 +290,7 @@ fn parse_function_docs(docs: HashMap<String, Vec<String>>) -> HashMap<String, Ve
 ///
 /// # Arguments
 /// * `method` - The method to parse
-fn parse_return_table(method: &ImplItemMethod) {
+fn parse_return_table(method: &ImplItemMethod) -> HashMap<String, Vec<Annotation>> {
 	let return_ident_name = get_return_table_ident_name(method);
 
 	let return_sets = parse_return_sets(method, return_ident_name);
@@ -295,13 +302,15 @@ fn parse_return_table(method: &ImplItemMethod) {
 	let docs = parse_function_docs(found_docs);
 
 	println!("docs {:#?}", docs);
+
+	docs
 }
 
 /// Parses a requireable trait implementation
 ///
 /// # Arguments
 /// * `tokens` - The tokens to parse
-pub fn parse_requireable(tokens: TokenStream) {
+pub fn parse_requireable(tokens: TokenStream) -> HashMap<String, Vec<Annotation>> {
 	let ast: syn::ItemImpl = syn::parse(tokens.clone()).unwrap();
 
 	// println!("ast is {:#?}", ast);
@@ -343,10 +352,9 @@ pub fn parse_requireable(tokens: TokenStream) {
 
 	let return_type = return_type.get(0).unwrap();
 
-	// println!("Method {:#?}", method);
-	println!("return_type {:#?}", return_type);
-
 	if return_type == "table" {
-		parse_return_table(method);
+		return parse_return_table(method);
 	}
+
+	panic!("Handling of return type for requireable is not implemented.");
 }
