@@ -1,5 +1,5 @@
 use crate::tags::lua::lua_modules::rs_lua::types::utils::types::ConstructableFrom;
-use rlua::{MetaMethod, UserData, Value};
+use rlua::{MetaMethod, ToLua, UserData, Value};
 use serenity::model::prelude::{StickerId, StickerPackId};
 use tagbot_macros::{lua_document, WrappedId};
 

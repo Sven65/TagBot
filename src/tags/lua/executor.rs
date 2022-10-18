@@ -73,11 +73,11 @@ fn execute_code(
 			globals.set("sender_member", sender_member)?;
 		}
 
-		globals.set("channel_id", TBChannelId::new(channel_id, _ctx))?;
+		globals.set("channel_id", TBChannelId::new(channel_id, _ctx.clone()))?;
 
 		let guild_id = interaction.clone().guild_id;
 		if let Some(id) = guild_id {
-			globals.set("guild_id", TBGuildId::new(id, _ctx))?;
+			globals.set("guild_id", TBGuildId::new(id, _ctx.clone()))?;
 		}
 
 		Ok(())

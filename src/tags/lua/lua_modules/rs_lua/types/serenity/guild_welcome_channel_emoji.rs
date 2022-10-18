@@ -29,7 +29,7 @@ impl UserData for TBGuildWelcomeChannelEmoji {
 	fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
 		methods.add_meta_method(MetaMethod::ToString, |ctx, this, _: Value| {
 			Ok(match &this.0 {
-				GuildWelcomeChannelEmoji::Custom { name, id } => convert_type(name.clone(), ctx)?,
+				GuildWelcomeChannelEmoji::Custom { name, .. } => convert_type(name.clone(), ctx)?,
 				GuildWelcomeChannelEmoji::Unicode(name) => convert_type(name.clone(), ctx)?,
 				_ => Value::Nil,
 			})

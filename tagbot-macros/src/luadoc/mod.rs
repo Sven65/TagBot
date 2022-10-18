@@ -448,7 +448,7 @@ pub fn lua_doc_generator(args: TokenStream, tokens: TokenStream) -> TokenStream 
 		is_requireable
 	});
 
-	if (contains_requireable) {
+	if contains_requireable {
 		let function_tree = parse_requireable(tokens.clone());
 
 		let functions: HashMap<String, Method> = function_tree
