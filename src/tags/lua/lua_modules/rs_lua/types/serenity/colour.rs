@@ -28,7 +28,7 @@ impl UserData for TBColour {
 	#[lua_document("TBColour", parse_comments, index)]
 	fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
 		methods.add_meta_method(MetaMethod::ToString, |ctx, this, _: Value| {
-			this.0.hex().to_string().to_lua(ctx)
+			this.0.hex().to_lua(ctx)
 		});
 
 		methods.add_meta_method(MetaMethod::Index, |ctx, this, value: String| {

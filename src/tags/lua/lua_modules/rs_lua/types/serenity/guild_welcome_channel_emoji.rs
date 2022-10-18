@@ -38,7 +38,7 @@ impl UserData for TBGuildWelcomeChannelEmoji {
 		methods.add_meta_method(MetaMethod::Index, |ctx, this, value: String| {
 			let data = match &this.0 {
 				GuildWelcomeChannelEmoji::Custom { id, name } => match value.as_str() {
-					"id" => convert_constructable::<TBEmojiId, _>(id.clone(), ctx)?,
+					"id" => convert_constructable::<TBEmojiId, _>(*id, ctx)?,
 					"name" => convert_type(name.clone(), ctx)?,
 					_ => Value::Nil,
 				},

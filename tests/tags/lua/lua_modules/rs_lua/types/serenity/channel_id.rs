@@ -16,9 +16,9 @@ fn channel_id_to_string() {
 		globals.set("userdata", userdata).unwrap();
 
 		let data = lua.load(
-			format!(r#"
+			r#"
 				return tostring(userdata)
-			"#).as_str(),
+			"#.to_string().as_str(),
 		).eval::<String>().unwrap();
 
 		assert_eq!(data, "172382467385196544")
