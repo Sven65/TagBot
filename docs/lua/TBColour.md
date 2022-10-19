@@ -5,45 +5,11 @@
 - r :: u8
 - g :: u8
 - b :: u8
-# Methods
-
-## hex() -> string
-
-Converts the color to a hex color string
-
-
-
-### Return Values
-- :: string | The converted hex color
-
-## create_thing(my_param,my_param.index,second_table,second_table.index,size)
-
-creates the thing!!!!
-
-### Params
-- my_param :: table | A table param
-- my_param.index :: string | The index in the table
-- second_table :: table | A second table param
-- second_table.index :: string | The index in the  second table
-- size :: string | how big it is
-
-
 # Requireable
 
 This module is requireable as `colour`.
 
 ## Functions
-
-## new(params) -> TBColour
-
-Creates a new colour
-
-### Params
-- params :: u32 | The u32 value to create the colour with
-
-
-### Return Values
-- :: TBColour | The new timestamp
 
 ## from_rgb(r,g,b) -> TBColour
 
@@ -53,6 +19,17 @@ Creates a new colour with rgb values
 - r :: u8 | The red value of the color between 0 and 255
 - g :: u8 | The green value of the color between 0 and 255
 - b :: u8 | The blue value of the color between 0 and 255
+
+
+### Return Values
+- :: TBColour | The new timestamp
+
+## new(params) -> TBColour
+
+Creates a new colour
+
+### Params
+- params :: u32 | The u32 value to create the colour with
 
 
 ### Return Values
