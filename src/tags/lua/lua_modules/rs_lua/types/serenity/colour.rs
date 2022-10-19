@@ -46,6 +46,17 @@ impl UserData for TBColour {
 		methods.add_method("hex", |ctx, this, _: Value| {
 			this.0.hex().to_lua(ctx)
 		});
+
+		/// @desc Converts the color to a hex color string
+		/// @method
+		/// @param {table} my_param A table param
+		/// @param {string} my_param.index The index in the table
+		/// @param {table} second_table A second table param
+		/// @param {string} second_table.index The index in the  second table
+		/// @return {string} The converted hex color
+		methods.add_method("cock", |ctx, this, _: Value| {
+			this.0.hex().to_lua(ctx)
+		});
 	}
 }
 

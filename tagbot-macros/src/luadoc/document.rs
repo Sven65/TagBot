@@ -25,8 +25,6 @@ impl From<&Vec<Annotation>> for Method {
 			})
 			.collect::<Vec<Annotation>>();
 
-		println!("annotations {:#?}", annotations);
-
 		method.params = annotations
 			.iter()
 			.cloned()

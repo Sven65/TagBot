@@ -16,6 +16,20 @@ Converts the color to a hex color string
 ### Return Values
 - :: string | The converted hex color
 
+## cock(my_param,my_param.index,second_table,second_table.index) -> string
+
+Converts the color to a hex color string
+
+### Params
+- my_param :: table | A table param
+- my_param.index :: string | The index in the table
+- second_table :: table | A second table param
+- second_table.index :: string | The index in the  second table
+
+
+### Return Values
+- :: string | The converted hex color
+
 # Requireable
 
 This module is requireable as `colour`.
