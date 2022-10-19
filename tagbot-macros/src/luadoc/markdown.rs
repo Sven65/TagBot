@@ -10,7 +10,10 @@ fn generate_method_signature(name: &String, method: &Method) -> String {
 	let params: String = method
 		.params
 		.iter()
-		.map(|(param_name, _)| param_name.to_string())
+		.map(|(param_name, annotation)| {
+			println!("annotation is {:#?}", annotation);
+			param_name.to_string()
+		})
 		.collect::<Vec<String>>()
 		.join(",");
 

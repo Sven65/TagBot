@@ -35,8 +35,6 @@ impl From<&Vec<Annotation>> for Method {
 			.map(|(annot, param)| (param.param, annot))
 			.collect::<IndexMap<String, Annotation>>();
 
-		// println!("param {:#?}", method.params);
-
 		method.returns = annotations
 			.iter()
 			.cloned()

@@ -399,7 +399,7 @@ fn find_tables(tree: HashMap<String, Vec<Annotation>>) -> IndexMap<String, Vec<A
 fn replace_params_with_table(
 	original: HashMap<String, Vec<Annotation>>,
 	tables: IndexMap<String, Vec<Annotation>>,
-) {
+) -> HashMap<String, Vec<Annotation>> {
 	let mut new_tree: HashMap<String, Vec<Annotation>> = original.clone();
 
 	tables
@@ -416,11 +416,9 @@ fn replace_params_with_table(
 							let table_annot: Option<TableAnnotation> =
 								annots.iter().find_map(|annot| match annot {
 									Annotation::Table(table) | Annotation::ReturnTable(table) => {
-										println!("table is {:#?}, param is {:#?}", table, param);
 										if table.param == param.param {
 											Some(table.to_owned())
 										} else {
-											println!("returning None for table param match");
 											None
 										}
 									}
@@ -457,17 +455,15 @@ fn replace_params_with_table(
 							}
 						}
 					}
-					Annotation::Return(ret) => None,
+					Annotation::Return(_) => None,
 					_ => Some(annot.to_owned()),
 				})
 				.collect::<Vec<Annotation>>();
 
-			println!("new group is {:#?}", new_group);
-
 			new_tree.insert(name.to_string(), new_group);
 		});
 
-	println!("new tree is {:#?}", new_tree);
+	new_tree
 }
 
 /// Parsed a comment string line into annotation
@@ -520,7 +516,7 @@ pub fn parse_comments(tokens: TokenStream) -> HashMap<String, Vec<Annotation>> {
 
 	let tables = find_tables(tree.clone());
 
-	replace_params_with_table(tree.clone(), tables);
+	let new_tree = replace_params_with_table(tree.clone(), tables);
 
-	tree
+	new_tree
 }

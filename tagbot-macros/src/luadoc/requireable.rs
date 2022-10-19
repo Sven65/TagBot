@@ -311,15 +311,11 @@ fn parse_return_table(method: &ImplItemMethod) -> HashMap<String, Vec<Annotation
 pub fn parse_requireable(tokens: TokenStream) -> HashMap<String, Vec<Annotation>> {
 	let ast: syn::ItemImpl = syn::parse(tokens.clone()).unwrap();
 
-	// println!("ast is {:#?}", ast);
-
 	let found_methods: Vec<&ImplItemMethod> = ast
 		.items
 		.iter()
 		.filter_map(|item| match item {
 			syn::ImplItem::Method(method) => {
-				// println!("method {:#?}", method);
-
 				let method_name = method.sig.ident.to_string();
 
 				if method_name != "create_module".to_string() {
