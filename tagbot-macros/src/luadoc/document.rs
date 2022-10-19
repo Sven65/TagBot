@@ -41,7 +41,7 @@ impl From<&Vec<Annotation>> for Method {
 			.iter()
 			.cloned()
 			.filter_map(|annot| match annot {
-				Annotation::Return(_) => Some(annot),
+				Annotation::Return(_) | Annotation::ReturnParam(_) => Some(annot),
 				_ => None,
 			})
 			.collect::<Vec<Annotation>>()
