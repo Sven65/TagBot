@@ -79,7 +79,7 @@ impl UserData for TBTimestamp {
 #[allow(unused_doc_comments)]
 impl Requireable for TBTimestamp {
 	/// @desc Creates a requireable module
-	/// @return {table} The timestamp module
+	/// @return {module} The timestamp module
 	fn create_module<'lua>(ctx: rlua::Context<'lua>) -> rlua::Value<'lua> {
 		let value = ctx.create_table();
 

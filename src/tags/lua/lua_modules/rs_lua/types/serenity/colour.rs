@@ -47,14 +47,16 @@ impl UserData for TBColour {
 			this.0.hex().to_lua(ctx)
 		});
 
-		/// @desc Converts the color to a hex color string
+		/// @desc creates the thing!!!!
 		/// @method
 		/// @param {table} my_param A table param
 		/// @param {string} my_param.index The index in the table
 		/// @param {table} second_table A second table param
 		/// @param {string} second_table.index The index in the  second table
-		/// @return {string} The converted hex color
-		methods.add_method("cock", |ctx, this, _: Value| {
+		/// @param {string} size how big it is
+		/// @return {table} r_table The converted hex color
+		/// @return {string} r_table.actual how big it actually is
+		methods.add_method("create_thing", |ctx, this, _: Value| {
 			this.0.hex().to_lua(ctx)
 		});
 	}
@@ -64,7 +66,7 @@ impl UserData for TBColour {
 #[allow(unused_doc_comments)]
 impl Requireable for TBColour {
 	/// @desc Creates a requireable module
-	/// @return {table} The colour module
+	/// @return {module} The colour module
 	fn create_module(ctx: rlua::Context) -> rlua::Value {
 		let value = ctx.create_table();
 
