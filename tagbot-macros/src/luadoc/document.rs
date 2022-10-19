@@ -1,18 +1,20 @@
 use std::collections::HashMap;
 
+use indexmap::IndexMap;
+
 use super::comments::Annotation;
 
 #[derive(Debug)]
 pub struct Method {
 	pub desc: Vec<Annotation>,
-	pub params: HashMap<String, Annotation>,
+	pub params: IndexMap<String, Annotation>,
 	pub returns: Annotation,
 }
 
 impl From<&Vec<Annotation>> for Method {
 	fn from(annotations: &Vec<Annotation>) -> Self {
 		let mut method =
-			Self { desc: Vec::new(), params: HashMap::new(), returns: Annotation::None };
+			Self { desc: Vec::new(), params: IndexMap::new(), returns: Annotation::None };
 
 		method.desc = annotations
 			.iter()
@@ -23,6 +25,8 @@ impl From<&Vec<Annotation>> for Method {
 			})
 			.collect::<Vec<Annotation>>();
 
+		println!("annotations {:#?}", annotations);
+
 		method.params = annotations
 			.iter()
 			.cloned()
@@ -31,7 +35,9 @@ impl From<&Vec<Annotation>> for Method {
 				_ => None,
 			})
 			.map(|(annot, param)| (param.param, annot))
-			.collect::<HashMap<String, Annotation>>();
+			.collect::<IndexMap<String, Annotation>>();
+
+		// println!("param {:#?}", method.params);
 
 		method.returns = annotations
 			.iter()
@@ -82,7 +88,7 @@ pub struct Document {
 	/// Title of the class
 	pub title: DocTitle,
 	/// Methods the class hass
-	pub methods: HashMap<String, Method>,
+	pub methods: IndexMap<String, Method>,
 	/// Attributes of the class
 	pub attributes: Vec<Attribute>,
 	/// Operators that the class supports
@@ -94,19 +100,19 @@ pub struct Document {
 	pub requireable_as: Option<String>,
 
 	/// Functions exposed through requireable
-	pub requireable_functions: HashMap<String, Method>,
+	pub requireable_functions: IndexMap<String, Method>,
 }
 
 impl Document {
 	pub fn new() -> Self {
 		Self {
 			title: DocTitle::new(),
-			methods: HashMap::new(),
+			methods: IndexMap::new(),
 			attributes: Vec::new(),
 			operators: Vec::new(),
 			requireable: false,
 			requireable_as: None,
-			requireable_functions: HashMap::new(),
+			requireable_functions: IndexMap::new(),
 		}
 	}
 }

@@ -1518,6 +1518,7 @@ name = "tagbot-macros"
 version = "0.1.0"
 dependencies = [
  "darling",
+ "indexmap",
  "lazy_static",
  "proc-macro2",
  "quote",

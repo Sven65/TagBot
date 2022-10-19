@@ -5,6 +5,7 @@ use std::{
 };
 
 use darling::ToTokens;
+use indexmap::IndexMap;
 use proc_macro::TokenStream;
 use syn::{
 	parse_macro_input, Arm, AttributeArgs, Expr, ExprBlock, ExprMethodCall, Lit, NestedMeta, Path,
@@ -398,7 +399,7 @@ pub fn lua_doc_generator(args: TokenStream, tokens: TokenStream) -> TokenStream 
 	if parsed_args.contains(&"parse_comments".to_string()) {
 		let comment_tree = parse_comments(tokens.clone());
 
-		let methods: HashMap<String, Method> = comment_tree
+		let methods: IndexMap<String, Method> = comment_tree
 			.iter()
 			.filter(|(_, b)| b.contains(&comments::Annotation::Method))
 			.map(|(a, b)| {
@@ -406,7 +407,7 @@ pub fn lua_doc_generator(args: TokenStream, tokens: TokenStream) -> TokenStream 
 
 				(a.to_string(), method)
 			})
-			.collect::<HashMap<String, Method>>();
+			.collect::<IndexMap<String, Method>>();
 
 		CURRENT_DOC.with(|map| {
 			let mut borrowed = map.borrow_mut();
@@ -451,7 +452,7 @@ pub fn lua_doc_generator(args: TokenStream, tokens: TokenStream) -> TokenStream 
 	if contains_requireable {
 		let function_tree = parse_requireable(tokens.clone());
 
-		let functions: HashMap<String, Method> = function_tree
+		let functions: IndexMap<String, Method> = function_tree
 			.iter()
 			.filter(|(_, b)| b.contains(&comments::Annotation::Function))
 			.map(|(a, b)| {
@@ -459,7 +460,7 @@ pub fn lua_doc_generator(args: TokenStream, tokens: TokenStream) -> TokenStream 
 
 				(a.to_string(), method)
 			})
-			.collect::<HashMap<String, Method>>();
+			.collect::<IndexMap<String, Method>>();
 
 		CURRENT_DOC.with(|map| {
 			let mut borrowed = map.borrow_mut();
