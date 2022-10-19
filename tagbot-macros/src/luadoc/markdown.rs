@@ -10,16 +10,32 @@ fn generate_method_signature(name: &String, method: &Method) -> String {
 	let params: String = method
 		.params
 		.iter()
-		.map(|(param_name, annotation)| {
-			println!("annotation is {:#?}", annotation);
-			param_name.to_string()
-		})
+		.map(|(param_name, annotation)| param_name.to_string())
 		.collect::<Vec<String>>()
 		.join(",");
 
 	format!("{}({})", name, params)
 }
 
+pub fn write_annotation(stream: &mut Vec<u8>, annotation: &Annotation, param_name: Option<String>) {
+	match annotation {
+		Annotation::Param(val) => writeln!(
+			stream,
+			"- {} :: {} | {}",
+			param_name.unwrap_or(val.param.to_string()),
+			val.typ,
+			val.desc
+		)
+		.unwrap(),
+		Annotation::Table(val) => val
+			.children
+			.iter()
+			.for_each(|child| write_annotation(stream, child, None)),
+		_ => {}
+	}
+}
+
+#[rustfmt::skip]
 pub fn write_method(stream: &mut Vec<u8>, name: &String, method: &Method) {
 	let returns = match &method.returns {
 		super::comments::Annotation::Return(ret) => Some(ret),
@@ -49,9 +65,7 @@ pub fn write_method(stream: &mut Vec<u8>, name: &String, method: &Method) {
 		writeln!(stream, "### Params").unwrap();
 
 		method.params.iter().for_each(|(param_name, param)| {
-			if let Annotation::Param(val) = param {
-				writeln!(stream, "- {} :: {} | {}", param_name, val.typ, val.desc).unwrap();
-			}
+			write_annotation(stream, param, Some(param_name.to_string()))
 		})
 	}
 

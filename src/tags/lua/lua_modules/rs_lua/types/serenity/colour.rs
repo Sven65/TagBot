@@ -53,7 +53,7 @@ impl UserData for TBColour {
 		/// @param {string} my_param.index The index in the table
 		/// @param {table} second_table A second table param
 		/// @param {string} second_table.index The index in the  second table
-		/// @param {string} size how big it is
+		/// @param {string} second_table.size how big it is
 		/// @return {table} r_table The converted hex color
 		/// @return {string} r_table.actual how big it actually is
 		methods.add_method("create_thing", |ctx, this, _: Value| {

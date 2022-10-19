@@ -29,22 +29,39 @@ impl From<&Vec<Annotation>> for Method {
 			.iter()
 			.cloned()
 			.filter_map(|annot| match annot.to_owned() {
-				Annotation::Param(param) => Some((annot, param)),
+				Annotation::Param(param) => Some((annot, Annotation::Param(param))),
+				Annotation::Table(param) => Some((annot, Annotation::Table(param))),
 				_ => None,
 			})
-			.map(|(annot, param)| (param.param, annot))
+			.map(|(annot, param)| {
+				let param_param = match param {
+					Annotation::Param(param) => param.param,
+					Annotation::Table(param) => param.param,
+					_ => {
+						panic!(
+							"Unexpected annotation type found when parsing params. {:#?}",
+							param
+						)
+					}
+				};
+
+				(param_param, annot)
+			})
 			.collect::<IndexMap<String, Annotation>>();
 
 		method.returns = annotations
 			.iter()
 			.cloned()
 			.filter_map(|annot| match annot {
-				Annotation::Return(_) | Annotation::ReturnParam(_) => Some(annot),
+				Annotation::Return(_)
+				| Annotation::ReturnParam(_)
+				| Annotation::Table(_)
+				| Annotation::ReturnTable(_) => Some(annot),
 				_ => None,
 			})
 			.collect::<Vec<Annotation>>()
 			.get(0)
-			.unwrap()
+			.unwrap_or_else(|| panic!("Failed to unwrap return values for method"))
 			.to_owned();
 
 		method

@@ -398,9 +398,6 @@ pub fn lua_doc_generator(args: TokenStream, tokens: TokenStream) -> TokenStream 
 
 	if parsed_args.contains(&"parse_comments".to_string()) {
 		let comment_tree = parse_comments(tokens.clone());
-
-		println!("comment_tree {:#?}", comment_tree);
-
 		let methods: IndexMap<String, Method> = comment_tree
 			.iter()
 			.filter(|(_, b)| b.contains(&comments::Annotation::Method))
