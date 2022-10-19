@@ -1,3 +1,4 @@
+use cat_loggr::{log_debug, log_fatal};
 use gag::BufferRedirect;
 use rlua::{Error as LuaError, FromLuaMulti, HookTriggers, Lua, Result as LuaResult};
 use serenity::{
@@ -50,7 +51,7 @@ fn execute_code(
 ) -> rlua::Result<String> {
 	let lua = Lua::new();
 
-	println!("interaction {:#?}", interaction);
+	log_debug!("interaction {:#?}", interaction);
 
 	lua.set_memory_limit(MEMORY_LIMIT);
 
@@ -136,12 +137,12 @@ fn execute_code(
 	lua_buf.into_inner().read_to_string(&mut output).unwrap();
 
 	if result.is_err() {
-		println!("Error executing lua: {:#?}", result.clone().err());
+		log_fatal!("Error executing lua: {:#?}", result.clone().err());
 
 		return result;
 	}
 
-	println!("output {}", output);
+	log_debug!("output {}", output);
 
 	Ok(output.to_string())
 }
@@ -156,14 +157,14 @@ pub async fn execute_tag(
 	if result.is_ok() {
 		Ok(result.ok().unwrap())
 	} else {
-		println!("Failed to execute tag: {:#?}", result.clone().err());
+		log_fatal!("Failed to execute tag: {:#?}", result.clone().err());
 
 		let cause = match result.clone().err().unwrap() {
 			LuaError::CallbackError { traceback: _, cause } => cause.to_string(),
 			_ => "".to_string(),
 		};
 
-		println!("Cause is {:#?}", cause);
+		log_fatal!("Cause is {:#?}", cause);
 
 		let cause = match cause.as_str() {
 			"" => "".to_string(),

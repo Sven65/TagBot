@@ -1,5 +1,6 @@
 use std::io::Error;
 
+use cat_loggr::log_fatal;
 use chrono::{DateTime, Utc};
 use lazy_static::lazy_static;
 use regex::{Captures, Regex};
@@ -287,7 +288,7 @@ async fn replace_server_variables(
 	if channels.is_ok() {
 		channel_count_str = format!("{}", channels.unwrap().len());
 	} else {
-		println!("Failed to get channel count: {:?}", channels.err())
+		log_fatal!("Failed to get channel count: {:?}", channels.err())
 	}
 
 	return content
@@ -334,7 +335,7 @@ async fn replace_server_owner_variables(
 	let owner = guild.owner_id.to_user(&ctx.http).await;
 
 	if owner.is_err() {
-		println!("Failed to get owner of guild: {:?}", owner.err());
+		log_fatal!("Failed to get owner of guild: {:?}", owner.err());
 		return content;
 	}
 
@@ -343,7 +344,7 @@ async fn replace_server_owner_variables(
 	let owner_member = guild.member(&ctx.http, owner.id).await;
 
 	if owner_member.is_err() {
-		println!(
+		log_fatal!(
 			"Failed to get owner member of guild: {:?}",
 			owner_member.err()
 		);

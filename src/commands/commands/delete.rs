@@ -1,3 +1,4 @@
+use cat_loggr::log_fatal;
 use serenity::{
 	builder::CreateApplicationCommand,
 	model::prelude::{
@@ -37,7 +38,7 @@ pub async fn delete(interaction: ApplicationCommandInteraction, _ctx: Context) -
 	let res = TagsTable::delete_tag(name.clone()).await;
 
 	if res.is_err() {
-		println!("Failed to delete tag: {:?}", res.err());
+		log_fatal!("Failed to delete tag: {:?}", res.err());
 		return format!("Failed to delete tag {}", name);
 	}
 

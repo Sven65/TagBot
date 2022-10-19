@@ -1,5 +1,6 @@
 pub mod structures;
 
+use cat_loggr::log_debug;
 use lazy_static::lazy_static;
 // use serenity::futures::lock::Mutex;
 use serenity::model::prelude::command::Command;
@@ -80,7 +81,7 @@ impl CommandIndex {
 			)
 			.await;
 
-			println!("Created global command {:#?}", created.unwrap().name);
+			log_debug!("Created global command {:#?}", created.unwrap().name);
 		}
 
 		let tb_command = TBCommand {
@@ -92,7 +93,7 @@ impl CommandIndex {
 
 		self.commands.insert(name.to_string(), tb_command);
 
-		dbg!("Registered to index");
+		log_debug!("Registered to index");
 	}
 
 	#[allow(dead_code)]

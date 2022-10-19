@@ -1,10 +1,9 @@
+use cat_loggr::{log_fatal, log_info};
 use dotenv::dotenv;
 use lazy_static::lazy_static;
 use reql::{cmd::connect::Options, r, Session};
 use std::env;
 use tokio::runtime::Handle;
-
-use crate::infoln;
 
 #[derive(Clone)]
 pub struct RethinkDB {
@@ -37,7 +36,7 @@ impl RethinkDB {
 
 		self.session = Some(conn);
 
-		infoln!("Connected to RethinkDB.");
+		log_info!("Connected to RethinkDB.");
 
 		return Ok(self.session.as_ref().unwrap());
 	}
@@ -59,7 +58,7 @@ impl RethinkDB {
 		let res = futures::executor::block_on(rdb.init_connection());
 
 		if res.is_err() {
-			println!(
+			log_fatal!(
 				"Failed to spawn blocker while creating connection: {:#?}",
 				res.err()
 			);

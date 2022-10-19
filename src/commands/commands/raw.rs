@@ -1,3 +1,4 @@
+use cat_loggr::log_fatal;
 use futures::AsyncWriteExt;
 use serenity::{
 	builder::CreateApplicationCommand,
@@ -68,7 +69,7 @@ pub async fn raw(interaction: ApplicationCommandInteraction, ctx: Context) -> St
 			.await;
 
 		if result.is_err() {
-			println!("Failed sending response {}", result.err().unwrap());
+			log_fatal!("Failed sending response {}", result.err().unwrap());
 		}
 	}
 
