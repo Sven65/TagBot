@@ -1,3 +1,4 @@
+use cat_loggr::log_fatal;
 use serenity::{
 	model::prelude::{
 		interaction::{
@@ -42,10 +43,10 @@ pub async fn glist(interaction: ApplicationCommandInteraction, ctx: Context) -> 
 			.await;
 
 		if result.is_err() {
-			println!("Failed sending response {}", result.err().unwrap());
+			log_fatal!("Failed sending response {}", result.err().unwrap());
 		}
 	} else {
-		println!("Failed to get tags {}", tags.err().unwrap());
+		log_fatal!("Failed to get tags {}", tags.err().unwrap());
 
 		let result = interaction
 			.create_interaction_response(&ctx.http, |response| {
@@ -56,7 +57,7 @@ pub async fn glist(interaction: ApplicationCommandInteraction, ctx: Context) -> 
 			.await;
 
 		if result.is_err() {
-			println!("Failed sending response {}", result.err().unwrap());
+			log_fatal!("Failed sending response {}", result.err().unwrap());
 		}
 	}
 

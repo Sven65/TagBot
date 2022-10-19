@@ -1,3 +1,4 @@
+use cat_loggr::log_debug;
 use core::result::Result;
 use lazy_static::lazy_static;
 use rlua::{Context, Value};
@@ -32,7 +33,7 @@ impl LuaModuleRegistry {
 	/// * `name` - The name of the module, used in `require()`
 	/// * `module_path` - The path of the file on disk
 	pub fn register_module_file(&mut self, name: &str, module_path: &str) {
-		println!("Registering module \"{}\" with path {}", name, module_path);
+		log_debug!("Registering module \"{}\" with path {}", name, module_path);
 
 		let module = LuaModule {
 			module_type: LuaModuleType::LuaFile,
@@ -124,7 +125,7 @@ impl LuaModuleRegistry {
 	///
 	/// * `name` - The name of the module, used in `require()`
 	pub fn register_rust_module(&mut self, name: &str, f: RustModuleFn) {
-		println!("Registering rust lua module \"{}\"", name);
+		log_debug!("Registering rust lua module \"{}\"", name);
 
 		let module =
 			LuaModule { module_type: LuaModuleType::RustSource, path: None, func: Some(f) };

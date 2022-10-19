@@ -7,6 +7,8 @@
 macro_rules! handle_error {
 	($e:expr, $($args: tt)*) => (match $e {
 		Ok(val) => val,
-		Err(err) => println!("{}: {}", $($args)*, err),
+		Err(err) => {
+			cat_loggr::log_fatal!("{}: {}", $($args)*, err);
+		},
 	});
 }

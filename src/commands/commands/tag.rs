@@ -1,3 +1,4 @@
+use cat_loggr::log_fatal;
 use serenity::{
 	builder::CreateApplicationCommand,
 	model::prelude::{
@@ -60,7 +61,7 @@ pub async fn tag(interaction: ApplicationCommandInteraction, ctx: Context) -> St
 			.await;
 
 		if res.is_err() {
-			println!(
+			log_fatal!(
 				"Failed to send tag content follow up message: {:#?}",
 				res.err()
 			);

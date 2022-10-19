@@ -1,3 +1,4 @@
+use cat_loggr::{log_debug, log_fatal, log_info};
 use dotenv::dotenv;
 use serenity::{
 	async_trait,
@@ -51,7 +52,7 @@ impl EventHandler for Handler {
 					})
 					.await
 				{
-					println!("Cannot respond to stupidf command {}", why);
+					log_fatal!("Cannot respond to stupidf command {}", why);
 				}
 			}
 		} else if let Interaction::ModalSubmit(modal) = interaction {
@@ -87,7 +88,7 @@ impl EventHandler for Handler {
 				panic!("No modal handler found for {}", split[0]);
 			}
 		} else if let Interaction::MessageComponent(component) = interaction {
-			println!("Received component interaction: {:#?}", component);
+			log_debug!("Received component interaction: {:#?}", component);
 
 			if component.data.custom_id.is_empty() {
 				panic!("Received modal has no custom id.");
@@ -124,7 +125,7 @@ impl EventHandler for Handler {
 	}
 
 	async fn ready(&self, ctx: Context, ready: Ready) {
-		println!("{} is connected", ready.user.name);
+		log_info!("{} is connected", ready.user.name);
 
 		commands::framework::COMMAND_INDEX
 			.lock()
@@ -149,6 +150,6 @@ async fn main() {
 		.expect("Error creating client");
 
 	if let Err(why) = client.start().await {
-		println!("Client error: {:?}", why)
+		log_fatal!("Client error: {:?}", why)
 	}
 }

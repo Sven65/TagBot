@@ -1,3 +1,4 @@
+use cat_loggr::log_fatal;
 use serenity::{
 	builder::CreateApplicationCommand,
 	model::prelude::{
@@ -70,7 +71,7 @@ pub async fn edit(interaction: ApplicationCommandInteraction, ctx: Context) -> S
 		.await;
 
 	if modal.is_err() {
-		println!("Failed to create modal: {}", modal.err().unwrap())
+		log_fatal!("Failed to create modal: {}", modal.err().unwrap())
 	}
 
 	"".to_string()
@@ -112,7 +113,7 @@ pub async fn edit_tag_handle_modal(interaction: ModalSubmitInteraction, ctx: Con
 		);
 		"".to_string()
 	} else {
-		println!("Error editing tag: {:?}", result.err());
+		log_fatal!("Error editing tag: {:?}", result.err());
 		handle_error!(
 			send_modal_message(ctx, interaction.clone(), "Error while editing tag", false).await,
 			"Failed to send tag edit error message"

@@ -15,10 +15,6 @@ impl Paths {
 		tmp.pop();
 		tmp.pop();
 		let prefix = tmp.clone();
-		println!(
-			"Prefix path: {}",
-			prefix.into_os_string().into_string().unwrap()
-		);
 		Paths { prefix: tmp }
 	}
 }

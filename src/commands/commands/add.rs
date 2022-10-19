@@ -1,3 +1,4 @@
+use cat_loggr::{log_debug, log_fatal};
 use serenity::{
 	builder::CreateApplicationCommand,
 	model::prelude::{
@@ -113,8 +114,8 @@ pub async fn add(interaction: ApplicationCommandInteraction, ctx: Context) -> St
 		.await;
 
 	if modal.is_err() {
-		println!("Failed to create modal: {}", modal.as_ref().err().unwrap());
-		println!("Modal is {:#?}", modal.as_ref());
+		log_fatal!("Failed to create modal: {}", modal.as_ref().err().unwrap());
+		log_debug!("Modal is {:#?}", modal.as_ref());
 	}
 
 	"".to_string()
@@ -144,7 +145,7 @@ pub async fn add_tag_handle_modal(interaction: ModalSubmitInteraction, ctx: Cont
 		_ => TagType::Legacy,
 	};
 
-	println!("Creating type {:#?}", tag_type);
+	log_debug!("Creating type {:#?}", tag_type);
 
 	if name.is_empty() {
 		handle_error!(
@@ -194,7 +195,7 @@ pub async fn add_tag_handle_modal(interaction: ModalSubmitInteraction, ctx: Cont
 		);
 		"".to_string()
 	} else {
-		println!("Error adding tag: {:?}", result.err());
+		log_fatal!("Error adding tag: {:?}", result.err());
 		handle_error!(
 			send_modal_message(ctx, interaction.clone(), "Error while adding tag", false).await,
 			"Failed to send tag add error message"
