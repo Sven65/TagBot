@@ -301,8 +301,6 @@ fn parse_return_table(method: &ImplItemMethod) -> HashMap<String, Vec<Annotation
 
 	let docs = parse_function_docs(found_docs);
 
-	println!("docs {:#?}", docs);
-
 	docs
 }
 
