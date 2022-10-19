@@ -180,7 +180,7 @@ fn parse_simple_annotation(line: &String) -> Option<(String, String)> {
 
 	match captures {
 		Some(cap) => Some((
-			cap.name("annotation").unwrap().as_str().to_string(),
+			cap.name("annotation").unwrap().as_str().trim().to_string(),
 			cap.name("rest").unwrap().as_str().to_string(),
 		)),
 		None => None,
@@ -196,7 +196,7 @@ fn parse_param_value_annotation(line: &String) -> Option<ParamValueAnnotation> {
 
 	match captures {
 		Some(cap) => Some(ParamValueAnnotation {
-			annotation_type: cap.name("annotation").unwrap().as_str().to_string(),
+			annotation_type: cap.name("annotation").unwrap().as_str().trim().to_string(),
 			typ: cap.name("type").unwrap().as_str().to_string(),
 			param: cap.name("param").unwrap().as_str().to_string(),
 			desc: cap.name("rest").unwrap().as_str().to_string(),
@@ -214,7 +214,7 @@ fn parse_param_annotation(line: &String) -> Option<ParamAnnotation> {
 
 	match captures {
 		Some(cap) => Some(ParamAnnotation {
-			annotation_type: cap.name("annotation").unwrap().as_str().to_string(),
+			annotation_type: cap.name("annotation").unwrap().as_str().trim().to_string(),
 			typ: cap.name("type").unwrap().as_str().to_string(),
 			desc: cap.name("rest").unwrap().as_str().to_string(),
 		}),
@@ -309,10 +309,8 @@ fn find_tables(tree: HashMap<String, Vec<Annotation>>) -> IndexMap<String, Vec<A
 				.for_each(|annot| {
 					// Find param that's marked as table
 
-					// todo: deduplicate code
-
 					match annot {
-						Annotation::Param(param) => {
+						Annotation::Param(param) | Annotation::ReturnParam(param) => {
 							if param.typ == "table" {
 								table_params.insert(param.param.clone(), Vec::new());
 								table_annots.insert(param.param.clone(), annot.clone());
@@ -334,30 +332,6 @@ fn find_tables(tree: HashMap<String, Vec<Annotation>>) -> IndexMap<String, Vec<A
 
 									let table = table.unwrap();
 
-									// table.push(annot.to_owned());
-									table.push(annot.to_owned());
-								}
-							}
-						}
-						Annotation::ReturnParam(param) => {
-							if param.typ == "table" {
-								table_params.insert(param.param.clone(), Vec::new());
-								table_annots.insert(param.param.clone(), annot.clone());
-							} else {
-								// Get table key
-								// todo: Make this support multi-key tables (like.this.key.you.know)
-
-								let parts = param.param.split(".").collect::<Vec<&str>>();
-
-								if parts.len() > 1 {
-									let key = parts.get(0).unwrap().to_string();
-									let index = parts.get(1).unwrap();
-
-									let table = table_params.get_mut(&key);
-
-									let table = table.unwrap();
-
-									// table.push(annot.to_owned());
 									table.push(annot.to_owned());
 								}
 							}
@@ -460,13 +434,17 @@ fn replace_params_with_table(
 							let table_annot = table_annot.unwrap();
 
 							if param.param == table_annot.param {
-								return Some(Annotation::Table(table_annot));
+								if param.annotation_type == "@return" {
+									return Some(Annotation::ReturnTable(table_annot));
+								} else {
+									return Some(Annotation::Table(table_annot));
+								}
 							} else {
 								return Some(annot.to_owned());
 							}
 						} else {
 							match annot {
-								Annotation::Param(param) => {
+								Annotation::Param(param) | Annotation::ReturnParam(param) => {
 									let parts = param.param.split(".").collect::<Vec<&str>>();
 
 									if parts.len() < 2 {
