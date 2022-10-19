@@ -350,9 +350,12 @@ pub fn parse_requireable(tokens: TokenStream) -> HashMap<String, Vec<Annotation>
 
 	let return_type = return_type.get(0).unwrap();
 
-	if return_type == "table" {
-		return parse_return_table(method);
-	}
-
-	panic!("Handling of return type for requireable is not implemented.");
+	return match return_type.as_str() {
+		"table" => parse_return_table(method),
+		"module" => parse_return_table(method),
+		_ => panic!(
+			"Handling of return type '{}' for requireable is not implemented.",
+			return_type
+		),
+	};
 }

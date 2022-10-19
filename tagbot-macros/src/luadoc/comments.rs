@@ -1,4 +1,4 @@
-use std::{collections::HashMap, ops::Index};
+use std::{collections::HashMap, hash::Hash, ops::Index};
 
 use darling::ToTokens;
 use indexmap::IndexMap;
@@ -58,6 +58,8 @@ pub enum Annotation {
 	Method,
 	Param(ParamValueAnnotation),
 	Return(ParamAnnotation),
+	ReturnParam(ParamValueAnnotation),
+	ReturnTable(TableAnnotation),
 	Description(String),
 	Table(TableAnnotation),
 	None,
@@ -69,9 +71,11 @@ impl Annotation {
 			Annotation::Function => None,
 			Annotation::Method => None,
 			Annotation::Param(param) => Some(param.typ.clone()),
+			Annotation::ReturnParam(param) => Some(param.typ.clone()),
 			Annotation::Return(ret) => Some(ret.typ.clone()),
 			Annotation::Description(_) => None,
 			Annotation::Table(tbl) => Some(tbl.typ.clone()),
+			Annotation::ReturnTable(tbl) => Some(tbl.typ.clone()),
 			Annotation::None => None,
 		}
 	}
@@ -82,8 +86,10 @@ impl Annotation {
 			Annotation::Method => "method",
 			Annotation::Param(_) => "param",
 			Annotation::Return(_) => "return",
+			Annotation::ReturnParam(_) => "returnparam",
 			Annotation::Description(_) => "desc",
 			Annotation::Table(_) => "table",
+			Annotation::ReturnTable(_) => "returntable",
 			Annotation::None => "none",
 		}
 	}
@@ -222,12 +228,27 @@ fn parse_param_annotation(line: &String) -> Option<ParamAnnotation> {
 /// * `line` - The line to parse
 fn parse_return(line: &String) -> Annotation {
 	let parsed = parse_param_annotation(line);
+	let parsed_value = parse_param_value_annotation(line);
 
-	if parsed.is_none() {
+	if parsed.is_none() || parsed_value.is_none() {
 		panic!("Return parser could not execute.");
 	}
 
 	let parsed = parsed.unwrap();
+
+	if parsed.typ == "table" {
+		return Annotation::ReturnParam(parsed_value.unwrap());
+	}
+
+	if parsed_value.is_some() {
+		let uw_parsed_value = parsed_value.unwrap();
+
+		let param_parts = uw_parsed_value.param.split(".").collect::<Vec<&str>>();
+
+		if param_parts.len() > 1 {
+			return Annotation::ReturnParam(uw_parsed_value);
+		}
+	}
 
 	Annotation::Return(parsed)
 }
@@ -244,7 +265,6 @@ fn parse_param(line: &String) -> Annotation {
 	}
 
 	let parsed = parsed.unwrap();
-
 	Annotation::Param(parsed)
 }
 
@@ -263,8 +283,6 @@ fn parse_desc(line: &String) -> Annotation {
 }
 
 fn find_tables(tree: HashMap<String, Vec<Annotation>>) -> IndexMap<String, Vec<Annotation>> {
-	println!("finding tables in {:#?}", tree);
-
 	let parsed_tables: IndexMap<String, Vec<Annotation>> = tree
 		.iter()
 		.filter_map(|(name, annots)| {
@@ -277,7 +295,7 @@ fn find_tables(tree: HashMap<String, Vec<Annotation>>) -> IndexMap<String, Vec<A
 					// Filter so we only have param and return variants
 					let variant = annot.variant_string();
 
-					variant == "param" || variant == "return"
+					variant == "param" || variant == "returnparam"
 				})
 				.filter_map(|annot| {
 					// Filter out annots without typ()
@@ -291,6 +309,8 @@ fn find_tables(tree: HashMap<String, Vec<Annotation>>) -> IndexMap<String, Vec<A
 				.for_each(|annot| {
 					// Find param that's marked as table
 
+					// todo: deduplicate code
+
 					match annot {
 						Annotation::Param(param) => {
 							if param.typ == "table" {
@@ -302,20 +322,46 @@ fn find_tables(tree: HashMap<String, Vec<Annotation>>) -> IndexMap<String, Vec<A
 
 								let parts = param.param.split(".").collect::<Vec<&str>>();
 
-								println!("parts {:#?}", parts);
-
 								if parts.len() > 1 {
 									let key = parts.get(0).unwrap().to_string();
 									let index = parts.get(1).unwrap();
 
-									let table = table_params.get_mut(&key).unwrap();
+									let table = table_params.get_mut(&key);
+
+									if table.is_none() {
+										panic!("table 1 is none!!!!!1");
+									}
+
+									let table = table.unwrap();
 
 									// table.push(annot.to_owned());
 									table.push(annot.to_owned());
 								}
 							}
 						}
-						Annotation::Return(ret) => {}
+						Annotation::ReturnParam(param) => {
+							if param.typ == "table" {
+								table_params.insert(param.param.clone(), Vec::new());
+								table_annots.insert(param.param.clone(), annot.clone());
+							} else {
+								// Get table key
+								// todo: Make this support multi-key tables (like.this.key.you.know)
+
+								let parts = param.param.split(".").collect::<Vec<&str>>();
+
+								if parts.len() > 1 {
+									let key = parts.get(0).unwrap().to_string();
+									let index = parts.get(1).unwrap();
+
+									let table = table_params.get_mut(&key);
+
+									let table = table.unwrap();
+
+									// table.push(annot.to_owned());
+									table.push(annot.to_owned());
+								}
+							}
+						}
 						_ => panic!("Found unexpected annotation type when finding tables."),
 					}
 				});
@@ -325,6 +371,8 @@ fn find_tables(tree: HashMap<String, Vec<Annotation>>) -> IndexMap<String, Vec<A
 				.map(|(param, annots)| {
 					let table_annot = table_annots.get(param).unwrap();
 
+					let mut table_type = "regular";
+
 					let (annotation_type, desc, param_param, typ) = match table_annot {
 						Annotation::Param(param) => (
 							param.annotation_type.clone(),
@@ -332,16 +380,38 @@ fn find_tables(tree: HashMap<String, Vec<Annotation>>) -> IndexMap<String, Vec<A
 							param.param.clone(),
 							param.typ.clone(),
 						),
-						_ => todo!(),
+						Annotation::ReturnParam(param) => {
+							table_type = "return";
+							(
+								param.annotation_type.clone(),
+								param.desc.clone(),
+								param.param.clone(),
+								param.typ.clone(),
+							)
+						}
+						_ => panic!(
+							"Handling not implemented for table annot {:#?}.",
+							table_annot
+						),
 					};
 
-					Annotation::Table(TableAnnotation {
-						annotation_type,
-						children: annots.to_vec(),
-						desc,
-						param: param_param,
-						typ,
-					})
+					if table_type == "return" {
+						Annotation::ReturnTable(TableAnnotation {
+							annotation_type,
+							children: annots.to_vec(),
+							desc,
+							param: param_param,
+							typ,
+						})
+					} else {
+						Annotation::Table(TableAnnotation {
+							annotation_type,
+							children: annots.to_vec(),
+							desc,
+							param: param_param,
+							typ,
+						})
+					}
 				})
 				.collect::<Vec<Annotation>>();
 
@@ -349,12 +419,78 @@ fn find_tables(tree: HashMap<String, Vec<Annotation>>) -> IndexMap<String, Vec<A
 		})
 		.collect::<IndexMap<String, Vec<Annotation>>>();
 
-	println!("p {:#?}", parsed_tables);
-
 	parsed_tables
 }
 
-fn replace_params_with_table(original: HashMap<String, Vec<Annotation>>) {}
+fn replace_params_with_table(
+	original: HashMap<String, Vec<Annotation>>,
+	tables: IndexMap<String, Vec<Annotation>>,
+) {
+	let mut new_tree: HashMap<String, Vec<Annotation>> = original.clone();
+
+	tables
+		.iter()
+		.filter(|(_, annots)| annots.len() > 0)
+		.for_each(|(name, annots)| {
+			let group = new_tree.get_mut(name).unwrap();
+
+			let new_group: Vec<Annotation> = group
+				.iter()
+				.filter_map(|annot| match annot {
+					Annotation::Param(param) | Annotation::ReturnParam(param) => {
+						if param.typ == "table" {
+							let table_annot: Option<TableAnnotation> =
+								annots.iter().find_map(|annot| match annot {
+									Annotation::Table(table) | Annotation::ReturnTable(table) => {
+										println!("table is {:#?}, param is {:#?}", table, param);
+										if table.param == param.param {
+											Some(table.to_owned())
+										} else {
+											println!("returning None for table param match");
+											None
+										}
+									}
+									_ => panic!("Found something other than table annotation."),
+								});
+
+							if table_annot.is_none() {
+								panic!("Table annot is None.");
+							}
+
+							let table_annot = table_annot.unwrap();
+
+							if param.param == table_annot.param {
+								return Some(Annotation::Table(table_annot));
+							} else {
+								return Some(annot.to_owned());
+							}
+						} else {
+							match annot {
+								Annotation::Param(param) => {
+									let parts = param.param.split(".").collect::<Vec<&str>>();
+
+									if parts.len() < 2 {
+										return Some(annot.to_owned());
+									}
+
+									None
+								}
+								_ => Some(annot.to_owned()),
+							}
+						}
+					}
+					Annotation::Return(ret) => None,
+					_ => Some(annot.to_owned()),
+				})
+				.collect::<Vec<Annotation>>();
+
+			println!("new group is {:#?}", new_group);
+
+			new_tree.insert(name.to_string(), new_group);
+		});
+
+	println!("new tree is {:#?}", new_tree);
+}
 
 /// Parsed a comment string line into annotation
 ///
@@ -404,7 +540,9 @@ pub fn parse_comments(tokens: TokenStream) -> HashMap<String, Vec<Annotation>> {
 		})
 		.collect();
 
-	find_tables(tree.clone());
+	let tables = find_tables(tree.clone());
+
+	replace_params_with_table(tree.clone(), tables);
 
 	tree
 }
