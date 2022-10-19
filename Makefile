@@ -17,5 +17,7 @@ publish:
 	docker push $(IMAGE_TAG) --all-tags
 run-local:
 	docker run --rm --env-file=.env --network=host $(IMAGE_TAG_VERSION)
-	
+doc:
+	GENERATE_DOCS=true cargo doc
+
 all: info build publish clean
