@@ -11,9 +11,18 @@ impl Paths {
 			Ok(p) => p,
 			Err(e) => panic!("Can't find exe path: {}", e),
 		};
-		tmp.pop();
-		tmp.pop();
-		tmp.pop();
+
+		// This is a workaround to get the correct path when running
+		// in a local development environment and in docker
+		// as the executable gets placed at different locations
+		if cfg!(debug_assertions) {
+			tmp.pop();
+			tmp.pop();
+			tmp.pop();
+		} else {
+			tmp.pop();
+		}
+
 		Paths { prefix: tmp }
 	}
 }

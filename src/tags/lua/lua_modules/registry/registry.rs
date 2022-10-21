@@ -94,7 +94,8 @@ impl LuaModuleRegistry {
 
 		let path = lua_module.path.as_ref().unwrap();
 
-		let contents = fs::read_to_string(path.as_str()).expect("Unable to read file for module");
+		let contents = fs::read_to_string(path.as_str())
+			.expect(format!("Unable to read file for module path {:#?}", path).as_str());
 
 		Ok(contents)
 	}
