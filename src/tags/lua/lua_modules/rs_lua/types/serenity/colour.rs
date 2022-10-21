@@ -47,18 +47,6 @@ impl UserData for TBColour {
 			this.0.hex().to_lua(ctx)
 		});
 
-		/// @desc creates the thing!!!!
-		/// @method
-		/// @param {table} my_param A table param
-		/// @param {string} my_param.index The index in the table
-		/// @param {table} second_table A second table param
-		/// @param {string} second_table.index The index in the  second table
-		/// @param {string} second_table.size how big it is
-		/// @return {table} r_table The created thing
-		/// @return {string} r_table.actual how big it actually is
-		methods.add_method("create_thing", |ctx, this, _: Value| {
-			this.0.hex().to_lua(ctx)
-		});
 	}
 }
 
