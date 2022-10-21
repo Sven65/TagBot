@@ -1,24 +1,43 @@
+# syntax=docker/dockerfile:1.3-labs
+
 ################# COMPILE TAGBOT #################
 
 FROM rust:1.63.0 as build
 
-RUN USER=root cargo new --bin tagbot
-WORKDIR /tagbot
 
-COPY ./Cargo.lock ./Cargo.lock
-COPY ./Cargo.toml ./Cargo.toml
+# Capture deps
+# COPY Cargo.toml Cargo.lock /app/
+#COPY ./tagbot-macros/Cargo.toml ./tagbot-macros/Cargo.lock /app/tagbot-macros/
 
-# 3. Build deps for cache
+# We create a new lib and then use our own Cargo.toml
 
-RUN cargo build --release
-RUN rm src/*.rs
+RUN cargo new --lib /app/
+COPY ./Cargo.toml /app/
 
-COPY ./src ./src
+# We do the same for macros
+RUN cargo new /app/tagbot-macros
+COPY tagbot-macros/Cargo.toml /app/tagbot-macros/
 
-# Build for release
+COPY ./src /app/src
+COPY ./tagbot-macros /app/tagbot-macros
 
-RUN rm ./target/release/deps/tagbot*
-RUN cargo install --path .
+# This step compiles only our dependencies and saves them in a layer. This is the most impactful time savings
+# Note the use of --mount=type=cache. On subsequent runs, we'll have the crates already downloaded
+WORKDIR /app/
+RUN --mount=type=cache,target=/usr/local/cargo/registry cargo fetch
+
+# A bit of magic here!
+# * We're mounting that cache again to use during the build, otherwise it's not present and we'll have to download those again - bad!
+# * EOF syntax is neat but not without its drawbacks. We need to `set -e`, otherwise a failing command is going to continue on
+# * Rust here is a bit fiddly, so we'll touch the files (even though we copied over them) to force a new build
+RUN --mount=type=cache,target=/usr/local/cargo/registry <<EOF
+  set -e
+  # update timestamps to force a new build
+  touch /app/tagbot-macros/src/lib.rs /app/src/main.rs
+  cargo build --release
+EOF
+
+CMD ["/app/target/release/tagbot"]
 
 ################# COMPILE LUA #################
 
@@ -118,7 +137,7 @@ RUN ln -s /lib/x86_64-linux-gnu/libm-2.31.so /lib/x86_64-linux-gnu/libm.so.6
 ## Copy tagbot binary
 
 
-COPY --from=build /tagbot/target/release/tagbot ./tagbot
+COPY --from=build /app/target/release/tagbot ./tagbot
 COPY ./data ./data
 
 ENTRYPOINT './tagbot'
