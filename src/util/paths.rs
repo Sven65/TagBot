@@ -14,7 +14,6 @@ impl Paths {
 		tmp.pop();
 		tmp.pop();
 		tmp.pop();
-		let prefix = tmp.clone();
 		Paths { prefix: tmp }
 	}
 }

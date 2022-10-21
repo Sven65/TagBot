@@ -1,4 +1,4 @@
-use std::{collections::HashMap, hash::Hash, ops::Index};
+use std::collections::HashMap;
 
 use darling::ToTokens;
 use indexmap::IndexMap;
@@ -322,7 +322,6 @@ fn find_tables(tree: HashMap<String, Vec<Annotation>>) -> IndexMap<String, Vec<A
 
 								if parts.len() > 1 {
 									let key = parts.get(0).unwrap().to_string();
-									let index = parts.get(1).unwrap();
 
 									let table = table_params.get_mut(&key);
 
