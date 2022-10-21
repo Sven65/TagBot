@@ -6,6 +6,8 @@ use super::document::Attribute;
 use super::document::Document;
 use super::document::Method;
 
+// todo: method return table values
+
 fn generate_method_signature(name: &String, method: &Method) -> String {
 	let params: String = method
 		.params
@@ -35,17 +37,38 @@ pub fn write_annotation(stream: &mut Vec<u8>, annotation: &Annotation, param_nam
 	}
 }
 
+fn write_returns(stream: &mut Vec<u8>, annotation: &Annotation) {
+	match &annotation {
+		super::comments::Annotation::Return(ret) => {
+			writeln!(stream, "- :: {} | {}\n", ret.typ, ret.desc).unwrap()
+		}
+		super::comments::Annotation::ReturnParam(ret) => {
+			writeln!(stream, "- {} :: {} | {}\n", ret.param, ret.typ, ret.desc).unwrap()
+		}
+		super::comments::Annotation::ReturnTable(ret) => {
+			writeln!(stream, "- {} :: {} | {}\n", ret.param, ret.typ, ret.desc).unwrap();
+
+			ret.children
+				.iter()
+				.for_each(|child| write_returns(stream, child));
+		}
+		_ => {}
+	};
+}
+
 #[rustfmt::skip]
 pub fn write_method(stream: &mut Vec<u8>, name: &String, method: &Method) {
 	let returns = match &method.returns {
-		super::comments::Annotation::Return(ret) => Some(ret),
+		super::comments::Annotation::Return(ret) => Some((ret.typ.clone(), ret.desc.clone())),
+		super::comments::Annotation::ReturnParam(ret) => Some((ret.typ.clone(), ret.desc.clone())),
+		super::comments::Annotation::ReturnTable(ret) => Some((ret.typ.clone(), ret.desc.clone())),
 		_ => None,
 	};
 
 	let method_sig = generate_method_signature(name, method);
 
 	if returns.is_some() {
-		writeln!(stream, "## {} -> {}\n", method_sig, returns.unwrap().typ).unwrap();
+		writeln!(stream, "## {} -> {}\n", method_sig, returns.as_ref().unwrap().0).unwrap();
 	} else {
 		writeln!(stream, "## {}\n", method_sig).unwrap();
 	}
@@ -73,15 +96,7 @@ pub fn write_method(stream: &mut Vec<u8>, name: &String, method: &Method) {
 
 	if returns.is_some() {
 		writeln!(stream, "### Return Values").unwrap();
-
-		let unwrapped_ret = returns.unwrap();
-
-		writeln!(
-			stream,
-			"- :: {} | {}\n",
-			unwrapped_ret.typ, unwrapped_ret.desc
-		)
-		.unwrap();
+		write_returns(stream, &method.returns);
 	}
 }
 

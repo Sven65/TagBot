@@ -54,7 +54,7 @@ impl UserData for TBColour {
 		/// @param {table} second_table A second table param
 		/// @param {string} second_table.index The index in the  second table
 		/// @param {string} second_table.size how big it is
-		/// @return {table} r_table The converted hex color
+		/// @return {table} r_table The created thing
 		/// @return {string} r_table.actual how big it actually is
 		methods.add_method("create_thing", |ctx, this, _: Value| {
 			this.0.hex().to_lua(ctx)
@@ -79,7 +79,7 @@ impl Requireable for TBColour {
 		/// @desc Creates a new colour
 		/// @function
 		/// @param {u32} params The u32 value to create the colour with
-		/// @return {TBColour} The new timestamp
+		/// @return {TBColour} The new colour
 		let func = ctx.create_function(|_, params: u32| {
 			let value = params;
 
@@ -93,7 +93,7 @@ impl Requireable for TBColour {
 		/// @param {u8} r The red value of the color between 0 and 255
 		/// @param {u8} g The green value of the color between 0 and 255
 		/// @param {u8} b The blue value of the color between 0 and 255
-		/// @return {TBColour} The new timestamp
+		/// @return {TBColour} The new colour
 		let from_rgb = ctx.create_function(|_, (r, g, b): (u8, u8, u8)| {
 			Ok(TBColour::new(Colour::from_rgb(r, g, b)))
 		});

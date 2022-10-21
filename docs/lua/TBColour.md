@@ -7,16 +7,7 @@
 - b :: u8
 # Methods
 
-## hex() -> string
-
-Converts the color to a hex color string
-
-
-
-### Return Values
-- :: string | The converted hex color
-
-## create_thing(my_param,second_table)
+## create_thing(my_param,second_table) -> table
 
 creates the thing!!!!
 
@@ -25,6 +16,20 @@ creates the thing!!!!
 - second_table.index :: string | The index in the  second table
 - second_table.size :: string | how big it is
 
+
+### Return Values
+- r_table :: table | The created thing
+
+- r_table.actual :: string | how big it actually is
+
+## hex() -> string
+
+Converts the color to a hex color string
+
+
+
+### Return Values
+- :: string | The converted hex color
 
 # Requireable
 
@@ -43,7 +48,7 @@ Creates a new colour with rgb values
 
 
 ### Return Values
-- :: TBColour | The new timestamp
+- :: TBColour | The new colour
 
 ## new(params) -> TBColour
 
@@ -54,5 +59,5 @@ Creates a new colour
 
 
 ### Return Values
-- :: TBColour | The new timestamp
+- :: TBColour | The new colour
 
