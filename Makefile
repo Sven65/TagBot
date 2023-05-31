@@ -9,6 +9,7 @@ IMAGE_TAG_LATEST  := $(IMAGE_TAG):latest
 info:
 	@echo IMAGE NAME IS $(IMAGE_NAME)
 	@echo VERSION IS $(PACKAGE_VERSION)
+	@echo IMAGE TAGS ARE $(IMAGE_TAG_VERSION) $(IMAGE_TAG_LATEST)
 clean:
 	rm -rf build/
 build:

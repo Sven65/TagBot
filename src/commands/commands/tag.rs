@@ -32,6 +32,7 @@ pub async fn tag(interaction: ApplicationCommandInteraction, ctx: Context) -> St
 	let gotten_tag = TagsTable::get_tag(name.clone()).await;
 
 	if gotten_tag.is_err() {
+		cat_loggr::log_fatal!("{}: {:?}", "Failed to get tag:", gotten_tag.err());
 		handle_error!(
 			send_app_interaction_message(ctx, interaction, "That tag doesn't exist", false).await,
 			"Failed to send non-existant tag message"

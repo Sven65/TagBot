@@ -51,7 +51,9 @@ fn execute_code(
 ) -> rlua::Result<String> {
 	let lua = Lua::new();
 
-	log_debug!("interaction {:#?}", interaction);
+	if cfg!(debug_assertions) {
+		log_debug!("interaction {:#?}", interaction);
+	}
 
 	lua.set_memory_limit(MEMORY_LIMIT);
 
@@ -147,6 +149,7 @@ fn execute_code(
 	Ok(output.to_string())
 }
 
+// Todo: Child thread this
 pub async fn execute_tag(
 	tag: Tag,
 	interaction: ApplicationCommandInteraction,
