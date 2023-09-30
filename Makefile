@@ -1,4 +1,4 @@
-DOCKER_REGISTRY=
+DOCKER_REGISTRY ?= 
 PACKAGE_VERSION := $(shell cargo metadata --no-deps --format-version 1 | jq '.packages[0].version' | tr -d '"')
 IMAGE_NAME := $(shell cargo metadata --no-deps --format-version 1 | jq '.packages[0].name' | tr -d '"')
 

@@ -2,7 +2,7 @@ use futures::TryStreamExt;
 use reql::{func, r, types::WriteStatus, Session};
 use serde::{Deserialize, Serialize};
 
-use super::rethinkdb::RDB;
+use crate::services::rethinkdb::rethinkdb::RDB;
 
 macro_rules! create_error {
 	($($args:tt)*) => {
@@ -72,7 +72,8 @@ impl TagsTable {
 		owner_id: String,
 		tag_type: Option<TagType>,
 	) -> Result<WriteStatus, reql::Error> {
-		let connection = RDB.get_connection().await;
+		let rdb = RDB.lock().await;
+		let connection = rdb.get_connection().await;
 
 		if connection.is_none() {
 			return create_error!("Failed to create tag: Failed to get DB Connection.".to_string());
@@ -100,7 +101,11 @@ impl TagsTable {
 	///
 	/// * `tag_name` - The name of the tag to get. Automatically converted to lowercase.
 	pub async fn get_tag(tag_name: String) -> Result<Tag, reql::Error> {
-		let connection = RDB.get_connection().await;
+		let mut rdb_lock = RDB.lock().await;
+
+		let rdb = rdb_lock.to_owned();
+
+		let connection = rdb.get_connection().await;
 
 		if connection.is_none() {
 			return create_error!("Failed to get tag: Failed to get DB Connection.");
@@ -113,11 +118,19 @@ impl TagsTable {
 			.get(tag_name.to_lowercase())
 			.run::<&Session, Tag>(connection);
 
-		if let Some(result) = query.try_next().await? {
-			return Ok(result);
+		match query.try_next().await {
+			Ok(Some(result)) => Ok(result),
+			Ok(None) => create_error!("Failed to get tag"),
+			Err(_) => {
+				rdb_lock.init_connection().await?;
+				Ok(Tag {
+					content: "Failed to get tag, please try again.".to_string(),
+					id: "failed-tag".to_string(),
+					owner: "1".to_string(),
+					tag_type: Some(TagType::Legacy),
+				})
+			} // Propagate the error
 		}
-
-		create_error!("Failed to get tag")
 	}
 
 	/// Deletes a tag from the tags table, if it exists.
@@ -126,7 +139,8 @@ impl TagsTable {
 	///
 	/// * `tag_name` - The name of the tag to delete. Automatically converted to lowercase.
 	pub async fn delete_tag(tag_name: String) -> Result<WriteStatus, reql::Error> {
-		let connection = RDB.get_connection().await;
+		let rdb = RDB.lock().await;
+		let connection = rdb.get_connection().await;
 
 		if connection.is_none() {
 			return create_error!("Failed to get tag: Failed to get DB Connection.");
@@ -151,7 +165,8 @@ impl TagsTable {
 
 	/// Gets all tags in the database
 	pub async fn get_all() -> Result<Vec<Tag>, reql::Error> {
-		let connection = RDB.get_connection().await;
+		let rdb = RDB.lock().await;
+		let connection = rdb.get_connection().await;
 
 		if connection.is_none() {
 			return create_error!("Failed to get all tags: Failed to get DB Connection.");
@@ -176,7 +191,8 @@ impl TagsTable {
 	///
 	/// * `owner_id` - The id of the user whose tags to get
 	pub async fn get_all_by_owner(owner_id: String) -> Result<Vec<Tag>, reql::Error> {
-		let connection = RDB.get_connection().await;
+		let rdb = RDB.lock().await;
+		let connection = rdb.get_connection().await;
 
 		if connection.is_none() {
 			return create_error!("Failed to get user tags: Failed to get DB Connection.");
@@ -208,7 +224,8 @@ impl TagsTable {
 		tag_name: String,
 		new_owner: String,
 	) -> Result<WriteStatus, reql::Error> {
-		let connection = RDB.get_connection().await;
+		let rdb = RDB.lock().await;
+		let connection = rdb.get_connection().await;
 
 		if connection.is_none() {
 			return create_error!("Failed to set tag owner: Failed to get DB Connection.");
@@ -241,7 +258,8 @@ impl TagsTable {
 		tag_name: String,
 		new_content: String,
 	) -> Result<WriteStatus, reql::Error> {
-		let connection = RDB.get_connection().await;
+		let rdb = RDB.lock().await;
+		let connection = rdb.get_connection().await;
 
 		if connection.is_none() {
 			return create_error!("Failed to set tag content: Failed to get DB Connection.");

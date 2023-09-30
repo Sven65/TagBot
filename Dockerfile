@@ -2,8 +2,7 @@
 
 ################# COMPILE TAGBOT #################
 
-FROM rust:1.63.0 as build
-
+FROM rust:1.72.1-bullseye as build
 
 # Capture deps
 # COPY Cargo.toml Cargo.lock /app/
@@ -13,10 +12,12 @@ FROM rust:1.63.0 as build
 
 RUN cargo new --lib /app/
 COPY ./Cargo.toml /app/
+COPY ./Cargo.lock /app/
 
 # We do the same for macros
 RUN cargo new /app/tagbot-macros
 COPY tagbot-macros/Cargo.toml /app/tagbot-macros/
+COPY tagbot-macros/Cargo.lock /app/tagbot-macros/
 
 COPY ./src /app/src
 COPY ./tagbot-macros /app/tagbot-macros
@@ -86,7 +87,8 @@ RUN luarocks install kikito/sandbox
 
 # # TODO: Add luarocks and sandbox
 
-FROM debian:buster-slim as final
+# FROM debian:buster-slim as final
+FROM debian:bullseye as final
 
 WORKDIR /home
 
@@ -130,9 +132,9 @@ COPY --from=lua_modules /usr/local/share/lua/ /usr/local/share/lua/
 
 ## Copy libm bs lmao
 
-COPY --from=build /lib/x86_64-linux-gnu/libm-2.31.so /lib/x86_64-linux-gnu/ 
-RUN rm /lib/x86_64-linux-gnu/libm.so.6
-RUN ln -s /lib/x86_64-linux-gnu/libm-2.31.so /lib/x86_64-linux-gnu/libm.so.6
+# COPY --from=build /lib/x86_64-linux-gnu/libm.so.6 /lib/x86_64-linux-gnu/ 
+# RUN rm /lib/x86_64-linux-gnu/libm.so.6
+# RUN ln -s /lib/x86_64-linux-gnu/libm.so.6 /lib/x86_64-linux-gnu/libm.so.6
 
 ## Copy tagbot binary
 

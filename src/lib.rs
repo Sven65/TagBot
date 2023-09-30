@@ -1,4 +1,4 @@
-mod services;
 mod commands;
-mod util;
+mod services;
 pub mod tags;
+mod util;

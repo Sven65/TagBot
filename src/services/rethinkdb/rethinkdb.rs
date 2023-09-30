@@ -1,17 +1,38 @@
 use cat_loggr::{log_fatal, log_info};
 use dotenv::dotenv;
+use futures::lock::Mutex;
 use lazy_static::lazy_static;
 use reql::{cmd::connect::Options, r, Session};
-use std::env;
+use std::{env, sync::Arc};
 use tokio::runtime::Handle;
 
 #[derive(Clone)]
+pub struct RethinkDBOptions {
+	host: String,
+	port: u16,
+	db_name: String,
+	user: String,
+	password: String,
+}
+
+#[derive(Clone)]
 pub struct RethinkDB {
+	pub connection_options: Option<RethinkDBOptions>,
 	pub session: Option<Session>,
 }
 
 impl RethinkDB {
-	async fn init_connection(&mut self) -> Result<&Session, reql::Error> {
+	pub fn get_options_as_connect(&self) -> Options {
+		let rdb_opts = self.connection_options.clone().unwrap();
+		Options::new()
+			.host(rdb_opts.host)
+			.port(rdb_opts.port)
+			.db(rdb_opts.db_name)
+			.user(rdb_opts.user)
+			.password(rdb_opts.password)
+	}
+
+	pub fn init_options(&mut self) {
 		dotenv().ok();
 
 		let host = env::var("RETHINK_HOST").expect("Expected rethinkdb host to be present in env.");
@@ -25,14 +46,11 @@ impl RethinkDB {
 		let password = env::var("RETHINK_PASSWORD")
 			.expect("Expected rethinkdb password to be present in env.");
 
-		let options = Options::new()
-			.host(host)
-			.port(port)
-			.db(db_name)
-			.user(user)
-			.password(password);
+		self.connection_options = Some(RethinkDBOptions { host, port, db_name, user, password });
+	}
 
-		let conn = r.connect(options).await?;
+	pub async fn init_connection(&mut self) -> Result<&Session, reql::Error> {
+		let conn = r.connect(self.get_options_as_connect()).await?;
 
 		self.session = Some(conn);
 
@@ -42,11 +60,19 @@ impl RethinkDB {
 	}
 
 	pub async fn get_connection(&self) -> Option<&Session> {
-		self.session.as_ref()
+		let connection = self.session.as_ref();
+
+		if connection.is_none() {
+			println!("Connection to DB lost.");
+		}
+
+		connection
 	}
 
 	pub fn new() -> Self {
-		let mut rdb: RethinkDB = RethinkDB { session: None };
+		let mut rdb: RethinkDB = RethinkDB { session: None, connection_options: None };
+
+		rdb.init_options();
 
 		let handle = Handle::current();
 
@@ -69,5 +95,5 @@ impl RethinkDB {
 }
 
 lazy_static! {
-	pub static ref RDB: RethinkDB = RethinkDB::new();
+	pub static ref RDB: Arc<Mutex<RethinkDB>> = Arc::new(Mutex::new(RethinkDB::new()));
 }
