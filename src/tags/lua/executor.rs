@@ -115,23 +115,53 @@ fn execute_code(
 	let mut output = String::new();
 
 	let result = lua.context(|lua_ctx| {
-		let lua_script = format!(
-			r#"
-			local _print = print
-			local sandbox = require 'sandbox'
+		let mut lua_script: String = "".to_string();
 
-			local env = {{ print = _print, arg = arg, require = user_require }}
+		if cfg!(feature = "run_untrusted_code") {
+			lua_script = format!(
+				r#"
+				local _print = print
 
-			local ok, result = pcall(sandbox.run, [[{}]], {{env = env, quota = 1000}})
+				local env = {{ print = _print, arg = arg, require = user_require }}
+				local code = [[{}]]
+				local chunk, err = load(code, "user_code", "t", env)
 
-			if result then
-				print(result)
-			end
+				local ok, result
+				if chunk then
+					ok, result = pcall(chunk)
+				else
+					ok, result = false, err
+				end
 
-			return ''
-		"#,
-			&tag.content
-		);
+				if ok then
+					print(result)
+				else
+					print("Error:", result)
+				end
+
+				return ''
+			"#,
+				&tag.content
+			);
+		} else {
+			lua_script = format!(
+				r#"
+				local _print = print
+				local sandbox = require 'sandbox'
+
+				local env = {{ print = _print, arg = arg, require = user_require }}
+
+				local ok, result = pcall(sandbox.run, [[{}]], {{env = env, quota = 1000}})
+
+				if result then
+					print(result)
+				end
+
+				return ''
+			"#,
+				&tag.content
+			);
+		}
 
 		eval::<String>(lua_ctx, lua_script.as_str())
 	});

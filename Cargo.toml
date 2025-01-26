@@ -5,6 +5,10 @@ edition = "2021"
 license = "OPL-3.0"
 publish = false
 
+[features]
+default = []
+run_untrusted_code = []
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
@@ -34,3 +38,4 @@ features = [ "builder", "cache", "client", "gateway", "http", "model", "utils", 
 [dev-dependencies]
 test-case = "2.2.1"
 serde_json = "1.0.1"
+

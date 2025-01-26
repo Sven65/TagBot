@@ -2,6 +2,7 @@ pub mod channel;
 pub mod channel_category;
 pub mod channel_id;
 pub mod colour;
+pub mod embed;
 pub mod emoji;
 pub mod emoji_id;
 pub mod guild_channel;

@@ -1,4 +1,4 @@
-use rlua::{Context, Value};
+use rlua::{prelude::LuaValue, Context, Value};
 
 use crate::{
 	tags::lua::lua_modules::rs_lua::types::{
@@ -25,6 +25,22 @@ fn resolve_path(module_path: &str) -> String {
 }
 
 fn get_value<'lua>(key: &str, ctx: Context<'lua>) -> rlua::Value<'lua> {
+	println!("Ctx is {:#?}", ctx.globals());
+
+	let globals = ctx.globals();
+
+	// Iterate over the globals and print each key-value pair
+	for pair in globals.clone().pairs::<String, LuaValue>() {
+		match pair {
+			Ok((key, value)) => {
+				println!("Key: {}, Value: {:?}", key, value);
+			}
+			Err(_) => {
+				println!("Error while accessing global pair.");
+			}
+		}
+	}
+
 	let value = ctx.globals().get::<&str, Value>(key);
 
 	if value.is_err() {
@@ -42,4 +58,5 @@ pub fn init_modules() {
 	LUA_MODULE_INDEX.lock().unwrap().register_rust_module("variables/channel_id", |ctx| get_value("channel_id", ctx));
 	LUA_MODULE_INDEX.lock().unwrap().register_rust_module("timestamp", |ctx| TBTimestamp::create_module(ctx));
 	LUA_MODULE_INDEX.lock().unwrap().register_rust_module("colour", |ctx| TBColour::create_module(ctx));
+	LUA_MODULE_INDEX.lock().unwrap().register_rust_module("embed", |ctx| TBEmbed::create_module(ctx));
 }
