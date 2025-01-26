@@ -121,14 +121,10 @@ impl TagsTable {
 		match query.try_next().await {
 			Ok(Some(result)) => Ok(result),
 			Ok(None) => create_error!("Failed to get tag"),
-			Err(_) => {
+			Err(e) => {
 				rdb_lock.init_connection().await?;
-				Ok(Tag {
-					content: "Failed to get tag, please try again.".to_string(),
-					id: "failed-tag".to_string(),
-					owner: "1".to_string(),
-					tag_type: Some(TagType::Legacy),
-				})
+
+				Err(e)
 			} // Propagate the error
 		}
 	}
