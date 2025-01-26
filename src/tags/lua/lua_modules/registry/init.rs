@@ -25,22 +25,6 @@ fn resolve_path(module_path: &str) -> String {
 }
 
 fn get_value<'lua>(key: &str, ctx: Context<'lua>) -> rlua::Value<'lua> {
-	println!("Ctx is {:#?}", ctx.globals());
-
-	let globals = ctx.globals();
-
-	// Iterate over the globals and print each key-value pair
-	for pair in globals.clone().pairs::<String, LuaValue>() {
-		match pair {
-			Ok((key, value)) => {
-				println!("Key: {}, Value: {:?}", key, value);
-			}
-			Err(_) => {
-				println!("Error while accessing global pair.");
-			}
-		}
-	}
-
 	let value = ctx.globals().get::<&str, Value>(key);
 
 	if value.is_err() {

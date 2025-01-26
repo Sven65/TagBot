@@ -22,7 +22,7 @@ impl UserData for TBEmbed {
 	#[rustfmt::skip]
     #[allow(unused_doc_comments)]
     #[lua_document("TBEmbed", parse_comments, index)]
-	fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
+	fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(_methods: &mut T) {
         // methods.add_method("create", |ctx, this, value: Table| {
         //     this.0.author = value.get("author");
         // });
