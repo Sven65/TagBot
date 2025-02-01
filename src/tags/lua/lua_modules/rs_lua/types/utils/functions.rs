@@ -1,7 +1,7 @@
-use rlua::{Context, Result as LuaResult, Table, ToLua, Value};
+use rlua::{Context, FromLua, Lua, Result as LuaResult, Table, ToLua, Value};
 
 use super::types::{ConstructableFrom, ConstructableFrom2};
-use std::{collections::HashMap, hash::Hash};
+use std::{collections::HashMap, fmt::Debug, hash::Hash};
 
 pub fn lua_todo(ctx: Context) -> LuaResult<Value> {
 	"Not yet implemented.".to_string().to_lua(ctx)
@@ -216,4 +216,58 @@ pub fn convert_hashmap_types_with_new<
 	let table: Table = ctx.create_table_from(map)?;
 
 	table.to_lua(ctx)
+}
+
+/// Retrieves an optional value from an `rlua::Table`.
+///
+/// This function attempts to fetch a value from the given Lua table using the provided key.
+/// If the key does not exist or contains `nil`, it returns `None`. Otherwise, it attempts
+/// to convert the value into type `T`.
+///
+/// # Type Parameters
+/// - `'lua`: The Lua context lifetime.
+/// - `T`: A type that implements `rlua::FromLua<'lua>`, allowing it to be converted from a Lua value.
+///
+/// # Parameters
+/// - `table`: A reference to an `rlua::Table` from which to retrieve the value.
+/// - `key`: The key associated with the value to retrieve.
+///
+/// # Returns
+/// - `Ok(Some(T))` if the value exists and is successfully converted.
+/// - `Ok(None)` if the key does not exist or is `nil`.
+/// - `Err(rlua::Error)` if the conversion to `T` fails.
+///
+/// # Example
+/// ```
+/// use rlua::{Lua, Table, Result};
+///
+/// fn main() -> Result<()> {
+///     let lua = Lua::new();
+///     lua.context(|ctx| {
+///         let table: Table = ctx.load("return { foo = 42, bar = nil }").eval()?;
+///
+///         let foo: Option<i32> = get_option(&table, "foo")?;
+///         let bar: Option<i32> = get_option(&table, "bar")?;
+///         let baz: Option<i32> = get_option(&table, "baz")?;
+///
+///         assert_eq!(foo, Some(42));
+///         assert_eq!(bar, None);
+///         assert_eq!(baz, None);
+///
+///         Ok(())
+///     })
+/// }
+/// ```
+///
+/// # Errors
+/// This function returns an error if the key exists but the value cannot be converted into `T`.
+pub fn get_option_from_table<'lua, T: FromLua<'lua>>(
+	table: &Table<'lua>,
+	key: &str,
+	ctx: Context<'lua>,
+) -> LuaResult<Option<T>> {
+	match table.clone().get::<_, Value>(key)? {
+		Value::Nil => Ok(None),
+		value => Ok(Some(T::from_lua(value, ctx)?)),
+	}
 }
