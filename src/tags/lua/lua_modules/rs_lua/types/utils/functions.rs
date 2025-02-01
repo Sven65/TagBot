@@ -140,7 +140,7 @@ pub fn convert_type_option<'lua, T: IntoLua<'lua>>(
 /// use tagbot::tags::lua::lua_modules::rs_lua::types::utils::functions::convert_vec;
 /// let lua = rlua::Lua::new();
 /// let values = vec![1, 2, 3];
-/// let result = convert_vec::<T, i32>(values, &lua);
+/// let result = convert_vec::<i32, i32>(values, &lua);
 /// assert!(result.is_ok());
 /// ```
 pub fn convert_vec<'lua, T: std::convert::From<T2> + IntoLua<'lua>, T2>(
@@ -251,20 +251,24 @@ pub fn convert_hashmap_types_with_new<
 ///
 /// # Example
 /// ```
-/// use rlua::{Lua, Table, Result};
+/// use rlua::{Lua, Table, Result, prelude::LuaError};
+///
 ///
 /// fn main() -> Result<()> {
+///     use tagbot::tags::lua::lua_modules::rs_lua::types::utils::functions::get_option_from_table;
 ///     let lua = Lua::new();
 ///
-///     let table: Table = ctx.load("return { foo = 42, bar = nil }").eval()?;
+///     let table: Table = lua.load("return { foo = 42, bar = nil }").eval()?;
 ///
-///     let foo: Option<i32> = get_option(&table, "foo")?;
-///     let bar: Option<i32> = get_option(&table, "bar")?;
-///     let baz: Option<i32> = get_option(&table, "baz")?;
+///     let foo: Option<i32> = get_option_from_table(&table, "foo", &lua)?;
+///     let bar: Option<i32> = get_option_from_table(&table, "bar", &lua)?;
+///     let baz: Option<i32> = get_option_from_table(&table, "baz", &lua)?;
 ///
 ///     assert_eq!(foo, Some(42));
 ///     assert_eq!(bar, None);
 ///     assert_eq!(baz, None);
+///
+///     Ok(())
 ///
 /// }
 /// ```
