@@ -20,6 +20,7 @@ use self::structures::{
 
 const CREATE_COMMANDS: bool = false;
 
+#[allow(dead_code)]
 #[derive(Debug, Clone, Copy)]
 pub struct TBCommand {
 	pub executor: CommandExecutorFn,

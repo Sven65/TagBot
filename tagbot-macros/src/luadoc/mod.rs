@@ -482,7 +482,7 @@ pub fn lua_doc_generator(args: TokenStream, tokens: TokenStream) -> TokenStream 
 
 			let dir_path = "docs/lua";
 			let path = format!("{}/{}.md", dir_path, name);
-			std::fs::create_dir_all(dir_path.clone()).unwrap();
+			std::fs::create_dir_all(dir_path).unwrap();
 
 			let mut output = File::create(path).unwrap();
 

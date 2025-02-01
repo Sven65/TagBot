@@ -1,4 +1,4 @@
-use rlua::{prelude::LuaValue, Context, Value};
+use rlua::{Context, Value};
 
 use crate::{
 	tags::lua::lua_modules::rs_lua::types::{
@@ -40,7 +40,7 @@ pub fn init_modules() {
 	LUA_MODULE_INDEX.lock().unwrap().register_rust_module("variables/sender", |ctx| get_value("sender", ctx));
 	LUA_MODULE_INDEX.lock().unwrap().register_rust_module("variables/sender_member", |ctx| get_value("sender_member", ctx));
 	LUA_MODULE_INDEX.lock().unwrap().register_rust_module("variables/channel_id", |ctx| get_value("channel_id", ctx));
-	LUA_MODULE_INDEX.lock().unwrap().register_rust_module("timestamp", |ctx| TBTimestamp::create_module(ctx));
-	LUA_MODULE_INDEX.lock().unwrap().register_rust_module("colour", |ctx| TBColour::create_module(ctx));
-	LUA_MODULE_INDEX.lock().unwrap().register_rust_module("embed", |ctx| TBEmbed::create_module(ctx));
+	LUA_MODULE_INDEX.lock().unwrap().register_rust_module("timestamp", TBTimestamp::create_module);
+	LUA_MODULE_INDEX.lock().unwrap().register_rust_module("colour", TBColour::create_module);
+	LUA_MODULE_INDEX.lock().unwrap().register_rust_module("embed", TBEmbed::create_module);
 }
