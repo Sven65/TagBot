@@ -1,22 +1,13 @@
-use rlua::{Context, FromLua, MetaMethod, Table, UserData, Value};
-use serenity::{
-	builder::{CreateEmbed, CreateEmbedAuthor},
-	model::prelude::{Embed, EmbedAuthor},
-};
+use rlua::{FromLua, UserData, Value};
+use serenity::builder::{CreateEmbed, CreateEmbedAuthor};
 use tagbot_macros::lua_document;
 
-use crate::{
-	handle_error,
-	tags::lua::{
-		lua_modules::rs_lua::types::{
-			utils::{
-				functions::{convert_type, convert_type_option, get_option_from_table},
-				types::{ConstructableFrom, ConstructableFromLuaContext},
-			},
-			Requireable,
-		},
-		util::dump_table,
+use crate::tags::lua::{
+	lua_modules::rs_lua::types::{
+		utils::{functions::get_option_from_table, types::ConstructableFromLuaContext},
+		Requireable,
 	},
+	util::dump_table,
 };
 
 // Wrapper for [`serenity::model::prelude::Embed`]
@@ -33,32 +24,21 @@ impl<'lua> FromLua<'lua> for FromLuaCreateEmbedAuthor {
 			let mut author = CreateEmbedAuthor::default();
 
 			// Extract the 'name' field from the Lua table and insert into the HashMap
-			if let Some(name) = table.get("name")? {
-				if let Value::String(name_str) = name {
-					// Convert rlua::String to String
-					if let Ok(name_str) = name_str.to_str() {
-						author.name(name_str.to_string());
-					}
+			if let Some(Value::String(name_str)) = table.get("name")? {
+				if let Ok(name_str) = name_str.to_str() {
+					author.name(name_str.to_string());
 				}
 			}
 
-			// Extract the 'url' field from the Lua table
-			if let Some(url) = table.get("url")? {
-				if let Value::String(url_str) = url {
-					// Convert rlua::String to String
-					if let Ok(url_str) = url_str.to_str() {
-						author.url(url_str.to_string());
-					}
+			if let Some(Value::String(url)) = table.get("url")? {
+				if let Ok(url) = url.to_str() {
+					author.url(url.to_string());
 				}
 			}
 
-			// Extract the 'icon_url' field from the Lua table
-			if let Some(icon_url) = table.get("icon_url")? {
-				if let Value::String(icon_url_str) = icon_url {
-					// Convert rlua::String to String
-					if let Ok(icon_url_str) = icon_url_str.to_str() {
-						author.icon_url(icon_url_str.to_string());
-					}
+			if let Some(Value::String(icon_url)) = table.get("icon_url")? {
+				if let Ok(icon_url) = icon_url.to_str() {
+					author.icon_url(icon_url.to_string());
 				}
 			}
 
@@ -73,9 +53,9 @@ impl<'lua> FromLua<'lua> for FromLuaCreateEmbedAuthor {
 	}
 }
 
-impl Into<CreateEmbedAuthor> for FromLuaCreateEmbedAuthor {
-	fn into(self) -> CreateEmbedAuthor {
-		self.0 // Unwrap the inner CreateEmbedAuthor
+impl From<FromLuaCreateEmbedAuthor> for CreateEmbedAuthor {
+	fn from(val: FromLuaCreateEmbedAuthor) -> Self {
+		val.0 // Unwrap the inner CreateEmbedAuthor
 	}
 }
 
@@ -116,14 +96,19 @@ impl UserData for TBEmbed {
 	#[rustfmt::skip]
     #[allow(unused_doc_comments)]
     #[lua_document("TBEmbed", parse_comments, index)]
-	fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(_methods: &mut T) {
+	fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
         // methods.add_method("create", |ctx, this, value: Table| {
         //     this.0.author = value.get("author");
         // });
 
+		methods.add_method("test", |_ctx, this, _: Value| {
+			println!("{:#?}", this.0);
+			Ok(())
+		});
+
         // methods.add_meta_method(MetaMethod::Index, |ctx, this, value: String| {
         //     Ok(match value.as_str() {
-        //         "author" => convert_type_option::<String>(this.0.author.clone(), ctx)?
+        //         "author_name" => convert_type::<String>(this.0.0, ctx)?,
         //     })
         // });
     }

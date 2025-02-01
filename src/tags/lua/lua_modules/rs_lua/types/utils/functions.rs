@@ -119,20 +119,29 @@ pub fn convert_type_option<'lua, T: IntoLua<'lua>>(
 	value.unwrap().into_lua(ctx)
 }
 
-/// Converts a [`Vec<T2>`] to a [`Vec<T>`]
+/// Converts a [`Vec<T2>`] into a [`Vec<T>`], where `T` is the type that can be created from `T2`
+/// through the [`From<T2>`] trait and can be converted into a Lua value using the [`IntoLua<'lua>`] trait.
 ///
-/// # Arguments
+/// # Parameters
+/// - `value`: A vector of type `Vec<T2>` that will be converted.
+/// - `ctx`: A Lua context (`Context<'lua>`) that will be used for the Lua conversion.
 ///
-/// * `value` - The value to convert
-/// * `ctx` - [`rlua::Context`] to use for converting to lua
+/// # Type Parameters
+/// - `T`: The type that the elements of `Vec<T2>` will be converted into. `T` must implement both
+///   [`From<T2>`] (to convert from `T2` to `T`) and [`IntoLua<'lua>`] (to convert from `T` to Lua).
+/// - `T2`: The type of the elements in the input vector. `T2` must be convertible into `T`.
+///
+/// # Returns
+/// - A [`LuaResult<Value>`], which contains the converted vector as a Lua value if successful, or
+///   an error if the conversion fails.
 ///
 /// # Example
-///
-/// ```no_run
-/// // Convert a vec of strings
-///
-/// let data: Vec<String> = vec!["hello", "world"];
-/// convert_vec::<String, _>(data, ctx)?,
+/// ```rust
+/// use tagbot::tags::lua::lua_modules::rs_lua::types::utils::functions::convert_vec;
+/// let lua = rlua::Lua::new();
+/// let values = vec![1, 2, 3];
+/// let result = convert_vec::<T, i32>(values, &lua);
+/// assert!(result.is_ok());
 /// ```
 pub fn convert_vec<'lua, T: std::convert::From<T2> + IntoLua<'lua>, T2>(
 	value: Vec<T2>,
@@ -246,19 +255,17 @@ pub fn convert_hashmap_types_with_new<
 ///
 /// fn main() -> Result<()> {
 ///     let lua = Lua::new();
-///     lua.context(|ctx| {
-///         let table: Table = ctx.load("return { foo = 42, bar = nil }").eval()?;
 ///
-///         let foo: Option<i32> = get_option(&table, "foo")?;
-///         let bar: Option<i32> = get_option(&table, "bar")?;
-///         let baz: Option<i32> = get_option(&table, "baz")?;
+///     let table: Table = ctx.load("return { foo = 42, bar = nil }").eval()?;
 ///
-///         assert_eq!(foo, Some(42));
-///         assert_eq!(bar, None);
-///         assert_eq!(baz, None);
+///     let foo: Option<i32> = get_option(&table, "foo")?;
+///     let bar: Option<i32> = get_option(&table, "bar")?;
+///     let baz: Option<i32> = get_option(&table, "baz")?;
 ///
-///         Ok(())
-///     })
+///     assert_eq!(foo, Some(42));
+///     assert_eq!(bar, None);
+///     assert_eq!(baz, None);
+///
 /// }
 /// ```
 ///

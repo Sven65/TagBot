@@ -2,12 +2,9 @@ use rlua::{Error, IntoLua, MetaMethod, UserData, Value};
 use serenity::utils::Colour;
 use tagbot_macros::lua_document;
 
-use crate::tags::lua::{
-	lua_modules::rs_lua::types::{
-		utils::{functions::convert_type, types::ConstructableFrom},
-		Requireable,
-	},
-	util::dump_table,
+use crate::tags::lua::lua_modules::rs_lua::types::{
+	utils::{functions::convert_type, types::ConstructableFrom},
+	Requireable,
 };
 
 /// Wrapper for [`serenity::utils::Colour`]
