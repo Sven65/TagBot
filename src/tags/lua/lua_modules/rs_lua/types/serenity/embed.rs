@@ -1,4 +1,4 @@
-use rlua::{FromLua, UserData, Value};
+use rlua::{Error, FromLua, UserData, Value};
 use serenity::builder::{CreateEmbed, CreateEmbedAuthor};
 use tagbot_macros::lua_document;
 
@@ -50,6 +50,23 @@ impl<'lua> FromLua<'lua> for FromLuaCreateEmbedAuthor {
 				message: Some("Expected a table".to_string()),
 			})
 		}
+	}
+}
+
+impl FromLua<'_> for TBEmbed {
+	fn from_lua(value: Value<'_>, lua: &'_ rlua::Lua) -> rlua::Result<Self> {
+		let tb_embed = value.as_userdata().unwrap();
+
+		if !tb_embed.is::<TBEmbed>() {
+			return Err(Error::external("Passed type is not TBEmbed"));
+		}
+
+		let tb_embed = match tb_embed.take::<TBEmbed>() {
+			Ok(embed) => embed,
+			Err(_) => return Err(Error::external("Failed to take internal TBEmbed")),
+		};
+
+		Ok(tb_embed)
 	}
 }
 
