@@ -1,10 +1,10 @@
-use rlua::{Context, FromLua, Lua, Result as LuaResult, Table, ToLua, Value};
+use rlua::{Context, FromLua, IntoLua, Result as LuaResult, Table, Value};
 
 use super::types::{ConstructableFrom, ConstructableFrom2};
-use std::{collections::HashMap, fmt::Debug, hash::Hash};
+use std::{collections::HashMap, hash::Hash};
 
 pub fn lua_todo(ctx: Context) -> LuaResult<Value> {
-	"Not yet implemented.".to_string().to_lua(ctx)
+	"Not yet implemented.".to_string().into_lua(ctx)
 }
 
 /// Convert a given value to a lua value for a constructable type wrapper implementing ToLua
@@ -12,13 +12,13 @@ pub fn lua_todo(ctx: Context) -> LuaResult<Value> {
 /// # Arguments
 /// * `value` - The value to convert
 /// * `ctx` - [`rlua::Context`] to use when converting
-pub fn convert_constructable<'lua, T: ConstructableFrom<V> + ToLua<'lua>, V: Clone>(
+pub fn convert_constructable<'lua, T: ConstructableFrom<V> + IntoLua<'lua>, V: Clone>(
 	value: V,
 	ctx: Context<'lua>,
 ) -> LuaResult<Value> {
 	let converted_value = T::new(value);
 
-	converted_value.to_lua(ctx)
+	converted_value.into_lua(ctx)
 }
 
 /// Converts a given Option value to a lua value for a constructable type wrapper, or Value::Nil if the option is none.
@@ -26,7 +26,7 @@ pub fn convert_constructable<'lua, T: ConstructableFrom<V> + ToLua<'lua>, V: Clo
 /// # Arguments
 /// * `value` - The value to convert
 /// * `ctx` - [`rlua::Context`] to use when converting
-pub fn convert_constructable_option<'lua, T: ConstructableFrom<V> + ToLua<'lua>, V: Clone>(
+pub fn convert_constructable_option<'lua, T: ConstructableFrom<V> + IntoLua<'lua>, V: Clone>(
 	value: Option<V>,
 	ctx: Context<'lua>,
 ) -> LuaResult<Value> {
@@ -38,7 +38,7 @@ pub fn convert_constructable_option<'lua, T: ConstructableFrom<V> + ToLua<'lua>,
 
 	let converted_value = T::new(value.unwrap());
 
-	converted_value.to_lua(ctx)
+	converted_value.into_lua(ctx)
 }
 
 /// Converts a given Option value to a lua value for a constructable2 type wrapper, or Value::Nil if the option is none.
@@ -49,7 +49,7 @@ pub fn convert_constructable_option<'lua, T: ConstructableFrom<V> + ToLua<'lua>,
 /// * `ctx` - [`rlua::Context`] to use when converting
 pub fn convert_constructable2_option<
 	'lua,
-	T: ConstructableFrom2<V, V2> + ToLua<'lua>,
+	T: ConstructableFrom2<V, V2> + IntoLua<'lua>,
 	V: Clone,
 	V2: Clone,
 >(
@@ -65,7 +65,7 @@ pub fn convert_constructable2_option<
 
 	let converted_value = T::new(value.unwrap(), value2.unwrap());
 
-	converted_value.to_lua(ctx)
+	converted_value.into_lua(ctx)
 }
 
 /// Converts a given value to a lua value for a constructable2 type wrapper, or Value::Nil if the option is none.
@@ -76,7 +76,7 @@ pub fn convert_constructable2_option<
 /// * `ctx` - [`rlua::Context`] to use when converting
 pub fn convert_constructable2<
 	'lua,
-	T: ConstructableFrom2<V, V2> + ToLua<'lua>,
+	T: ConstructableFrom2<V, V2> + IntoLua<'lua>,
 	V: Clone,
 	V2: Clone,
 >(
@@ -86,7 +86,7 @@ pub fn convert_constructable2<
 ) -> LuaResult<Value> {
 	let converted_value = T::new(value, value2);
 
-	converted_value.to_lua(ctx)
+	converted_value.into_lua(ctx)
 }
 
 /// Converts a value of type T into a [`LuaResult<Value>`]
@@ -94,8 +94,11 @@ pub fn convert_constructable2<
 /// # Arguments
 /// * `value` - The value to convert
 /// * `ctx` - [`rlua::Context`] to use for the conversion
-pub fn convert_type<'lua, T: ToLua<'lua>>(value: T, ctx: Context<'lua>) -> LuaResult<Value<'lua>> {
-	value.to_lua(ctx)
+pub fn convert_type<'lua, T: IntoLua<'lua>>(
+	value: T,
+	ctx: Context<'lua>,
+) -> LuaResult<Value<'lua>> {
+	value.into_lua(ctx)
 }
 
 /// Converts a value of type Option<T> into a [`LuaResult<Value>`]
@@ -105,7 +108,7 @@ pub fn convert_type<'lua, T: ToLua<'lua>>(value: T, ctx: Context<'lua>) -> LuaRe
 /// # Arguments
 /// * `value` - The value to convert
 /// * `ctx` - [`rlua::Context`] to use for the conversion
-pub fn convert_type_option<'lua, T: ToLua<'lua>>(
+pub fn convert_type_option<'lua, T: IntoLua<'lua>>(
 	value: Option<T>,
 	ctx: Context<'lua>,
 ) -> LuaResult<Value> {
@@ -113,7 +116,7 @@ pub fn convert_type_option<'lua, T: ToLua<'lua>>(
 		return Ok(Value::Nil);
 	}
 
-	value.unwrap().to_lua(ctx)
+	value.unwrap().into_lua(ctx)
 }
 
 /// Converts a [`Vec<T2>`] to a [`Vec<T>`]
@@ -131,13 +134,13 @@ pub fn convert_type_option<'lua, T: ToLua<'lua>>(
 /// let data: Vec<String> = vec!["hello", "world"];
 /// convert_vec::<String, _>(data, ctx)?,
 /// ```
-pub fn convert_vec<'lua, T: std::convert::From<T2> + ToLua<'lua>, T2>(
+pub fn convert_vec<'lua, T: std::convert::From<T2> + IntoLua<'lua>, T2>(
 	value: Vec<T2>,
 	ctx: Context<'lua>,
 ) -> LuaResult<Value> {
 	let vec2: Vec<T> = value.into_iter().map(|x| x.into()).collect();
 
-	vec2.to_lua(ctx)
+	vec2.into_lua(ctx)
 }
 
 #[rustfmt::skip]
@@ -150,7 +153,7 @@ pub fn convert_vec<'lua, T: std::convert::From<T2> + ToLua<'lua>, T2>(
 /// * `ctx` - [`rlua::Context`] to use for converting to lua
 pub fn convert_vec_new<
 	'lua,
-	T: ConstructableFrom2<T2, S> + ToLua<'lua>,
+	T: ConstructableFrom2<T2, S> + IntoLua<'lua>,
 	T2,
 	S: Clone,
 >(
@@ -160,7 +163,7 @@ pub fn convert_vec_new<
 ) -> LuaResult<Value> {
 	let vec2: Vec<T> = value.into_iter().map(|x| T::new(x, value2.clone())).collect();
 
-	vec2.to_lua(ctx)
+	vec2.into_lua(ctx)
 }
 
 /// Converts a [`HashMap<K2, V2>`] to a [`HashMap<K, V>`]
@@ -170,8 +173,8 @@ pub fn convert_vec_new<
 /// * `ctx` - [`rlua::Context`] to use for converting to lua
 pub fn convert_hashmap_types<
 	'lua,
-	K: Eq + Hash + std::convert::From<K2> + ToLua<'lua>,
-	V: std::convert::From<V2> + ToLua<'lua>,
+	K: Eq + Hash + std::convert::From<K2> + IntoLua<'lua>,
+	V: std::convert::From<V2> + IntoLua<'lua>,
 	K2,
 	V2,
 >(
@@ -186,7 +189,7 @@ pub fn convert_hashmap_types<
 
 	let table: Table = ctx.create_table_from(map)?;
 
-	table.to_lua(ctx)
+	table.into_lua(ctx)
 }
 
 /// Converts a [`HashMap<K2, V2>`] to a [`HashMap<K, V>`] using [`V::new`]
@@ -197,8 +200,8 @@ pub fn convert_hashmap_types<
 /// * `ctx` - [`rlua::Context`] to use for converting to lua
 pub fn convert_hashmap_types_with_new<
 	'lua,
-	K: Eq + Hash + std::convert::From<K2> + ToLua<'lua>,
-	V: ConstructableFrom2<V2, S> + ToLua<'lua>,
+	K: Eq + Hash + std::convert::From<K2> + IntoLua<'lua>,
+	V: ConstructableFrom2<V2, S> + IntoLua<'lua>,
 	S: Clone,
 	K2,
 	V2,
@@ -215,7 +218,7 @@ pub fn convert_hashmap_types_with_new<
 
 	let table: Table = ctx.create_table_from(map)?;
 
-	table.to_lua(ctx)
+	table.into_lua(ctx)
 }
 
 /// Retrieves an optional value from an `rlua::Table`.

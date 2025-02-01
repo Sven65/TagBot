@@ -1,4 +1,4 @@
-use rlua::{Error as LuaError, MetaMethod, ToLua, UserData, Value};
+use rlua::{Error as LuaError, IntoLua, MetaMethod, UserData, Value};
 use serenity::model::prelude::{GuildId, PartialGuild};
 use serenity::{prelude::Context as SerenityContext, Error};
 use tagbot_macros::lua_document;
@@ -35,7 +35,7 @@ impl UserData for TBGuildId {
 	#[allow(unused_doc_comments)]
 	fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
 		methods.add_meta_method(MetaMethod::ToString, |ctx, this, _: Value| {
-			this.0.to_string().to_lua(ctx)
+			this.0.to_string().into_lua(ctx)
 		});
 
 		/// @desc Resolves the ID to a guild.
@@ -53,7 +53,7 @@ impl UserData for TBGuildId {
 				return Err(LuaError::external("Failed to get guild."));
 			}
 
-			TBPartialGuild(guild.unwrap(), this.1.clone()).to_lua(ctx)
+			TBPartialGuild(guild.unwrap(), this.1.clone()).into_lua(ctx)
 		});
 	}
 }

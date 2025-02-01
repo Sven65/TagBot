@@ -12,34 +12,32 @@ fn create_user() -> TBUser {
 #[test_case("discriminator", "1432" ; "Gets the correct discriminator")]
 #[test_case("tag", "test#1432" ; "Gets the correct tag")]
 fn get_str(param: &str, expected: &str) {
-	Lua::new().context(|lua| {
-		let userdata = lua.create_userdata(create_user()).unwrap();
-		let globals = lua.globals();
-		globals.set("userdata", userdata).unwrap();
+	let lua = Lua::new();
+	let userdata = lua.create_userdata(create_user()).unwrap();
+	let globals = lua.globals();
+	globals.set("userdata", userdata).unwrap();
 
-		let data = lua.load(
-			format!(r#"
-				return userdata.{}
-			"#, param).as_str(),
-		).eval::<String>().unwrap();
+	let data = lua.load(
+		format!(r#"
+			return userdata.{}
+		"#, param).as_str(),
+	).eval::<String>().unwrap();
 
-		assert_eq!(data, expected)
-	})
+	assert_eq!(data, expected)
 }
 
 #[test_case("bot", true ; "Gets that the user is a bot")]
 fn get_bool(param: &str, expected: bool) {
-	Lua::new().context(|lua| {
-		let userdata = lua.create_userdata(create_user()).unwrap();
-		let globals = lua.globals();
-		globals.set("userdata", userdata).unwrap();
+	let lua = Lua::new();
+	let userdata = lua.create_userdata(create_user()).unwrap();
+	let globals = lua.globals();
+	globals.set("userdata", userdata).unwrap();
 
-		let data = lua.load(
-			format!(r#"
-				return userdata.{}
-			"#, param).as_str(),
-		).eval::<bool>().unwrap();
+	let data = lua.load(
+		format!(r#"
+			return userdata.{}
+		"#, param).as_str(),
+	).eval::<bool>().unwrap();
 
-		assert_eq!(data, expected)
-	})
+	assert_eq!(data, expected)
 }
