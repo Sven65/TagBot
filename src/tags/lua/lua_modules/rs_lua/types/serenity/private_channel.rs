@@ -1,4 +1,4 @@
-use rlua::{MetaMethod, ToLua, UserData, Value};
+use rlua::{IntoLua, MetaMethod, UserData, Value};
 use serenity::{model::channel::PrivateChannel, prelude::Context as SerenityContext};
 use tagbot_macros::lua_document;
 
@@ -33,7 +33,7 @@ impl UserData for TBPrivateChannel {
 	#[lua_document("TBPrivateChannel", index)]
 	fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
 		methods.add_meta_method(MetaMethod::ToString, |ctx, this, _: Value| {
-			this.0.to_string().to_lua(ctx)
+			this.0.to_string().into_lua(ctx)
 		});
 
 		methods.add_meta_method(MetaMethod::Index, |ctx, this, value: String| {

@@ -85,7 +85,7 @@ impl<'lua> ConstructableFromLuaContext<'lua, rlua::Table<'lua>> for TBEmbed {
 
 		println!(
 			"Creating new embed with value {:#?}",
-			dump_table(value.clone())
+			dump_table(&value.clone())
 		);
 
 		// Borrow `value` for the correct lifetime to avoid the "dropped" error
@@ -150,7 +150,7 @@ impl Requireable for TBEmbed {
 		let func = ctx.create_function(|ctx2, params: rlua::Table| {
 			let value = params;
 
-			println!("Func params are {}", dump_table(value.clone()));
+			println!("Func params are {}", dump_table(&value.clone()));
 
 			Ok(TBEmbed::new(value, ctx2))
 		});

@@ -1,5 +1,5 @@
 use chrono::prelude::*;
-use rlua::{Error as LuaError, MetaMethod, ToLua, UserData, Value};
+use rlua::{Error as LuaError, IntoLua, MetaMethod, UserData, Value};
 use serenity::model::timestamp::Timestamp;
 use tagbot_macros::lua_document;
 
@@ -36,7 +36,7 @@ impl UserData for TBTimestamp {
 		// methods.add_meta_method(MetaMethod::Index, )
 
 		methods.add_meta_method(MetaMethod::ToString, |ctx, this, _: Value| {
-			this.0.to_string().to_lua(ctx)
+			this.0.to_string().into_lua(ctx)
 		});
 
 		/// @desc Formats the timestamp with with the specified format string.
@@ -48,7 +48,7 @@ impl UserData for TBTimestamp {
 
 			let formatted = time.format(&value);
 
-			Ok(formatted.to_string().to_lua(ctx))
+			Ok(formatted.to_string().into_lua(ctx))
 		});
 
 		/// @desc Formats with discord timestamp tag (https://gist.github.com/LeviSnoot/d9147767abeef2f770e9ddcd91eb85aa)

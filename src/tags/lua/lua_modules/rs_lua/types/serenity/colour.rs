@@ -1,10 +1,13 @@
-use rlua::{MetaMethod, ToLua, UserData, Value};
+use rlua::{Error, IntoLua, MetaMethod, UserData, Value};
 use serenity::utils::Colour;
 use tagbot_macros::lua_document;
 
-use crate::tags::lua::lua_modules::rs_lua::types::{
-	utils::{functions::convert_type, types::ConstructableFrom},
-	Requireable,
+use crate::tags::lua::{
+	lua_modules::rs_lua::types::{
+		utils::{functions::convert_type, types::ConstructableFrom},
+		Requireable,
+	},
+	util::dump_table,
 };
 
 /// Wrapper for [`serenity::utils::Colour`]
@@ -22,13 +25,30 @@ impl ConstructableFrom<Colour> for TBColour {
 	}
 }
 
+impl rlua::FromLuaMulti<'_> for TBColour {
+	fn from_lua_multi(values: rlua::MultiValue<'_>, _lua: &'_ rlua::Lua) -> rlua::Result<Self> {
+		let tb_color = values.get(0).unwrap().as_userdata().unwrap();
+
+		if !tb_color.is::<TBColour>() {
+			return Err(Error::external("Passed type is not TBColour"));
+		}
+
+		let tb_color = match tb_color.take::<TBColour>() {
+			Ok(colour) => colour,
+			Err(_) => return Err(Error::external("Failed to take internal TBColour")),
+		};
+
+		Ok(tb_color)
+	}
+}
+
 impl UserData for TBColour {
 	#[rustfmt::skip]
 	#[allow(unused_doc_comments)]
 	#[lua_document("TBColour", parse_comments, index)]
 	fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
 		methods.add_meta_method(MetaMethod::ToString, |ctx, this, _: Value| {
-			this.0.hex().to_lua(ctx)
+			this.0.hex().into_lua(ctx)
 		});
 
 		methods.add_meta_method(MetaMethod::Index, |ctx, this, value: String| {
@@ -44,7 +64,7 @@ impl UserData for TBColour {
 		/// @method
 		/// @return {string} The converted hex color
 		methods.add_method("hex", |ctx, this, _: Value| {
-			this.0.hex().to_lua(ctx)
+			this.0.hex().into_lua(ctx)
 		});
 
 	}

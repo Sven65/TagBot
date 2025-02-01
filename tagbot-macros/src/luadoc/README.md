@@ -73,7 +73,7 @@ impl UserData for TBTimestamp {
 
 			let formatted = time.format(&value);
 
-			Ok(formatted.to_string().to_lua(ctx))
+			Ok(formatted.to_string().into_lua(ctx))
 		});
 	}
 }

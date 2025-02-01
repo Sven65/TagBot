@@ -23,10 +23,10 @@ use super::user_require::user_require;
 const INSTRUCTION_LIMIT: Option<u32> = Some(1_000_000);
 const USER_MEMORY_LIMIT: usize = 1; // MB
 const SERVER_MEMORY_LIMIT: usize = 1; // MB
-const MEMORY_LIMIT: Option<usize> = Some((USER_MEMORY_LIMIT + SERVER_MEMORY_LIMIT) * 1024 * 1024); // MB * 1024 kb * 1024 bytes
+const MEMORY_LIMIT: usize = (USER_MEMORY_LIMIT + SERVER_MEMORY_LIMIT) * 1024 * 1024; // MB * 1024 kb * 1024 bytes
 
 fn eval<'lua, T: FromLuaMulti<'lua>>(lua_ctx: rlua::Context<'lua>, script: &str) -> LuaResult<T> {
-	lua_ctx.load(script).set_name("tag.lua")?.eval()
+	lua_ctx.load(script).set_name("tag.lua").eval()
 }
 
 fn parse_pos_args(data: &CommandData) -> Vec<&str> {
@@ -47,7 +47,7 @@ fn parse_pos_args(data: &CommandData) -> Vec<&str> {
 fn execute_code(
 	tag: Tag,
 	interaction: ApplicationCommandInteraction,
-	_ctx: Context,
+	serenity_ctx: Context,
 ) -> rlua::Result<String> {
 	let lua = Lua::new();
 
@@ -55,47 +55,42 @@ fn execute_code(
 		log_debug!("interaction {:#?}", interaction);
 	}
 
-	lua.set_memory_limit(MEMORY_LIMIT);
+	lua.set_memory_limit(MEMORY_LIMIT).unwrap();
 
 	let args = parse_pos_args(&interaction.data);
 
 	// Set interaction data
-	lua.context(|lua_ctx| {
-		let globals = lua_ctx.globals();
 
-		let sender = TBUser::new(interaction.clone().user);
+	let globals = lua.globals();
 
-		let member = interaction.clone().member;
+	let sender = TBUser::new(interaction.clone().user);
 
-		let channel_id = interaction.clone().channel_id;
+	let member = interaction.clone().member;
 
-		globals.set("sender", sender)?;
+	let channel_id = interaction.clone().channel_id;
 
-		if let Some(member) = member {
-			let sender_member = TBMember::new(member);
-			globals.set("sender_member", sender_member)?;
-		}
+	globals.set("sender", sender)?;
 
-		globals.set("channel_id", TBChannelId::new(channel_id, _ctx.clone()))?;
+	if let Some(member) = member {
+		let sender_member = TBMember::new(member);
+		globals.set("sender_member", sender_member)?;
+	}
 
-		let guild_id = interaction.clone().guild_id;
-		if let Some(id) = guild_id {
-			globals.set("guild_id", TBGuildId::new(id, _ctx.clone()))?;
-		}
+	globals.set(
+		"channel_id",
+		TBChannelId::new(channel_id, serenity_ctx.clone()),
+	)?;
 
-		Ok(())
-	})?;
+	let guild_id = interaction.clone().guild_id;
+	if let Some(id) = guild_id {
+		globals.set("guild_id", TBGuildId::new(id, serenity_ctx.clone()))?;
+	}
 
-	lua.context(|lua_ctx| {
-		let globals = lua_ctx.globals();
-		globals.set("arg", args)?;
+	globals.set("arg", args)?;
 
-		let lua_user_require = lua_ctx.create_function(user_require)?;
+	let lua_user_require = lua.create_function(user_require)?;
 
-		globals.set("user_require", lua_user_require)?;
-
-		Ok(())
-	})?;
+	globals.set("user_require", lua_user_require)?;
 
 	lua.set_hook(
 		HookTriggers {
@@ -114,57 +109,53 @@ fn execute_code(
 	let lua_buf = lua_buf.unwrap();
 	let mut output = String::new();
 
-	let result = lua.context(|lua_ctx| {
-		let mut lua_script: String = "".to_string();
+	let lua_script = if cfg!(feature = "run_untrusted_code") {
+		format!(
+			r#"
+			local _print = print
 
-		if cfg!(feature = "run_untrusted_code") {
-			lua_script = format!(
-				r#"
-				local _print = print
+			local env = {{ print = _print, arg = arg, require = user_require }}
+			local code = [[{}]]
+			local chunk, err = load(code, "user_code", "t", env)
 
-				local env = {{ print = _print, arg = arg, require = user_require }}
-				local code = [[{}]]
-				local chunk, err = load(code, "user_code", "t", env)
+			local ok, result
+			if chunk then
+				ok, result = pcall(chunk)
+			else
+				ok, result = false, err
+			end
 
-				local ok, result
-				if chunk then
-					ok, result = pcall(chunk)
-				else
-					ok, result = false, err
-				end
+			if ok then
+				print(result)
+			else
+				print("Error:", result)
+			end
 
-				if ok then
-					print(result)
-				else
-					print("Error:", result)
-				end
+			return ''
+		"#,
+			&tag.content
+		)
+	} else {
+		format!(
+			r#"
+			local _print = print
+			local sandbox = require 'sandbox'
 
-				return ''
-			"#,
-				&tag.content
-			);
-		} else {
-			lua_script = format!(
-				r#"
-				local _print = print
-				local sandbox = require 'sandbox'
+			local env = {{ print = _print, arg = arg, require = user_require }}
 
-				local env = {{ print = _print, arg = arg, require = user_require }}
+			local ok, result = pcall(sandbox.run, [[{}]], {{env = env, quota = 1000}})
 
-				local ok, result = pcall(sandbox.run, [[{}]], {{env = env, quota = 1000}})
+			if result then
+				print(result)
+			end
 
-				if result then
-					print(result)
-				end
+			return ''
+		"#,
+			&tag.content
+		)
+	};
 
-				return ''
-			"#,
-				&tag.content
-			);
-		}
-
-		eval::<String>(lua_ctx, lua_script.as_str())
-	});
+	let result = eval::<String>(&lua, lua_script.as_str());
 
 	lua_buf.into_inner().read_to_string(&mut output).unwrap();
 

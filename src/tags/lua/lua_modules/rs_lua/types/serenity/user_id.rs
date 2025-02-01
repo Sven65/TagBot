@@ -1,4 +1,4 @@
-use rlua::{Error as LuaError, MetaMethod, ToLua, UserData, Value};
+use rlua::{Error as LuaError, IntoLua, MetaMethod, UserData, Value};
 use serenity::model::prelude::UserId;
 use serenity::model::user::User;
 use serenity::{prelude::Context as SerenityContext, Error};
@@ -36,7 +36,7 @@ impl UserData for TBUserId {
 	#[allow(unused_doc_comments)]
 	fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
 		methods.add_meta_method(MetaMethod::ToString, |ctx, this, _: Value| {
-			this.0.to_string().to_lua(ctx)
+			this.0.to_string().into_lua(ctx)
 		});
 
 		/// @desc Resolves the ID to a user.
@@ -54,7 +54,7 @@ impl UserData for TBUserId {
 				return Err(LuaError::external("Failed to get user."));
 			}
 
-			TBUser(user.unwrap()).to_lua(ctx)
+			TBUser(user.unwrap()).into_lua(ctx)
 		});
 	}
 }
