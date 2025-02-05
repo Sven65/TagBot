@@ -1,6 +1,6 @@
-use cat_loggr::{log_debug, log_fatal};
+use cat_loggr::{log_debug, log_error, log_fatal, log_info};
 use gag::BufferRedirect;
-use rlua::{Error as LuaError, FromLuaMulti, HookTriggers, Lua, Result as LuaResult};
+use rlua::{Error as LuaError, FromLuaMulti, HookTriggers, Lua, Result as LuaResult, Value};
 use serenity::{
 	model::prelude::interaction::application_command::{
 		ApplicationCommandInteraction, CommandData,
@@ -12,7 +12,10 @@ use std::io::{Error, ErrorKind, Read};
 use crate::{
 	services::rethinkdb::tags::Tag,
 	tags::lua::lua_modules::rs_lua::types::{
-		serenity::{channel_id::TBChannelId, guild_id::TBGuildId, member::TBMember, user::TBUser},
+		serenity::{
+			channel_id::TBChannelId, embed::TBEmbed, guild_id::TBGuildId, member::TBMember,
+			user::TBUser,
+		},
 		utils::types::ConstructableFrom2,
 	},
 	util::command_options::FindOption,
@@ -87,10 +90,29 @@ fn execute_code(
 	}
 
 	globals.set("arg", args)?;
-
 	let lua_user_require = lua.create_function(user_require)?;
 
 	globals.set("user_require", lua_user_require)?;
+
+	let send_reply = lua.create_function(move |_ctx, value: TBEmbed| {
+		let interaction = interaction.clone();
+		let http = serenity_ctx.http.clone();
+		let future = async move {
+			let result = interaction
+				.create_followup_message(&http, |res| res.add_embed(value.0))
+				.await;
+
+			if result.is_err() {
+				log_error!("Failed to send embed: {:#?}", result.err());
+			}
+		};
+
+		tokio::spawn(future);
+
+		Ok(())
+	})?;
+
+	globals.set("send_embed", send_reply)?;
 
 	lua.set_hook(
 		HookTriggers {
@@ -114,7 +136,7 @@ fn execute_code(
 			r#"
 			local _print = print
 
-			local env = {{ print = _print, arg = arg, require = user_require }}
+			local env = {{ print = _print, arg = arg, require = user_require, send_embed = send_embed }}
 			local code = [[{}]]
 			local chunk, err = load(code, "user_code", "t", env)
 
@@ -141,7 +163,7 @@ fn execute_code(
 			local _print = print
 			local sandbox = require 'sandbox'
 
-			local env = {{ print = _print, arg = arg, require = user_require }}
+			local env = {{ print = _print, arg = arg, require = user_require, send_embed = send_embed }}
 
 			local ok, result = pcall(sandbox.run, [[{}]], {{env = env, quota = 1000}})
 

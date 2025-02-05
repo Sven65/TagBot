@@ -12,8 +12,8 @@ use crate::tags::lua::lua_modules::rs_lua::types::utils::{
 };
 
 use super::{
-	channel_category::TBChannelCategory, channel_id::TBChannelId, guild_channel::TBGuildChannel,
-	private_channel::TBPrivateChannel,
+	channel_category::TBChannelCategory, channel_id::TBChannelId, embed::TBEmbed,
+	guild_channel::TBGuildChannel, private_channel::TBPrivateChannel,
 };
 
 /// Wrapper for a Serenity Channel
@@ -33,7 +33,8 @@ impl ConstructableFrom2<Channel, SerenityContext> for TBChannel {
 
 impl UserData for TBChannel {
 	#[rustfmt::skip]
-	#[lua_document("TBChannel", tostring, index)]
+    #[allow(unused_doc_comments)]
+	#[lua_document("TBChannel", tostring, index, parse_comments)]
 	fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
 		methods.add_meta_method(MetaMethod::ToString, |ctx, this, _: Value| Ok(this.0.to_string().into_lua(ctx)));
 
@@ -47,6 +48,6 @@ impl UserData for TBChannel {
 				"position" => convert_type_option::<i64>(this.0.position(), ctx)?,
 				&_ => Value::Nil,
 			})
-		})
+		});
 	}
 }

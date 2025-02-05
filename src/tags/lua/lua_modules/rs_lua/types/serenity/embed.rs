@@ -87,24 +87,16 @@ impl UserData for TBEmbed {
     #[allow(unused_doc_comments)]
     #[lua_document("TBEmbed", parse_comments)]
 	fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
-
-		methods.add_method("test", |_ctx, this, ()| {
-			println!("Embed is currently {:#?}", this.0);
-			Ok(())
-		});
-
 		/// @desc Sets the name of the author
 		/// @method
 		/// @param {string} name The name to set
 		methods.add_method_mut("set_author_name", |_ctx, this: &mut TBEmbed, value: String| {
 			let author = &mut get_author_from_create_embed(&this.0).unwrap_or_default();
-			log_debug!("name author {:#?}", author);
 
 			author.name(value);
 
 			this.0.set_author(author.to_owned());
 
-			log_debug!("this.0 {:#?}", this.0);
 
 			Ok(())
 		});
