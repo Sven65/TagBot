@@ -2,7 +2,7 @@
 
 ################# COMPILE TAGBOT #################
 
-FROM rust:1.72.1-bullseye as build
+FROM --platform="linux/amd64" rust:1.81.0-bullseye as build
 
 # Capture deps
 # COPY Cargo.toml Cargo.lock /app/
@@ -42,7 +42,7 @@ CMD ["/app/target/release/tagbot"]
 
 ################# COMPILE LUA #################
 
-FROM debian:buster-slim as lua_builder
+FROM --platform="linux/amd64" debian:buster-slim as lua_builder
 
 WORKDIR /lua-build
 
@@ -72,7 +72,7 @@ RUN rm -rf ./luarocks-3.9.1
 
 ################# INSTALL LUAROCKS MODULES #################
 
-FROM lua_builder as lua_modules
+FROM --platform="linux/amd64" lua_builder as lua_modules
 
 RUN apt-get install -y wget git
 
@@ -88,7 +88,7 @@ RUN luarocks install kikito/sandbox
 # # TODO: Add luarocks and sandbox
 
 # FROM debian:buster-slim as final
-FROM debian:bullseye as final
+FROM --platform="linux/amd64" debian:bullseye as final
 
 WORKDIR /home
 
