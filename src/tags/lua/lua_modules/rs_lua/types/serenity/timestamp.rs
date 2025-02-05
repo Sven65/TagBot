@@ -1,6 +1,6 @@
 use chrono::prelude::*;
-use rlua::{Error as LuaError, IntoLua, MetaMethod, UserData, Value};
-use serenity::model::timestamp::Timestamp;
+use rlua::{Error as LuaError, FromLua, IntoLua, MetaMethod, UserData, Value};
+use serenity::model::timestamp::{self, Timestamp};
 use tagbot_macros::lua_document;
 
 use crate::tags::lua::lua_modules::rs_lua::types::{utils::types::ConstructableFrom, Requireable};
@@ -8,6 +8,29 @@ use crate::tags::lua::lua_modules::rs_lua::types::{utils::types::ConstructableFr
 #[derive(Clone, Debug)]
 #[lua_document("TBTimestamp", class)]
 pub struct TBTimestamp(Timestamp);
+
+impl FromLua<'_> for TBTimestamp {
+	fn from_lua(value: Value<'_>, _lua: &'_ rlua::Lua) -> rlua::Result<Self> {
+		let tb_timestamp = value.as_userdata();
+
+		if tb_timestamp.is_none() {
+			panic!("Passed value is none");
+		}
+
+		let tb_timestamp = tb_timestamp.unwrap();
+
+		if !tb_timestamp.is::<TBTimestamp>() {
+			return Err(LuaError::external("Passed type is not TBEmbed"));
+		}
+
+		let tb_timestamp = match tb_timestamp.take::<TBTimestamp>() {
+			Ok(timestamp) => timestamp,
+			Err(_) => return Err(LuaError::external("Failed to take internal TBEmbed")),
+		};
+
+		Ok(tb_timestamp)
+	}
+}
 
 impl TBTimestamp {
 	pub fn new(timestamp: Timestamp) -> TBTimestamp {
@@ -26,6 +49,12 @@ impl std::ops::Deref for TBTimestamp {
 
 	fn deref(&self) -> &Self::Target {
 		&self.0
+	}
+}
+
+impl From<TBTimestamp> for Timestamp {
+	fn from(val: TBTimestamp) -> Self {
+		val.0
 	}
 }
 

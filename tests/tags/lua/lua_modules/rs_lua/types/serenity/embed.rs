@@ -172,3 +172,140 @@ fn set_description() {
 
     assert_eq!(data.0.0.get("description").unwrap(), "Hello, World");
 }
+
+#[rustfmt::skip]
+#[test]
+fn set_image() {
+    tagbot::tags::lua::lua_modules::registry::init::init_modules();
+    let lua = Lua::new();
+
+    let globals = lua.globals();
+
+	let lua_user_require = lua.create_function(user_require).unwrap();
+
+	globals.set("user_require", lua_user_require).unwrap();
+
+    let data = lua.load(
+        r#"
+            local embed = user_require("embed")
+
+            local my_embed = embed:new()
+
+            my_embed:set_image("https://i.imgur.com/XDnPdoo.jpeg")
+
+            return my_embed
+        "#.to_string().as_str()
+    ).eval::<TBEmbed>().unwrap();
+
+    assert_eq!(data.0.0.get("image").unwrap().get("url").unwrap(), "https://i.imgur.com/XDnPdoo.jpeg");
+}
+
+#[rustfmt::skip]
+#[test]
+fn set_thumbnail() {
+    tagbot::tags::lua::lua_modules::registry::init::init_modules();
+    let lua = Lua::new();
+
+    let globals = lua.globals();
+
+	let lua_user_require = lua.create_function(user_require).unwrap();
+
+	globals.set("user_require", lua_user_require).unwrap();
+
+    let data = lua.load(
+        r#"
+            local embed = user_require("embed")
+
+            local my_embed = embed:new()
+
+            my_embed:set_thumbnail("https://i.imgur.com/XDnPdoo.jpeg")
+
+            return my_embed
+        "#.to_string().as_str()
+    ).eval::<TBEmbed>().unwrap();
+
+    assert_eq!(data.0.0.get("thumbnail").unwrap().get("url").unwrap(), "https://i.imgur.com/XDnPdoo.jpeg");
+}
+
+#[rustfmt::skip]
+#[test]
+fn set_timestamp() {
+    tagbot::tags::lua::lua_modules::registry::init::init_modules();
+    let lua = Lua::new();
+
+    let globals = lua.globals();
+
+	let lua_user_require = lua.create_function(user_require).unwrap();
+
+	globals.set("user_require", lua_user_require).unwrap();
+
+    let data = lua.load(
+        r#"
+            local embed = user_require("embed")
+            local Timestamp = user_require('timestamp')
+			local time = Timestamp.new{secs = 1662796089} 
+
+            local my_embed = embed:new()
+
+            my_embed:set_timestamp(time)
+
+            return my_embed
+        "#.to_string().as_str()
+    ).eval::<TBEmbed>().unwrap();
+
+    assert_eq!(data.0.0.get("timestamp").unwrap(), "2022-09-10T07:48:09Z");
+}
+
+#[rustfmt::skip]
+#[test]
+fn set_title() {
+    tagbot::tags::lua::lua_modules::registry::init::init_modules();
+    let lua = Lua::new();
+
+    let globals = lua.globals();
+
+	let lua_user_require = lua.create_function(user_require).unwrap();
+
+	globals.set("user_require", lua_user_require).unwrap();
+
+    let data = lua.load(
+        r#"
+            local embed = user_require("embed")
+
+            local my_embed = embed:new()
+
+            my_embed:set_title("Embed title")
+
+            return my_embed
+        "#.to_string().as_str()
+    ).eval::<TBEmbed>().unwrap();
+
+    assert_eq!(data.0.0.get("title").unwrap(), "Embed title");
+}
+
+#[rustfmt::skip]
+#[test]
+fn set_url() {
+    tagbot::tags::lua::lua_modules::registry::init::init_modules();
+    let lua = Lua::new();
+
+    let globals = lua.globals();
+
+	let lua_user_require = lua.create_function(user_require).unwrap();
+
+	globals.set("user_require", lua_user_require).unwrap();
+
+    let data = lua.load(
+        r#"
+            local embed = user_require("embed")
+
+            local my_embed = embed:new()
+
+            my_embed:set_url("https://i.imgur.com/XDnPdoo.jpeg")
+
+            return my_embed
+        "#.to_string().as_str()
+    ).eval::<TBEmbed>().unwrap();
+
+    assert_eq!(data.0.0.get("url").unwrap(), "https://i.imgur.com/XDnPdoo.jpeg");
+}

@@ -22,6 +22,17 @@ This module is requireable as `colour`.
 
 ## Functions
 
+## new(params) -> TBColour
+
+Creates a new colour
+
+### Params
+- params :: u32 | The u32 value to create the colour with
+
+
+### Return Values
+- :: TBColour | The new colour
+
 ## from_rgb(r,g,b) -> TBColour
 
 Creates a new colour with rgb values
@@ -30,17 +41,6 @@ Creates a new colour with rgb values
 - r :: u8 | The red value of the color between 0 and 255
 - g :: u8 | The green value of the color between 0 and 255
 - b :: u8 | The blue value of the color between 0 and 255
-
-
-### Return Values
-- :: TBColour | The new colour
-
-## new(params) -> TBColour
-
-Creates a new colour
-
-### Params
-- params :: u32 | The u32 value to create the colour with
 
 
 ### Return Values

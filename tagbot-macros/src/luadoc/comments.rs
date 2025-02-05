@@ -261,7 +261,7 @@ fn parse_param(line: &String) -> Annotation {
 	let parsed = parse_param_value_annotation(line);
 
 	if parsed.is_none() {
-		panic!("Param parser could not execute.");
+		panic!("Param parser could not execute - did you forget something in your LuaDoc?");
 	}
 
 	let parsed = parsed.unwrap();
