@@ -1,11 +1,16 @@
+use std::collections::HashMap;
+
 use rlua::{
 	Error, FromLua, UserData,
-	Value::{self, Nil},
+	Value::{self},
 };
+use serde_json::Value as JsonValue;
 use serenity::builder::{CreateEmbed, CreateEmbedAuthor};
 use tagbot_macros::lua_document;
 
 use crate::tags::lua::lua_modules::rs_lua::types::Requireable;
+
+use super::colour::TBColour;
 
 // Wrapper for [`serenity::model::prelude::Embed`]
 #[derive(Clone, Debug)]
@@ -35,54 +40,60 @@ impl FromLua<'_> for TBEmbed {
 	}
 }
 
+pub fn get_author_from_create_embed(embed: &CreateEmbed) -> Option<CreateEmbedAuthor> {
+	embed.0.get("author").and_then(|author_value| {
+		if let JsonValue::Object(map) = author_value {
+			let converted_map: HashMap<&'static str, JsonValue> = map
+				.iter()
+				.map(|(k, v)| {
+					let key: &'static str = Box::leak(k.clone().into_boxed_str());
+					(key, v.clone())
+				})
+				.collect();
+
+			Some(CreateEmbedAuthor(converted_map))
+		} else {
+			None
+		}
+	})
+}
+
 impl UserData for TBEmbed {
 	#[rustfmt::skip]
     #[allow(unused_doc_comments)]
-    #[lua_document("TBEmbed", parse_comments, index)]
+    #[lua_document("TBEmbed", parse_comments)]
 	fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
-        // methods.add_method("create", |ctx, this, value: Table| {
-        //     this.0.author = value.get("author");
-        // });
 
 		methods.add_method("test", |_ctx, this, ()| {
 			println!("Embed is currently {:#?}", this.0);
 			Ok(())
 		});
 
-		// methods.add_method_mut("set_author", |_ctx, this: &mut TBEmbed, (name, icon_url, url): (String, Option<String>, Option<String>)| {
-		// 	let mut author = &mut CreateEmbedAuthor::default();
-			
-		// 	author.name(value);
-
-
-			
-		// 	Ok(())
-		// });
-
+		/// @desc Sets the name of the author
+		/// @method
+		/// @param {string} name The name to set
 		methods.add_method_mut("set_author_name", |_ctx, this: &mut TBEmbed, value: String| {
-			this.0.author(|prev| {
-				println!("Prev for author name is {:#?}", prev);
-				
-				prev.name(value);
-				prev
-			});
+			let author = &mut get_author_from_create_embed(&this.0).unwrap_or_default();
+
+			author.name(value);
+
+			this.0.set_author(author.to_owned());
+
 			Ok(())
 		});
 
+		/// @desc Sets the authors icon url
+		/// @method
+		/// @param {string} url The url to set
 		methods.add_method_mut("set_author_icon_url", |_ctx, this, value: String| {
-			this.0.author(|prev| {
-				println!("Prev for icon url is {:#?}", prev);
-				prev.icon_url(value);
-				prev
-			});
+			let author = &mut get_author_from_create_embed(&this.0).unwrap_or_default();
+			
+			author.icon_url(value);
+
+			this.0.set_author(author.to_owned());
+
 			Ok(())
 		});
-
-        // methods.add_meta_method(MetaMethod::Index, |ctx, this, value: String| {
-        //     Ok(match value.as_str() {
-        //         "author_name" => convert_type::<String>(this.0.0, ctx)?,
-        //     })
-        // });
     }
 }
 
@@ -108,6 +119,6 @@ impl Requireable for TBEmbed {
 
 		value.set("new", func.unwrap()).unwrap();
 
-		Value::Table(value)
+		Value::Table(value.clone())
 	}
 }

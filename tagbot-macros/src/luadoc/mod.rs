@@ -347,6 +347,11 @@ pub fn lua_doc_generator(args: TokenStream, tokens: TokenStream) -> TokenStream 
 		Err(_e) => false,
 	};
 
+	let only_for_class = match env::var("ONLY_CLASS") {
+		Ok(val) => Some(val),
+		Err(_e) => None,
+	};
+
 	if !should_generate {
 		return tokens;
 	}
@@ -358,6 +363,12 @@ pub fn lua_doc_generator(args: TokenStream, tokens: TokenStream) -> TokenStream 
 	let (class_name, parsed_second) = parsed_args.split_first().unwrap();
 
 	let class_name = class_name.to_string();
+
+	if only_for_class.is_some() {
+		if class_name != only_for_class.unwrap() {
+			return tokens;
+		}
+	}
 
 	if parsed_args.contains(&"index".to_string()) {
 		let parsed_index = parse_index_method(tokens.clone());

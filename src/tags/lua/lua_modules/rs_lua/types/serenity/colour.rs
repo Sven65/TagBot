@@ -8,7 +8,7 @@ use crate::tags::lua::lua_modules::rs_lua::types::{
 };
 
 /// Wrapper for [`serenity::utils::Colour`]
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 #[lua_document("TBColour", class)]
 pub struct TBColour(pub Colour);
 
@@ -19,6 +19,12 @@ impl ConstructableFrom<Colour> for TBColour {
 	/// * `colour` - The serenity Colour to wrap
 	fn new(colour: Colour) -> TBColour {
 		TBColour(colour)
+	}
+}
+
+impl From<TBColour> for Colour {
+	fn from(val: TBColour) -> Self {
+		val.0
 	}
 }
 

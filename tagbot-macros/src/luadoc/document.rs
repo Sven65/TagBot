@@ -58,7 +58,7 @@ impl From<&Vec<Annotation>> for Method {
 			})
 			.collect::<Vec<Annotation>>()
 			.get(0)
-			.unwrap_or_else(|| panic!("Failed to unwrap return values for method"))
+			.unwrap_or_else(|| &Annotation::None)
 			.to_owned();
 
 		method
