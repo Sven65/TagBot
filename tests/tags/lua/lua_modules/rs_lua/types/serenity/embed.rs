@@ -1,6 +1,9 @@
+use cat_loggr::log_debug;
 use rlua::Lua;
 use tagbot::tags::lua::{
-	lua_modules::rs_lua::types::serenity::embed::{get_author_from_create_embed, TBEmbed},
+	lua_modules::rs_lua::types::serenity::embed::{
+		get_author_from_create_embed, get_footer_from_create_embed, TBEmbed,
+	},
 	user_require::user_require,
 };
 
@@ -25,8 +28,6 @@ fn create_new_embed() {
     ).eval::<TBEmbed>().unwrap();
 
     assert_eq!(data.0.0.get("type").unwrap(), "rich");
-
-    // assert_eq!(format!("{:?}", data.0), "CreateEmbed({\"type\": String(\"rich\")})")
 }
 
 #[rustfmt::skip]
@@ -105,15 +106,14 @@ fn set_author_icon_url_preserves_author_name() {
 
             local my_embed = embed:new()
 
-            my_embed:set_author_icon_url("https://i.imgur.com/XDnPdoo.jpeg")
             my_embed:set_author_name("Author Name")
+            my_embed:set_author_icon_url("https://i.imgur.com/XDnPdoo.jpeg")
 
             return my_embed
         "#.to_string().as_str()
     ).eval::<TBEmbed>().unwrap();
 
     let author = get_author_from_create_embed(&data.0).unwrap_or_default();
-
     assert_eq!(author.0.get("name").unwrap(), "Author Name");
     assert_eq!(author.0.get("icon_url").unwrap(), "https://i.imgur.com/XDnPdoo.jpeg");    
 }
@@ -308,4 +308,120 @@ fn set_url() {
     ).eval::<TBEmbed>().unwrap();
 
     assert_eq!(data.0.0.get("url").unwrap(), "https://i.imgur.com/XDnPdoo.jpeg");
+}
+
+#[rustfmt::skip]
+#[test]
+fn set_footer_text() {
+    tagbot::tags::lua::lua_modules::registry::init::init_modules();
+    let lua = Lua::new();
+
+    let globals = lua.globals();
+
+	let lua_user_require = lua.create_function(user_require).unwrap();
+
+	globals.set("user_require", lua_user_require).unwrap();
+
+    let data = lua.load(
+        r#"
+            local embed = user_require("embed")
+
+            local my_embed = embed:new()
+
+            my_embed:set_url("https://i.imgur.com/XDnPdoo.jpeg")
+
+            return my_embed
+        "#.to_string().as_str()
+    ).eval::<TBEmbed>().unwrap();
+
+    assert_eq!(data.0.0.get("url").unwrap(), "https://i.imgur.com/XDnPdoo.jpeg");
+}
+
+#[rustfmt::skip]
+#[test]
+fn should_set_footer_text() {
+    tagbot::tags::lua::lua_modules::registry::init::init_modules();
+    let lua = Lua::new();
+
+    let globals = lua.globals();
+
+	let lua_user_require = lua.create_function(user_require).unwrap();
+
+	globals.set("user_require", lua_user_require).unwrap();
+
+    let data = lua.load(
+        r#"
+            local embed = user_require("embed")
+
+            local my_embed = embed:new()
+
+            my_embed:set_footer_text("Footer text")
+
+            return my_embed
+        "#.to_string().as_str()
+    ).eval::<TBEmbed>().unwrap();
+
+    let footer = get_footer_from_create_embed(&data.0).unwrap_or_default();
+
+    assert_eq!(footer.0.get("text").unwrap(), "Footer text");
+}
+
+#[rustfmt::skip]
+#[test]
+fn set_footer_icon_url() {
+    tagbot::tags::lua::lua_modules::registry::init::init_modules();
+    let lua = Lua::new();
+
+    let globals = lua.globals();
+
+	let lua_user_require = lua.create_function(user_require).unwrap();
+
+	globals.set("user_require", lua_user_require).unwrap();
+
+    let data = lua.load(
+        r#"
+            local embed = user_require("embed")
+
+            local my_embed = embed:new()
+
+            my_embed:set_footer_icon_url("https://i.imgur.com/XDnPdoo.jpeg")
+
+            return my_embed
+        "#.to_string().as_str()
+    ).eval::<TBEmbed>().unwrap();
+
+    let footer = get_footer_from_create_embed(&data.0).unwrap_or_default();
+
+    assert_eq!(footer.0.get("icon_url").unwrap(), "https://i.imgur.com/XDnPdoo.jpeg");
+}
+
+#[rustfmt::skip]
+#[test]
+fn set_footer_icon_url_preserves_text() {
+    tagbot::tags::lua::lua_modules::registry::init::init_modules();
+    let lua = Lua::new();
+
+    let globals = lua.globals();
+
+	let lua_user_require = lua.create_function(user_require).unwrap();
+
+	globals.set("user_require", lua_user_require).unwrap();
+
+    let data = lua.load(
+        r#"
+            local embed = user_require("embed")
+
+            local my_embed = embed:new()
+
+            my_embed:set_footer_icon_url("https://i.imgur.com/XDnPdoo.jpeg")
+            my_embed:set_footer_text("Footer text")
+
+            return my_embed
+        "#.to_string().as_str()
+    ).eval::<TBEmbed>().unwrap();
+
+    let author = get_footer_from_create_embed(&data.0).unwrap_or_default();
+
+    assert_eq!(author.0.get("text").unwrap(), "Footer text");
+    assert_eq!(author.0.get("icon_url").unwrap(), "https://i.imgur.com/XDnPdoo.jpeg");    
 }

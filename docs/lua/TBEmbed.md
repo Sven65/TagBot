@@ -2,6 +2,14 @@
 
 # Methods
 
+## set_footer_text(text)
+
+Sets the embed footers text
+
+### Params
+- text :: string | The text to set
+
+
 ## set_author_name(name)
 
 Sets the name of the author
@@ -10,12 +18,20 @@ Sets the name of the author
 - name :: string | The name to set
 
 
-## set_thumbnail(name)
+## set_colour(colour)
 
-Sets the name of the author
+Sets the left side colour of the embed
 
 ### Params
-- name :: string | The name to set
+- colour :: [TBColour](TBColour.md) | The colour to set
+
+
+## set_title(title)
+
+Sets the title of the embed
+
+### Params
+- title :: String | The title to set
 
 
 ## set_author_url(url)
@@ -34,12 +50,20 @@ Sets the authors icon url
 - url :: string | The url to set
 
 
-## set_colour(colour)
+## set_timestamp(timestamp)
 
-Sets the left side colour of the embed
+Sets the timestamp of the embed
 
 ### Params
-- colour :: [TBColour](TBColour.md) | The colour to set
+- timestamp :: [TBTimestamp](TBTimestamp.md) | The timestamp to set
+
+
+## set_footer_icon_url(url)
+
+Set the footer icon URL. This only supports HTTP(S).
+
+### Params
+- url :: string | The url to set
 
 
 ## set_description(description)
@@ -50,12 +74,38 @@ Sets the description of the embed
 - description :: string | The description
 
 
-## set_image(name)
+## set_thumbnail(url)
 
-Sets the name of the author
+Sets the thumbnail of the embed
 
 ### Params
-- name :: string | The name to set
+- url :: string | The url of the thumbnail
+
+
+## add_field(name,value,inline)
+
+Adds a field to the embed
+
+### Params
+- name :: string | The title of the field
+- value :: string | The value of the field
+- inline :: bool? | Optional if the field should be inline
+
+
+## set_url(url)
+
+Sets the url of the embed to direct to when clicking the title
+
+### Params
+- url :: String | The url to set
+
+
+## set_image(url)
+
+Sets the image for the embed
+
+### Params
+- url :: string | The URL to the image
 
 
 # Requireable
@@ -64,12 +114,10 @@ This module is requireable as `embed`.
 
 ## Functions
 
-## new(params) -> TBEmbed
+## new() -> TBEmbed
 
 Creates a new embed
 
-### Params
-- params :: Embed | The embed values to create with
 
 
 ### Return Values
