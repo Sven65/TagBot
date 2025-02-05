@@ -1,61 +1,26 @@
-use rlua::{Error, FromLua, UserData, Value};
+use rlua::{
+	Error, FromLua, UserData,
+	Value::{self, Nil},
+};
 use serenity::builder::{CreateEmbed, CreateEmbedAuthor};
 use tagbot_macros::lua_document;
 
-use crate::tags::lua::{
-	lua_modules::rs_lua::types::{
-		utils::{functions::get_option_from_table, types::ConstructableFromLuaContext},
-		Requireable,
-	},
-	util::dump_table,
-};
+use crate::tags::lua::lua_modules::rs_lua::types::Requireable;
 
 // Wrapper for [`serenity::model::prelude::Embed`]
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 #[lua_document("TBEmbed", class)]
 pub struct TBEmbed(pub CreateEmbed);
 
-#[derive(Clone, Debug)]
-pub struct FromLuaCreateEmbedAuthor(pub CreateEmbedAuthor);
-
-impl<'lua> FromLua<'lua> for FromLuaCreateEmbedAuthor {
-	fn from_lua(value: Value<'lua>, _: rlua::Context<'lua>) -> rlua::Result<Self> {
-		if let Value::Table(table) = value {
-			let mut author = CreateEmbedAuthor::default();
-
-			// Extract the 'name' field from the Lua table and insert into the HashMap
-			if let Some(Value::String(name_str)) = table.get("name")? {
-				if let Ok(name_str) = name_str.to_str() {
-					author.name(name_str.to_string());
-				}
-			}
-
-			if let Some(Value::String(url)) = table.get("url")? {
-				if let Ok(url) = url.to_str() {
-					author.url(url.to_string());
-				}
-			}
-
-			if let Some(Value::String(icon_url)) = table.get("icon_url")? {
-				if let Ok(icon_url) = icon_url.to_str() {
-					author.icon_url(icon_url.to_string());
-				}
-			}
-
-			Ok(FromLuaCreateEmbedAuthor(author))
-		} else {
-			Err(rlua::Error::FromLuaConversionError {
-				from: "Lua value",
-				to: "CreateEmbedAuthor",
-				message: Some("Expected a table".to_string()),
-			})
-		}
-	}
-}
-
 impl FromLua<'_> for TBEmbed {
-	fn from_lua(value: Value<'_>, lua: &'_ rlua::Lua) -> rlua::Result<Self> {
-		let tb_embed = value.as_userdata().unwrap();
+	fn from_lua(value: Value<'_>, _lua: &'_ rlua::Lua) -> rlua::Result<Self> {
+		let tb_embed = value.as_userdata();
+
+		if tb_embed.is_none() {
+			panic!("Passed value is none");
+		}
+
+		let tb_embed = tb_embed.unwrap();
 
 		if !tb_embed.is::<TBEmbed>() {
 			return Err(Error::external("Passed type is not TBEmbed"));
@@ -70,45 +35,6 @@ impl FromLua<'_> for TBEmbed {
 	}
 }
 
-impl From<FromLuaCreateEmbedAuthor> for CreateEmbedAuthor {
-	fn from(val: FromLuaCreateEmbedAuthor) -> Self {
-		val.0 // Unwrap the inner CreateEmbedAuthor
-	}
-}
-
-impl<'lua> ConstructableFromLuaContext<'lua, rlua::Table<'lua>> for TBEmbed {
-	fn new(value: rlua::Table<'lua>, ctx: rlua::Context<'lua>) -> Self {
-		let mut create_embed = CreateEmbed { ..Default::default() };
-
-		println!(
-			"Creating new embed with value {:#?}",
-			dump_table(&value.clone())
-		);
-
-		// Borrow `value` for the correct lifetime to avoid the "dropped" error
-		let binding = get_option_from_table::<FromLuaCreateEmbedAuthor>(&value, "author", ctx);
-
-		println!("Binding is {:#?}", binding);
-
-		let author = match &binding {
-			Ok(Some(author)) => Some(author),
-			Ok(None) => None,
-			Err(e) => {
-				cat_loggr::log_fatal!("Failed to get author: {}", e);
-				None
-			}
-		};
-
-		if author.is_some() {
-			println!("We have author: {:#?}", author);
-
-			create_embed.set_author(author.unwrap().0.clone());
-		}
-
-		TBEmbed(create_embed)
-	}
-}
-
 impl UserData for TBEmbed {
 	#[rustfmt::skip]
     #[allow(unused_doc_comments)]
@@ -118,8 +44,37 @@ impl UserData for TBEmbed {
         //     this.0.author = value.get("author");
         // });
 
-		methods.add_method("test", |_ctx, this, _: Value| {
-			println!("{:#?}", this.0);
+		methods.add_method("test", |_ctx, this, ()| {
+			println!("Embed is currently {:#?}", this.0);
+			Ok(())
+		});
+
+		// methods.add_method_mut("set_author", |_ctx, this: &mut TBEmbed, (name, icon_url, url): (String, Option<String>, Option<String>)| {
+		// 	let mut author = &mut CreateEmbedAuthor::default();
+			
+		// 	author.name(value);
+
+
+			
+		// 	Ok(())
+		// });
+
+		methods.add_method_mut("set_author_name", |_ctx, this: &mut TBEmbed, value: String| {
+			this.0.author(|prev| {
+				println!("Prev for author name is {:#?}", prev);
+				
+				prev.name(value);
+				prev
+			});
+			Ok(())
+		});
+
+		methods.add_method_mut("set_author_icon_url", |_ctx, this, value: String| {
+			this.0.author(|prev| {
+				println!("Prev for icon url is {:#?}", prev);
+				prev.icon_url(value);
+				prev
+			});
 			Ok(())
 		});
 
@@ -149,27 +104,10 @@ impl Requireable for TBEmbed {
 		/// @function
 		/// @param {Embed} params The embed values to create with
 		/// @return {TBEmbed} The new embed
-		let func = ctx.create_function(|ctx2, params: rlua::Table| {
-			let value = params;
-
-			println!("Func params are {}", dump_table(&value.clone()));
-
-			Ok(TBEmbed::new(value, ctx2))
-		});
-
-		let test_func = ctx.create_function(|_, name: String| {
-			println!("Hello, {}", name);
-
-			Ok(())
-		});
+		let func = ctx.create_function(|_ctx2, _params: rlua::Table| Ok(TBEmbed(CreateEmbed::default())));
 
 		value.set("new", func.unwrap()).unwrap();
-		value.set("hello", test_func.unwrap()).unwrap();
 
-		let func_table = Value::Table(value.clone());
-
-		println!("Func table: {:#?}", func_table);
-
-		func_table
+		Value::Table(value)
 	}
 }
