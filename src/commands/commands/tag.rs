@@ -57,6 +57,10 @@ pub async fn tag(interaction: ApplicationCommandInteraction, ctx: Context) -> St
 			Err(res) => res.to_string(),
 		};
 
+		if data.trim() == "nil" {
+			return "".to_string();
+		}
+
 		let res = interaction
 			.create_followup_message(&ctx.http, |res| res.content(data))
 			.await;

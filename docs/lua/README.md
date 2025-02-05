@@ -11,3 +11,9 @@ The TagBot lua executor comes with a couple of built-in modules, which can be us
 - `variables/guild_id` :: [TBGuildId?](./TBGuildId.md) | The ID of the guild where the tag was executed, if it was executed in a guild
 - `timestamp` :: [TBTimestamp](./TBTimestamp.md) | Module for working with timestamps
 - `colour` :: [TBColour](./TBColour.md) | Module for working with colours
+
+## Globals
+
+It also comes with some globals, which can be used without a require;
+
+- `send_embed` :: Sends a [TBEmbed](TBEmbed.md)
