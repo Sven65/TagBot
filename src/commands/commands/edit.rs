@@ -78,10 +78,10 @@ pub async fn edit(interaction: ApplicationCommandInteraction, ctx: Context) -> S
 }
 
 pub async fn edit_tag_handle_modal(interaction: ModalSubmitInteraction, ctx: Context) -> String {
-	let mut id_split = interaction.data.custom_id.split('-');
-	let tag_name = id_split.nth(2);
+	let id_split = interaction.data.custom_id.split('-');
+	let tag_name = id_split.skip(2).collect::<Vec<_>>().join("-");
 
-	if tag_name.is_none() {
+	if tag_name.is_empty() {
 		return "Failed to parse tag name from modal ID".to_string();
 	}
 
@@ -96,7 +96,7 @@ pub async fn edit_tag_handle_modal(interaction: ModalSubmitInteraction, ctx: Con
 		return "".to_string();
 	}
 
-	let name = tag_name.unwrap().to_string();
+	let name = tag_name.clone();
 
 	let result = TagsTable::set_content(name.clone(), content.clone()).await;
 

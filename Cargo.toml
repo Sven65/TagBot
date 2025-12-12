@@ -1,6 +1,6 @@
 [package]
 name = "tagbot"
-version = "4.0.5"
+version = "4.0.6"
 edition = "2021"
 license = "OPL-3.0"
 publish = false
@@ -35,9 +35,17 @@ serde_json = "1.0.1"
 [dependencies.serenity]
 default-features = false
 version = "0.11.5"
-features = [ "builder", "cache", "client", "gateway", "http", "model", "utils", "rustls_backend" ]
+features = [
+    "builder",
+    "cache",
+    "client",
+    "gateway",
+    "http",
+    "model",
+    "utils",
+    "rustls_backend",
+]
 
 [dev-dependencies]
 test-case = "2.2.1"
 serde_json = "1.0.1"
-

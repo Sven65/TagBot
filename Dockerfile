@@ -42,7 +42,7 @@ CMD ["/app/target/release/tagbot"]
 
 ################# COMPILE LUA #################
 
-FROM --platform="linux/amd64" debian:buster-slim as lua_builder
+FROM --platform="linux/amd64" debian:bullseye-slim as lua_builder
 
 WORKDIR /lua-build
 
