@@ -1,5 +1,5 @@
 use cat_loggr::{log_fatal, log_info};
-use dotenv::dotenv;
+use dotenvy::dotenv;
 use futures::lock::Mutex;
 use lazy_static::lazy_static;
 use reql::{cmd::connect::Options, r, Session};

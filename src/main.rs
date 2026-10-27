@@ -1,5 +1,5 @@
 use cat_loggr::{log_debug, log_fatal, log_info};
-use dotenv::dotenv;
+use dotenvy::dotenv;
 use serenity::{
 	async_trait,
 	builder::{CreateInteractionResponse, CreateInteractionResponseMessage},

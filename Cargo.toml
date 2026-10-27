@@ -12,7 +12,7 @@ run_untrusted_code = []
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-dotenv = "0.15"
+dotenvy = "0.15.7"
 reql = "0.11.2"
 tokio = { version = "1.54.1", features = ["macros", "rt-multi-thread"] }
 tracing = "0.1.44"
