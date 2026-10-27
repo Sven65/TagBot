@@ -1,5 +1,6 @@
 use rlua::{MetaMethod, UserData, Value};
-use serenity::{model::guild::RoleTags, prelude::Context as SerenityContext};
+use serenity::{http::Http, model::guild::RoleTags};
+use std::sync::Arc;
 use tagbot_macros::lua_document;
 
 use crate::tags::lua::lua_modules::rs_lua::types::utils::{
@@ -12,16 +13,16 @@ use super::{id::integration_id::TBIntegrationId, user_id::TBUserId};
 /// Wrapper for [`serenity::model::guild::RoleTags`]
 #[derive(Clone)]
 #[lua_document("TBRoleTags", class)]
-pub struct TBRoleTags(pub RoleTags, pub SerenityContext);
+pub struct TBRoleTags(pub RoleTags, pub Arc<Http>);
 
-impl ConstructableFrom2<RoleTags, SerenityContext> for TBRoleTags {
+impl ConstructableFrom2<RoleTags, Arc<Http>> for TBRoleTags {
 	/// Creates a new wrapper
 	///
 	/// # Arguments
 	/// * `role_tags` - The serenity RoleTags to wrap
-	/// * `s_ctx` - The serenity context to wrap
-	fn new(role_tags: RoleTags, s_ctx: SerenityContext) -> TBRoleTags {
-		TBRoleTags(role_tags, s_ctx)
+	/// * `http` - The serenity http client to wrap
+	fn new(role_tags: RoleTags, http: Arc<Http>) -> TBRoleTags {
+		TBRoleTags(role_tags, http)
 	}
 }
 
@@ -31,7 +32,7 @@ impl UserData for TBRoleTags {
 	fn add_methods<'lua, T: rlua::UserDataMethods<'lua, Self>>(methods: &mut T) {
 		methods.add_meta_method(MetaMethod::Index, |ctx, this, value: String| {
 			Ok(match value.as_str() {
-				"bot_id" => convert_constructable2_option::<TBUserId, _, SerenityContext>(this.0.bot_id, Some(this.1.clone()), ctx)?,
+				"bot_id" => convert_constructable2_option::<TBUserId, _, Arc<Http>>(this.0.bot_id, Some(this.1.clone()), ctx)?,
 				"integration_id" => convert_constructable_option::<TBIntegrationId, _>(this.0.integration_id, ctx)?,
 				"premium_subscriber" => convert_type::<bool>(this.0.premium_subscriber, ctx)?,
 				_ => Value::Nil,

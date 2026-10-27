@@ -6,5 +6,5 @@
 - avatar :: String?
 - banner :: String?
 - bot :: bool
-- discriminator :: u16
+- discriminator :: u16?
 - tag :: String

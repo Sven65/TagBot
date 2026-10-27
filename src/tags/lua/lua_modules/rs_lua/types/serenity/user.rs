@@ -34,10 +34,10 @@ impl UserData for TBUser {
 			Ok(match value.as_str() {
 				"id" => convert_type::<String>(this.0.id.to_string(), ctx)?,
 				"name" => convert_type::<String>(this.0.name.clone(), ctx)?,
-				"avatar" => convert_type_option::<String>(this.0.avatar.clone(), ctx)?,
-				"banner" => convert_type_option::<String>(this.0.banner.clone(), ctx)?,
+				"avatar" => convert_type_option::<String>(this.0.avatar.map(|hash| hash.to_string()), ctx)?,
+				"banner" => convert_type_option::<String>(this.0.banner.map(|hash| hash.to_string()), ctx)?,
 				"bot" => convert_type::<bool>(this.0.bot, ctx)?,
-				"discriminator" => convert_type::<u16>(this.0.discriminator, ctx)?,
+				"discriminator" => convert_type_option::<u16>(this.0.discriminator.map(|d| d.get()), ctx)?,
 				"tag" => convert_type::<String>(this.0.tag(), ctx)?,
 				&_ => Value::Nil,
 			})

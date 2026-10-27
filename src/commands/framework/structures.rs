@@ -1,28 +1,24 @@
 use serenity::{
-	builder::CreateApplicationCommand,
-	model::prelude::interaction::{
-		application_command::ApplicationCommandInteraction,
-		message_component::MessageComponentInteraction, modal::ModalSubmitInteraction,
-	},
+	builder::CreateCommand,
+	model::prelude::{CommandInteraction, ComponentInteraction, ModalInteraction},
 	prelude::Context,
 };
 use std::future::Future;
 use std::pin::Pin;
 
 pub type CommandExecutorFn = fn(
-	data: ApplicationCommandInteraction,
+	data: CommandInteraction,
 	ctx: Context,
 ) -> Pin<Box<dyn Future<Output = std::string::String> + Send>>;
 
 pub type CommandModalHandlerFn = fn(
-	data: ModalSubmitInteraction,
+	data: ModalInteraction,
 	ctx: Context,
 ) -> Pin<Box<dyn Future<Output = std::string::String> + Send>>;
 pub type CommandComponentHandlerFn =
 	fn(
-		data: MessageComponentInteraction,
+		data: ComponentInteraction,
 		ctx: Context,
 	) -> Pin<Box<dyn Future<Output = std::string::String> + Send>>;
 
-pub type OptionCreatorFn =
-	fn(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand;
+pub type OptionCreatorFn = fn(command: CreateCommand) -> CreateCommand;

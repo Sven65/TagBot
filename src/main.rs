@@ -2,10 +2,8 @@ use cat_loggr::{log_debug, log_fatal, log_info};
 use dotenv::dotenv;
 use serenity::{
 	async_trait,
-	model::prelude::{
-		interaction::{Interaction, InteractionResponseType},
-		Ready,
-	},
+	builder::{CreateInteractionResponse, CreateInteractionResponseMessage},
+	model::prelude::{Interaction, Ready},
 	prelude::{Context, EventHandler, GatewayIntents},
 	Client,
 };
@@ -21,7 +19,7 @@ mod util;
 #[async_trait]
 impl EventHandler for Handler {
 	async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
-		if let Interaction::ApplicationCommand(command) = interaction {
+		if let Interaction::Command(command) = interaction {
 			// println!("Received command interaction: {:#?}", command);
 			let index = &commands::framework::COMMAND_INDEX;
 			let mut locked_index = index.lock().await;
@@ -42,20 +40,17 @@ impl EventHandler for Handler {
 			};
 
 			if !stored_command.unwrap().sends_message {
-				if let Err(why) = command
-					.create_interaction_response(&ctx.http, |response| {
-						response
-							.kind(InteractionResponseType::ChannelMessageWithSource)
-							.interaction_response_data(|message| {
-								message.content(content).ephemeral(false)
-							})
-					})
-					.await
-				{
+				let response = CreateInteractionResponse::Message(
+					CreateInteractionResponseMessage::new()
+						.content(content)
+						.ephemeral(false),
+				);
+
+				if let Err(why) = command.create_response(&ctx.http, response).await {
 					log_fatal!("Cannot respond to stupidf command {}", why);
 				}
 			}
-		} else if let Interaction::ModalSubmit(modal) = interaction {
+		} else if let Interaction::Modal(modal) = interaction {
 			if modal.data.custom_id.is_empty() {
 				panic!("Received modal has no custom id.");
 			}
@@ -87,7 +82,7 @@ impl EventHandler for Handler {
 			} else {
 				panic!("No modal handler found for {}", split[0]);
 			}
-		} else if let Interaction::MessageComponent(component) = interaction {
+		} else if let Interaction::Component(component) = interaction {
 			log_debug!("Received component interaction: {:#?}", component);
 
 			if component.data.custom_id.is_empty() {

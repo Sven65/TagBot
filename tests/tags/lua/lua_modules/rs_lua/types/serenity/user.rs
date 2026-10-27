@@ -1,10 +1,18 @@
 use rlua::{Lua};
 use serenity::model::user::User;
+use std::num::NonZeroU16;
 use tagbot::tags::lua::lua_modules::rs_lua::types::serenity::user::TBUser;
 use test_case::test_case;
 
 fn create_user() -> TBUser {
-	TBUser::new(User::default())
+	let mut user = User::default();
+
+	user.id = 210.into();
+	user.name = "test".to_string();
+	user.discriminator = NonZeroU16::new(1432);
+	user.bot = true;
+
+	TBUser::new(user)
 }
 
 #[test_case("id", "210" ; "Gets the correct ID")]

@@ -1,15 +1,12 @@
 use serenity::{
-	builder::CreateApplicationCommand,
-	model::prelude::{
-		command::CommandOptionType,
-		interaction::application_command::{ApplicationCommandInteraction, CommandDataOptionValue},
-	},
+	builder::{CreateCommand, CreateCommandOption},
+	model::prelude::{CommandDataOptionValue, CommandInteraction, CommandOptionType},
 	prelude::Context,
 };
 
 use crate::{services::rethinkdb::tags::TagsTable, util::command_options::*};
 
-pub async fn stealtag(interaction: ApplicationCommandInteraction, _ctx: Context) -> String {
+pub async fn stealtag(interaction: CommandInteraction, _ctx: Context) -> String {
 	let allowed_users: [String; 1] = ["141610251299454976".to_owned()];
 
 	let data = interaction.data.clone();
@@ -18,12 +15,10 @@ pub async fn stealtag(interaction: ApplicationCommandInteraction, _ctx: Context)
 		return "You're not allowed to execute this command.".to_string();
 	}
 
-	let name = data
+	let name = &data
 		.find_option("name")
 		.expect("Expected name option")
-		.resolved
-		.as_ref()
-		.expect("Expected name value");
+		.value;
 
 	let name: String = match name {
 		CommandDataOptionValue::String(option) => option.to_string(),
@@ -46,14 +41,9 @@ pub async fn stealtag(interaction: ApplicationCommandInteraction, _ctx: Context)
 	}
 }
 
-pub fn stealtag_options_creator(
-	command: &mut CreateApplicationCommand,
-) -> &mut CreateApplicationCommand {
-	command.create_option(|option| {
-		option
-			.name("name")
-			.kind(CommandOptionType::String)
-			.description("The name of the tag")
-			.required(true)
-	}) as _
+pub fn stealtag_options_creator(command: CreateCommand) -> CreateCommand {
+	command.add_option(
+		CreateCommandOption::new(CommandOptionType::String, "name", "The name of the tag")
+			.required(true),
+	)
 }

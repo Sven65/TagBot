@@ -1,18 +1,14 @@
 use cat_loggr::log_fatal;
 use serenity::{
-	model::prelude::{
-		interaction::{
-			application_command::ApplicationCommandInteraction, InteractionResponseType,
-		},
-		AttachmentType,
-	},
+	builder::{CreateAttachment, CreateInteractionResponse, CreateInteractionResponseMessage},
+	model::prelude::CommandInteraction,
 	prelude::Context,
 };
 use std::io::Write;
 
 use crate::{handle_error, services::rethinkdb::tags::TagsTable};
 
-pub async fn glist(interaction: ApplicationCommandInteraction, ctx: Context) -> String {
+pub async fn glist(interaction: CommandInteraction, ctx: Context) -> String {
 	let tags = TagsTable::get_all().await;
 
 	if tags.is_ok() {
@@ -27,20 +23,15 @@ pub async fn glist(interaction: ApplicationCommandInteraction, ctx: Context) -> 
 			);
 		}
 
-		let file =
-			AttachmentType::Bytes { data: file_data.into(), filename: "tags.txt".to_string() };
+		let file = CreateAttachment::bytes(file_data, "tags.txt");
 
-		let result = interaction
-			.create_interaction_response(&ctx.http, |response| {
-				response
-					.kind(InteractionResponseType::ChannelMessageWithSource)
-					.interaction_response_data(|message| {
-						message
-							.content(format!("Found {} tags", tags.len()))
-							.add_file(file)
-					})
-			})
-			.await;
+		let response = CreateInteractionResponse::Message(
+			CreateInteractionResponseMessage::new()
+				.content(format!("Found {} tags", tags.len()))
+				.add_file(file),
+		);
+
+		let result = interaction.create_response(&ctx.http, response).await;
 
 		if result.is_err() {
 			log_fatal!("Failed sending response {}", result.err().unwrap());
@@ -48,13 +39,11 @@ pub async fn glist(interaction: ApplicationCommandInteraction, ctx: Context) -> 
 	} else {
 		log_fatal!("Failed to get tags {}", tags.err().unwrap());
 
-		let result = interaction
-			.create_interaction_response(&ctx.http, |response| {
-				response
-					.kind(InteractionResponseType::ChannelMessageWithSource)
-					.interaction_response_data(|message| message.content("Failed to list tags"))
-			})
-			.await;
+		let response = CreateInteractionResponse::Message(
+			CreateInteractionResponseMessage::new().content("Failed to list tags"),
+		);
+
+		let result = interaction.create_response(&ctx.http, response).await;
 
 		if result.is_err() {
 			log_fatal!("Failed sending response {}", result.err().unwrap());

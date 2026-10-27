@@ -10,4 +10,4 @@
 - is_nsfw :: bool
 - private :: TBPrivateChannel?
 - guild :: TBGuildChannel?
-- position :: i64?
+- position :: u16?

@@ -73,7 +73,7 @@ impl UserData for TBTimestamp {
 		/// @param {string} value The [format string](https://docs.rs/chrono/latest/chrono/format/strftime/index.html) to use when formatting
 		/// @return {string} Formatted timestamp
 		methods.add_method("format", |ctx, this, value: String| {
-			let time = Utc.timestamp(this.unix_timestamp(), 0);
+			let time = Utc.timestamp_opt(this.unix_timestamp(), 0).unwrap();
 
 			let formatted = time.format(&value);
 

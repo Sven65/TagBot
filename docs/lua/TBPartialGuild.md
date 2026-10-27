@@ -4,7 +4,7 @@
 # Attributes
 - id :: TBGuildId
 - afk_channel_id :: TBChannelId?
-- afk_timeout :: u64
+- afk_timeout :: u16?
 - default_message_notifications :: TBDefaultMessageNotificationLevel
 - widget_enabled :: bool?
 - widget_channel_id :: TBChannelId?
@@ -24,7 +24,7 @@
 - verification_level :: TBVerificationLevel
 - description :: String?
 - premium_tier :: TBPremiumTier
-- premium_subscription_count :: u64
+- premium_subscription_count :: u64?
 - banner :: String?
 - vanity_url_code :: String?
 - welcome_screen :: TBWelcomeScreen?

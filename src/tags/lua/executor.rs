@@ -2,9 +2,8 @@ use cat_loggr::{log_debug, log_error, log_fatal, log_info};
 use gag::BufferRedirect;
 use rlua::{Error as LuaError, FromLuaMulti, HookTriggers, Lua, Result as LuaResult, Value};
 use serenity::{
-	model::prelude::interaction::application_command::{
-		ApplicationCommandInteraction, CommandData,
-	},
+	builder::CreateInteractionResponseFollowup,
+	model::prelude::{CommandData, CommandInteraction},
 	prelude::Context,
 };
 use std::io::{Error, ErrorKind, Read};
@@ -40,7 +39,7 @@ fn parse_pos_args(data: &CommandData) -> Vec<&str> {
 	}
 
 	let args = args_opt.unwrap();
-	let args = args.value.as_ref().unwrap().as_str().unwrap();
+	let args = args.value.as_str().unwrap();
 
 	let args: Vec<&str> = args.split(' ').collect();
 
@@ -49,7 +48,7 @@ fn parse_pos_args(data: &CommandData) -> Vec<&str> {
 
 fn execute_code(
 	tag: Tag,
-	interaction: ApplicationCommandInteraction,
+	interaction: CommandInteraction,
 	serenity_ctx: Context,
 ) -> rlua::Result<String> {
 	let lua = Lua::new();
@@ -75,18 +74,18 @@ fn execute_code(
 	globals.set("sender", sender)?;
 
 	if let Some(member) = member {
-		let sender_member = TBMember::new(member);
+		let sender_member = TBMember::new(*member);
 		globals.set("sender_member", sender_member)?;
 	}
 
 	globals.set(
 		"channel_id",
-		TBChannelId::new(channel_id, serenity_ctx.clone()),
+		TBChannelId::new(channel_id, serenity_ctx.http.clone()),
 	)?;
 
 	let guild_id = interaction.clone().guild_id;
 	if let Some(id) = guild_id {
-		globals.set("guild_id", TBGuildId::new(id, serenity_ctx.clone()))?;
+		globals.set("guild_id", TBGuildId::new(id, serenity_ctx.http.clone()))?;
 	}
 
 	globals.set("arg", args)?;
@@ -99,7 +98,10 @@ fn execute_code(
 		let http = serenity_ctx.http.clone();
 		let future = async move {
 			let result = interaction
-				.create_followup_message(&http, |res| res.add_embed(value.0))
+				.create_followup(
+					&http,
+					CreateInteractionResponseFollowup::new().add_embed(value.0),
+				)
 				.await;
 
 			if result.is_err() {
@@ -195,7 +197,7 @@ fn execute_code(
 // Todo: Child thread this
 pub async fn execute_tag(
 	tag: Tag,
-	interaction: ApplicationCommandInteraction,
+	interaction: CommandInteraction,
 	ctx: Context,
 ) -> Result<String, Error> {
 	let result = execute_code(tag, interaction, ctx);

@@ -1,14 +1,12 @@
 use cat_loggr::{log_debug, log_fatal};
 use serenity::{
-	builder::CreateApplicationCommand,
+	builder::{
+		CreateActionRow, CreateCommand, CreateCommandOption, CreateInputText,
+		CreateInteractionResponse, CreateModal,
+	},
 	model::prelude::{
-		command::CommandOptionType,
-		component::InputTextStyle,
-		interaction::{
-			application_command::{ApplicationCommandInteraction, CommandDataOptionValue},
-			modal::ModalSubmitInteraction,
-			InteractionResponseType,
-		},
+		CommandDataOptionValue, CommandInteraction, CommandOptionType, InputTextStyle,
+		ModalInteraction,
 	},
 	prelude::Context,
 };
@@ -23,14 +21,12 @@ use crate::{
 	},
 };
 
-pub async fn add(interaction: ApplicationCommandInteraction, ctx: Context) -> String {
-	let tag_type = interaction
+pub async fn add(interaction: CommandInteraction, ctx: Context) -> String {
+	let tag_type = &interaction
 		.data
 		.find_option("type")
 		.expect("Expected tag type option")
-		.resolved
-		.as_ref()
-		.expect("Expected tag type value");
+		.value;
 
 	let tag_type: String = match tag_type {
 		CommandDataOptionValue::String(option) => option.to_string(),
@@ -63,7 +59,7 @@ pub async fn add(interaction: ApplicationCommandInteraction, ctx: Context) -> St
 	let mut tag_name: Option<String> = None;
 
 	if name_field.is_some() {
-		let name = name_field.unwrap().resolved.as_ref().unwrap();
+		let name = &name_field.unwrap().value;
 
 		let tag_name_value = match name {
 			CommandDataOptionValue::String(option) => option.to_string(),
@@ -73,44 +69,29 @@ pub async fn add(interaction: ApplicationCommandInteraction, ctx: Context) -> St
 		tag_name = Some(tag_name_value);
 	}
 
+	let mut name_input = CreateInputText::new(InputTextStyle::Short, "Name", "name_input")
+		.min_length(1)
+		.required(true);
+
+	if let Some(tname) = tag_name {
+		name_input = name_input.value(tname);
+	}
+
+	let content_input = CreateInputText::new(InputTextStyle::Paragraph, "Content", "content_input")
+		.min_length(1)
+		.required(true);
+
+	let modal = CreateModal::new(
+		format!("add-{}-{}", interaction.user.id, tag_type),
+		"Create a new tag",
+	)
+	.components(vec![
+		CreateActionRow::InputText(name_input),
+		CreateActionRow::InputText(content_input),
+	]);
+
 	let modal = interaction
-		.create_interaction_response(&ctx.http, |response| {
-			response
-				.kind(InteractionResponseType::Modal)
-				.interaction_response_data(|modal| {
-					modal
-						.custom_id(format!("add-{}-{}", interaction.user.id, tag_type))
-						.title("Create a new tag")
-						.components(|comp| {
-							comp.create_action_row(|row| {
-								row.create_input_text(|input| {
-									input
-										.custom_id("name_input")
-										.label("Name")
-										.min_length(1)
-										.required(true)
-										.style(InputTextStyle::Short);
-
-									if let Some(tname) = tag_name {
-										input.value(tname);
-									}
-
-									input
-								})
-							})
-							.create_action_row(|row| {
-								row.create_input_text(|input| {
-									input
-										.custom_id("content_input")
-										.label("Content")
-										.min_length(1)
-										.required(true)
-										.style(InputTextStyle::Paragraph)
-								})
-							})
-						})
-				})
-		})
+		.create_response(&ctx.http, CreateInteractionResponse::Modal(modal))
 		.await;
 
 	if modal.is_err() {
@@ -121,12 +102,12 @@ pub async fn add(interaction: ApplicationCommandInteraction, ctx: Context) -> St
 	"".to_string()
 }
 
-pub async fn add_tag_handle_modal(interaction: ModalSubmitInteraction, ctx: Context) -> String {
+pub async fn add_tag_handle_modal(interaction: ModalInteraction, ctx: Context) -> String {
 	let name_field = interaction.data.components.find_input("name_input");
 	let content_field = interaction.data.components.find_input("content_input");
 
-	let name = &name_field.unwrap().value;
-	let content = &content_field.unwrap().value;
+	let name = name_field.unwrap().value.as_ref().unwrap();
+	let content = content_field.unwrap().value.as_ref().unwrap();
 
 	let id_parts: Vec<&str> = interaction.data.custom_id.split('-').collect();
 
@@ -205,23 +186,17 @@ pub async fn add_tag_handle_modal(interaction: ModalSubmitInteraction, ctx: Cont
 	}
 }
 
-pub fn add_options_creator(
-	command: &mut CreateApplicationCommand,
-) -> &mut CreateApplicationCommand {
-	command.create_option(|option| {
-		option
-			.name("type")
-			.kind(CommandOptionType::String)
-			.description("The type of the tag")
-			.add_string_choice("Regular", "regular")
-			.add_string_choice("Lua", "lua")
-			.required(true)
-	});
-
-	command.create_option(|option| {
-		option
-			.name("name")
-			.kind(CommandOptionType::String)
-			.description("The name of the tag")
-	}) as _
+pub fn add_options_creator(command: CreateCommand) -> CreateCommand {
+	command
+		.add_option(
+			CreateCommandOption::new(CommandOptionType::String, "type", "The type of the tag")
+				.add_string_choice("Regular", "regular")
+				.add_string_choice("Lua", "lua")
+				.required(true),
+		)
+		.add_option(CreateCommandOption::new(
+			CommandOptionType::String,
+			"name",
+			"The name of the tag",
+		))
 }

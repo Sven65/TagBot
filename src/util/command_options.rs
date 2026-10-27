@@ -1,4 +1,4 @@
-use serenity::model::prelude::interaction::application_command::{CommandData, CommandDataOption};
+use serenity::model::prelude::{CommandData, CommandDataOption};
 
 pub trait FindOption {
 	fn find_option(&self, name: &str) -> Option<&CommandDataOption>;

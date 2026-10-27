@@ -3,7 +3,7 @@ use serenity::model::channel::ThreadMetadata;
 use tagbot_macros::lua_document;
 
 use crate::tags::lua::lua_modules::rs_lua::types::utils::{
-	functions::{convert_constructable_option, convert_type, convert_type_option},
+	functions::{convert_constructable_option, convert_type},
 	types::ConstructableFrom,
 };
 
@@ -35,7 +35,7 @@ impl UserData for TBThreadMetadata {
 		methods.add_meta_method(MetaMethod::Index, |ctx, this, value: String| {
 			Ok(match value.as_str() {
 				"archived" => convert_type::<bool>(this.0.archived, ctx)?,
-				"auto_archive_duration" => convert_type_option::<u64>(this.0.auto_archive_duration, ctx)?,
+				"auto_archive_duration" => convert_type::<u16>(u16::from(this.0.auto_archive_duration), ctx)?,
 				"archive_timestamp" => convert_constructable_option::<TBTimestamp, _>(this.0.archive_timestamp, ctx)?,
 				"locked" => convert_type::<bool>(this.0.locked, ctx)?,
 				"create_timestamp" => convert_constructable_option::<TBTimestamp, _>(this.0.create_timestamp, ctx)?,

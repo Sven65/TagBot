@@ -6,10 +6,7 @@ use lazy_static::lazy_static;
 use regex::{Captures, Regex};
 use serenity::{
 	model::{
-		prelude::{
-			interaction::application_command::{ApplicationCommandInteraction, CommandData},
-			ChannelId, GuildId, Member,
-		},
+		prelude::{ChannelId, CommandData, CommandInteraction, GuildId, Member},
 		user::User,
 	},
 	prelude::Context,
@@ -20,7 +17,7 @@ use crate::{
 	util::command_options::FindOption,
 };
 
-use rand::{seq::SliceRandom, Rng};
+use rand::{seq::IndexedRandom, RngExt};
 
 /// Parses and replaces positional variables, i.e {0}, {1} etc
 ///
@@ -40,7 +37,7 @@ pub fn replace_pos_variables(content: String, data: &CommandData) -> String {
 	}
 
 	let args = args_opt.unwrap();
-	let args = args.value.as_ref().unwrap().as_str().unwrap();
+	let args = args.value.as_str().unwrap();
 
 	let args: Vec<&str> = args.split(' ').collect();
 
@@ -81,7 +78,7 @@ pub fn replace_choosers(content: String) -> String {
 	let res = CHOOSE_VAR_REGEX.replace_all(&content, |caps: &Captures| {
 		let options: Vec<&str> = caps.get(1).unwrap().as_str().split('|').collect();
 
-		let option = options.choose(&mut rand::thread_rng());
+		let option = options.choose(&mut rand::rng());
 
 		option.unwrap().to_string()
 	});
@@ -108,9 +105,9 @@ pub fn replace_rint(content: String) -> String {
 		let min: i32 = min.as_str().parse::<i32>().unwrap();
 		let max: i32 = max.as_str().parse::<i32>().unwrap();
 
-		let mut rng = rand::thread_rng();
+		let mut rng = rand::rng();
 
-		let val = rng.gen_range(min..max);
+		let val = rng.random_range(min..max);
 
 		val.to_string()
 	});
@@ -169,7 +166,11 @@ pub fn replace_sender_variables(content: String, sender: &User) -> String {
 	content
 		.replacen("{sname}", &sender.name, 1)
 		.replacen("{sid}", &sender.id.to_string(), 1)
-		.replacen("{sdiscrim}", &sender.discriminator.to_string(), 1)
+		.replacen(
+			"{sdiscrim}",
+			&sender.discriminator.map_or(0, |d| d.get()).to_string(),
+			1,
+		)
 		.replacen("{sbot}", &sender.bot.to_string(), 1)
 		.replacen("{sender}", &format!("<@{}>", sender.id), 1)
 }
@@ -234,7 +235,7 @@ async fn replace_channel_variables(
 	return content
 		.replacen(
 			"{chanid}",
-			format!("{}", guild_channel.id.as_u64()).as_str(),
+			format!("{}", guild_channel.id.get()).as_str(),
 			1,
 		)
 		.replacen("{chantype}", guild_channel.kind.name(), 1)
@@ -293,12 +294,12 @@ async fn replace_server_variables(
 
 	return content
 		.replacen("{servername}", &guild.name, 1)
-		.replacen("{serverid}", format!("{}", guild.id.as_u64()).as_str(), 1)
+		.replacen("{serverid}", format!("{}", guild.id.get()).as_str(), 1)
 		.replacen("{servermembs}", member_count_str.as_str(), 1)
 		.replacen("{serverchans}", channel_count_str.as_str(), 1)
 		.replacen(
 			"{serverdefchan}",
-			format!("<#{}>", guild.id.as_u64()).as_str(),
+			format!("<#{}>", guild.id.get()).as_str(),
 			1,
 		)
 		.replacen(
@@ -371,11 +372,7 @@ async fn replace_server_owner_variables(
 				.as_str(),
 			1,
 		)
-		.replacen(
-			"{serverownerid}",
-			format!("{}", owner.id.as_u64()).as_str(),
-			1,
-		)
+		.replacen("{serverownerid}", format!("{}", owner.id.get()).as_str(), 1)
 		.replacen("{serverownerjoined}", &joined_at_string, 1);
 }
 
@@ -402,7 +399,7 @@ async fn replace_mention_variables(
 	let mut ret_content = content.clone();
 
 	let args = args_opt.unwrap();
-	let args = args.value.as_ref().unwrap().as_str().unwrap();
+	let args = args.value.as_str().unwrap();
 
 	let mentions = parse_mentions(args);
 
@@ -425,7 +422,11 @@ async fn replace_mention_variables(
 		.replacen("{mentionid}", mentioned_user.id.to_string().as_str(), 1)
 		.replacen(
 			"{mentiondiscrim}",
-			mentioned_user.discriminator.to_string().as_str(),
+			mentioned_user
+				.discriminator
+				.map_or(0, |d| d.get())
+				.to_string()
+				.as_str(),
 			1,
 		)
 		.replacen("{mentionbot}", &mentioned_user.bot.to_string(), 1)
@@ -470,7 +471,7 @@ async fn replace_mention_variables(
 
 pub async fn execute_tag(
 	tag: Tag,
-	interaction: ApplicationCommandInteraction,
+	interaction: CommandInteraction,
 	ctx: Context,
 ) -> Result<String, Error> {
 	let mut content = tag.content;
@@ -479,7 +480,7 @@ pub async fn execute_tag(
 	content = replace_dates(content);
 
 	content = replace_sender_variables(content, &interaction.user);
-	content = replace_sender_member_variables(content, interaction.member);
+	content = replace_sender_member_variables(content, interaction.member.map(|m| *m));
 	content = replace_channel_variables(&ctx, content, interaction.channel_id).await;
 	content = replace_server_variables(&ctx, content, interaction.guild_id).await;
 	content = replace_server_owner_variables(&ctx, content, interaction.guild_id).await;

@@ -1,6 +1,7 @@
 use rlua::{Error as LuaError, IntoLua, MetaMethod, UserData, Value};
 use serenity::model::prelude::{GuildId, PartialGuild};
-use serenity::{prelude::Context as SerenityContext, Error};
+use serenity::{http::Http, Error};
+use std::sync::Arc;
 use tagbot_macros::lua_document;
 use tokio::runtime::Handle;
 
@@ -8,8 +9,8 @@ use crate::tags::lua::lua_modules::rs_lua::types::utils::types::ConstructableFro
 
 use super::partial_guild::TBPartialGuild;
 
-async fn get_guild(guild_id: GuildId, s_ctx: SerenityContext) -> Result<PartialGuild, Error> {
-	let guild = guild_id.to_partial_guild(&s_ctx.http).await.unwrap();
+async fn get_guild(guild_id: GuildId, http: Arc<Http>) -> Result<PartialGuild, Error> {
+	let guild = guild_id.to_partial_guild(&http).await.unwrap();
 
 	Ok(guild)
 }
@@ -17,16 +18,16 @@ async fn get_guild(guild_id: GuildId, s_ctx: SerenityContext) -> Result<PartialG
 /// Wrapper for [`serenity::model::prelude::GuildId`]
 #[derive(Clone)]
 #[lua_document("TBGuildId", class)]
-pub struct TBGuildId(pub GuildId, pub SerenityContext);
+pub struct TBGuildId(pub GuildId, pub Arc<Http>);
 
-impl ConstructableFrom2<GuildId, SerenityContext> for TBGuildId {
+impl ConstructableFrom2<GuildId, Arc<Http>> for TBGuildId {
 	/// Creates a new wrapper
 	///
 	/// # Arguments
 	/// * `guild_id` - The serenity GuildId to wrap
-	/// * `s_ctx` - SerenityContext to use when resolving channel
-	fn new(guild_id: GuildId, s_ctx: SerenityContext) -> TBGuildId {
-		TBGuildId(guild_id, s_ctx)
+	/// * `http` - Http client to use when resolving channel
+	fn new(guild_id: GuildId, http: Arc<Http>) -> TBGuildId {
+		TBGuildId(guild_id, http)
 	}
 }
 
@@ -43,10 +44,10 @@ impl UserData for TBGuildId {
 		/// @return {TBGuild} A discord guild
 		methods.add_method("resolve", |ctx, this, _: Value| {
 			let guild_id = this.0;
-			let s_ctx = this.1.clone();
+			let http = this.1.clone();
 
 			let guild = tokio::task::block_in_place(move || {
-				Handle::current().block_on(async move { get_guild(guild_id, s_ctx).await })
+				Handle::current().block_on(async move { get_guild(guild_id, http).await })
 			});
 
 			if guild.is_err() {

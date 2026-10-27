@@ -3,8 +3,8 @@ pub mod structures;
 use cat_loggr::log_debug;
 use lazy_static::lazy_static;
 // use serenity::futures::lock::Mutex;
-use serenity::model::prelude::command::Command;
-use serenity::model::prelude::CommandId;
+use serenity::builder::CreateCommand;
+use serenity::model::prelude::{Command, CommandId};
 use serenity::prelude::Context;
 // use futures::Future;
 use tokio::sync::Mutex;
@@ -65,22 +65,19 @@ impl CommandIndex {
 		}
 
 		if CREATE_COMMANDS {
-			let created = Command::create_global_application_command(
-				&self.context.as_ref().unwrap().http,
-				|command| {
-					command.name(name).description(
-						options
-							.desc
-							.unwrap_or_else(|| "Default description.".to_string()),
-					);
+			let command = CreateCommand::new(name).description(
+				options
+					.desc
+					.unwrap_or_else(|| "Default description.".to_string()),
+			);
 
-					match options.option_creator {
-						Some(option_creator) => option_creator(command),
-						None => command,
-					}
-				},
-			)
-			.await;
+			let command = match options.option_creator {
+				Some(option_creator) => option_creator(command),
+				None => command,
+			};
+
+			let created =
+				Command::create_global_command(&self.context.as_ref().unwrap().http, command).await;
 
 			log_debug!("Created global command {:#?}", created.unwrap().name);
 		}
@@ -104,8 +101,7 @@ impl CommandIndex {
 		}
 
 		handle_error!(
-			Command::delete_global_application_command(&self.context.as_ref().unwrap().http, id)
-				.await,
+			Command::delete_global_command(&self.context.as_ref().unwrap().http, id).await,
 			"Failed to delete command"
 		);
 	}

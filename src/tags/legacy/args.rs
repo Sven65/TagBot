@@ -16,12 +16,10 @@ pub fn parse_mentions(args: &str) -> Vec<UserId> {
 			let id = cap.get(1);
 
 			if let Some(id_value) = id {
-				let u64_id = id_value.as_str().parse::<u64>();
+				let user_id = id_value.as_str().parse::<UserId>();
 
-				if let Ok(u64_id_value) = u64_id {
-					let user_id = UserId(u64_id_value);
-
-					mention_ids.push(user_id);
+				if let Ok(user_id_value) = user_id {
+					mention_ids.push(user_id_value);
 				}
 			}
 		}

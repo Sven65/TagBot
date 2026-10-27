@@ -27,7 +27,7 @@ fn create_new_embed() {
         "#.to_string().as_str()
     ).eval::<TBEmbed>().unwrap();
 
-    assert_eq!(data.0.0.get("type").unwrap(), "rich");
+    assert_eq!(serde_json::to_value(&data.0).unwrap().get("type").unwrap(), "rich");
 }
 
 #[rustfmt::skip]
@@ -54,9 +54,9 @@ fn should_set_author_name() {
         "#.to_string().as_str()
     ).eval::<TBEmbed>().unwrap();
 
-    let author = get_author_from_create_embed(&data.0).unwrap_or_default();
+    let author = get_author_from_create_embed(&data.0).unwrap();
 
-    assert_eq!(author.0.get("name").unwrap(), "Author Name");
+    assert_eq!(author.name, "Author Name");
 }
 
 #[rustfmt::skip]
@@ -83,9 +83,9 @@ fn set_author_icon_url() {
         "#.to_string().as_str()
     ).eval::<TBEmbed>().unwrap();
 
-    let author = get_author_from_create_embed(&data.0).unwrap_or_default();
+    let author = get_author_from_create_embed(&data.0).unwrap();
 
-    assert_eq!(author.0.get("icon_url").unwrap(), "https://i.imgur.com/XDnPdoo.jpeg");
+    assert_eq!(author.icon_url.unwrap(), "https://i.imgur.com/XDnPdoo.jpeg");
 }
 
 #[rustfmt::skip]
@@ -113,9 +113,9 @@ fn set_author_icon_url_preserves_author_name() {
         "#.to_string().as_str()
     ).eval::<TBEmbed>().unwrap();
 
-    let author = get_author_from_create_embed(&data.0).unwrap_or_default();
-    assert_eq!(author.0.get("name").unwrap(), "Author Name");
-    assert_eq!(author.0.get("icon_url").unwrap(), "https://i.imgur.com/XDnPdoo.jpeg");    
+    let author = get_author_from_create_embed(&data.0).unwrap();
+    assert_eq!(author.name, "Author Name");
+    assert_eq!(author.icon_url.unwrap(), "https://i.imgur.com/XDnPdoo.jpeg");    
 }
 
 #[rustfmt::skip]
@@ -143,7 +143,7 @@ fn set_colour() {
         "#.to_string().as_str()
     ).eval::<TBEmbed>().unwrap();
 
-    assert_eq!(data.0.0.get("color").unwrap(), 795192);
+    assert_eq!(serde_json::to_value(&data.0).unwrap().get("color").unwrap(), 795192);
 }
 
 #[rustfmt::skip]
@@ -170,7 +170,7 @@ fn set_description() {
         "#.to_string().as_str()
     ).eval::<TBEmbed>().unwrap();
 
-    assert_eq!(data.0.0.get("description").unwrap(), "Hello, World");
+    assert_eq!(serde_json::to_value(&data.0).unwrap().get("description").unwrap(), "Hello, World");
 }
 
 #[rustfmt::skip]
@@ -197,7 +197,7 @@ fn set_image() {
         "#.to_string().as_str()
     ).eval::<TBEmbed>().unwrap();
 
-    assert_eq!(data.0.0.get("image").unwrap().get("url").unwrap(), "https://i.imgur.com/XDnPdoo.jpeg");
+    assert_eq!(serde_json::to_value(&data.0).unwrap().get("image").unwrap().get("url").unwrap(), "https://i.imgur.com/XDnPdoo.jpeg");
 }
 
 #[rustfmt::skip]
@@ -224,7 +224,7 @@ fn set_thumbnail() {
         "#.to_string().as_str()
     ).eval::<TBEmbed>().unwrap();
 
-    assert_eq!(data.0.0.get("thumbnail").unwrap().get("url").unwrap(), "https://i.imgur.com/XDnPdoo.jpeg");
+    assert_eq!(serde_json::to_value(&data.0).unwrap().get("thumbnail").unwrap().get("url").unwrap(), "https://i.imgur.com/XDnPdoo.jpeg");
 }
 
 #[rustfmt::skip]
@@ -253,7 +253,7 @@ fn set_timestamp() {
         "#.to_string().as_str()
     ).eval::<TBEmbed>().unwrap();
 
-    assert_eq!(data.0.0.get("timestamp").unwrap(), "2022-09-10T07:48:09Z");
+    assert_eq!(serde_json::to_value(&data.0).unwrap().get("timestamp").unwrap(), "2022-09-10T07:48:09Z");
 }
 
 #[rustfmt::skip]
@@ -280,7 +280,7 @@ fn set_title() {
         "#.to_string().as_str()
     ).eval::<TBEmbed>().unwrap();
 
-    assert_eq!(data.0.0.get("title").unwrap(), "Embed title");
+    assert_eq!(serde_json::to_value(&data.0).unwrap().get("title").unwrap(), "Embed title");
 }
 
 #[rustfmt::skip]
@@ -307,7 +307,7 @@ fn set_url() {
         "#.to_string().as_str()
     ).eval::<TBEmbed>().unwrap();
 
-    assert_eq!(data.0.0.get("url").unwrap(), "https://i.imgur.com/XDnPdoo.jpeg");
+    assert_eq!(serde_json::to_value(&data.0).unwrap().get("url").unwrap(), "https://i.imgur.com/XDnPdoo.jpeg");
 }
 
 #[rustfmt::skip]
@@ -334,7 +334,7 @@ fn set_footer_text() {
         "#.to_string().as_str()
     ).eval::<TBEmbed>().unwrap();
 
-    assert_eq!(data.0.0.get("url").unwrap(), "https://i.imgur.com/XDnPdoo.jpeg");
+    assert_eq!(serde_json::to_value(&data.0).unwrap().get("url").unwrap(), "https://i.imgur.com/XDnPdoo.jpeg");
 }
 
 #[rustfmt::skip]
@@ -361,9 +361,9 @@ fn should_set_footer_text() {
         "#.to_string().as_str()
     ).eval::<TBEmbed>().unwrap();
 
-    let footer = get_footer_from_create_embed(&data.0).unwrap_or_default();
+    let footer = get_footer_from_create_embed(&data.0).unwrap();
 
-    assert_eq!(footer.0.get("text").unwrap(), "Footer text");
+    assert_eq!(footer.text, "Footer text");
 }
 
 #[rustfmt::skip]
@@ -390,9 +390,9 @@ fn set_footer_icon_url() {
         "#.to_string().as_str()
     ).eval::<TBEmbed>().unwrap();
 
-    let footer = get_footer_from_create_embed(&data.0).unwrap_or_default();
+    let footer = get_footer_from_create_embed(&data.0).unwrap();
 
-    assert_eq!(footer.0.get("icon_url").unwrap(), "https://i.imgur.com/XDnPdoo.jpeg");
+    assert_eq!(footer.icon_url.unwrap(), "https://i.imgur.com/XDnPdoo.jpeg");
 }
 
 #[rustfmt::skip]
@@ -420,8 +420,8 @@ fn set_footer_icon_url_preserves_text() {
         "#.to_string().as_str()
     ).eval::<TBEmbed>().unwrap();
 
-    let author = get_footer_from_create_embed(&data.0).unwrap_or_default();
+    let author = get_footer_from_create_embed(&data.0).unwrap();
 
-    assert_eq!(author.0.get("text").unwrap(), "Footer text");
-    assert_eq!(author.0.get("icon_url").unwrap(), "https://i.imgur.com/XDnPdoo.jpeg");    
+    assert_eq!(author.text, "Footer text");
+    assert_eq!(author.icon_url.unwrap(), "https://i.imgur.com/XDnPdoo.jpeg");    
 }

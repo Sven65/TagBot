@@ -34,7 +34,7 @@ impl UserData for TBMember {
 				"pending" => convert_type::<bool>(this.0.pending, ctx)?,
 				"premium_since" => convert_constructable_option::<TBTimestamp, _>(this.0.premium_since, ctx)?,
 				"permissions" => lua_todo(ctx)?, // TODO(bitflags)
-				"avatar" => convert_type_option::<String>(this.0.avatar.clone(), ctx)?,
+				"avatar" => convert_type_option::<String>(this.0.avatar.map(|hash| hash.to_string()), ctx)?,
 				"communication_disabled_until" => convert_constructable_option::<TBTimestamp, _>(this.0.communication_disabled_until, ctx)?,
 				&_ => Value::Nil,
 			})

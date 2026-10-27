@@ -1,29 +1,26 @@
 use rlua::{MetaMethod, UserData, Value};
-use serenity::model::guild::ThreadMember;
-use serenity::prelude::Context as SerenityContext;
+use serenity::model::guild::PartialThreadMember;
 use tagbot_macros::lua_document;
 
 use crate::tags::lua::lua_modules::rs_lua::types::utils::functions::{
-	convert_constructable, convert_constructable2_option, lua_todo,
+	convert_constructable, lua_todo,
 };
-use crate::tags::lua::lua_modules::rs_lua::types::utils::types::ConstructableFrom2;
+use crate::tags::lua::lua_modules::rs_lua::types::utils::types::ConstructableFrom;
 
-use super::channel_id::TBChannelId;
 use super::timestamp::TBTimestamp;
-use super::user_id::TBUserId;
 
-/// Wrapper for [`serenity::model::guild::ThreadMember`]
+/// Wrapper for [`serenity::model::guild::PartialThreadMember`]
 #[derive(Clone)]
 #[lua_document("TBThreadMember", class)]
-pub struct TBThreadMember(pub ThreadMember, pub SerenityContext);
+pub struct TBThreadMember(pub PartialThreadMember);
 
-impl ConstructableFrom2<ThreadMember, SerenityContext> for TBThreadMember {
+impl ConstructableFrom<PartialThreadMember> for TBThreadMember {
 	/// Creates a new wrapper
 	///
 	/// # Arguments
-	/// * `thread_member` - The serenity ThreadMember to wrap
-	fn new(thread_member: ThreadMember, ctx: SerenityContext) -> TBThreadMember {
-		TBThreadMember(thread_member, ctx)
+	/// * `thread_member` - The serenity PartialThreadMember to wrap
+	fn new(thread_member: PartialThreadMember) -> TBThreadMember {
+		TBThreadMember(thread_member)
 	}
 }
 
@@ -39,8 +36,6 @@ impl UserData for TBThreadMember {
 			// this.0.flags.contains(ThreadMemberFlags::NOTIFICATIONS)
 
 			Ok(match value.as_str() {
-				"id" => convert_constructable2_option::<TBChannelId , _, SerenityContext>(this.0.id, Some(this.1.clone()), ctx)?,
-				"user_id" => convert_constructable2_option::<TBUserId, _, SerenityContext>(this.0.user_id, Some(this.1.clone()), ctx)?,
 				"join_timestamp" => convert_constructable::<TBTimestamp, _>(this.0.join_timestamp, ctx)?,
 				"flags" => lua_todo(ctx)?, // TODO(bitflags)
 				_ => Value::Nil,

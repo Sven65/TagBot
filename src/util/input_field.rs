@@ -1,7 +1,4 @@
-use serenity::model::{
-	application::component::{ActionRow, ActionRowComponent},
-	prelude::component::InputText,
-};
+use serenity::model::prelude::{ActionRow, ActionRowComponent, InputText};
 
 pub trait FindInput {
 	fn find_input(&self, name: &str) -> Option<&InputText>;

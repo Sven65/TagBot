@@ -1,5 +1,6 @@
 use rlua::{MetaMethod, UserData, Value};
-use serenity::{model::sticker::Sticker, prelude::Context as SerenityContext};
+use serenity::{http::Http, model::sticker::Sticker};
+use std::sync::Arc;
 use tagbot_macros::lua_document;
 
 use crate::tags::lua::lua_modules::rs_lua::types::utils::{
@@ -20,16 +21,16 @@ use super::{
 /// Wrapper for [`serenity::model::sticker::Sticker`]
 #[derive(Clone)]
 #[lua_document("TBSticker", class)]
-pub struct TBSticker(pub Sticker, pub SerenityContext);
+pub struct TBSticker(pub Sticker, pub Arc<Http>);
 
-impl ConstructableFrom2<Sticker, SerenityContext> for TBSticker {
+impl ConstructableFrom2<Sticker, Arc<Http>> for TBSticker {
 	/// Creates a new wrapper
 	///
 	/// # Arguments
 	/// * `sticker` - The serenity Sticker to wrap
-	/// * `s_ctx` - SerenityContext to use when resolving
-	fn new(sticker: Sticker, s_ctx: SerenityContext) -> TBSticker {
-		TBSticker(sticker, s_ctx)
+	/// * `http` - Http client to use when resolving
+	fn new(sticker: Sticker, http: Arc<Http>) -> TBSticker {
+		TBSticker(sticker, http)
 	}
 }
 
@@ -47,9 +48,9 @@ impl UserData for TBSticker {
 				"kind" => convert_constructable::<TBStickerType, _>(this.0.kind, ctx)?,
 				"format_type" => convert_constructable::<TBStickerFormatType, _>(this.0.format_type, ctx)?,
 				"available" => convert_type::<bool>(this.0.available, ctx)?,
-				"guild_id" => convert_constructable2_option::<TBGuildId, _, SerenityContext>(this.0.guild_id, Some(this.1.clone()), ctx)?,
+				"guild_id" => convert_constructable2_option::<TBGuildId, _, Arc<Http>>(this.0.guild_id, Some(this.1.clone()), ctx)?,
 				"user" => convert_constructable_option::<TBUser, _>(this.0.user.clone(), ctx)?,
-				"sort_value" => convert_type_option::<u64>(this.0.sort_value, ctx)?,
+				"sort_value" => convert_type_option::<u16>(this.0.sort_value, ctx)?,
 				_ => Value::Nil,
 			})
 		})

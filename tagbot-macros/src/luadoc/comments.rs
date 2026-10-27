@@ -110,11 +110,7 @@ fn get_doc_groups(tokens: TokenStream) -> HashMap<String, Vec<String>> {
 		.stmts
 		.into_iter()
 		.filter_map(|stmt| match stmt {
-			syn::Stmt::Semi(expr, _) => match expr {
-				syn::Expr::MethodCall(call) => Some(call),
-				_ => None,
-			},
-			syn::Stmt::Expr(expr) => match expr {
+			syn::Stmt::Expr(expr, _) => match expr {
 				syn::Expr::MethodCall(call) => Some(call),
 				_ => None,
 			},
@@ -147,7 +143,7 @@ fn get_doc_groups(tokens: TokenStream) -> HashMap<String, Vec<String>> {
 
 			let comments = attrs
 				.iter()
-				.map(|attr| attr.tokens.clone())
+				.map(|attr| attr.meta.to_token_stream())
 				.flat_map(|token| token)
 				.filter_map(|token| match token {
 					proc_macro2::TokenTree::Literal(lit) => {

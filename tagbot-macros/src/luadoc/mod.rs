@@ -4,13 +4,10 @@ use std::{
 	io::Write,
 };
 
-use darling::ToTokens;
+use darling::{ast::NestedMeta, ToTokens};
 use indexmap::IndexMap;
 use proc_macro::TokenStream;
-use syn::{
-	parse_macro_input, Arm, AttributeArgs, Expr, ExprBlock, ExprMethodCall, Lit, NestedMeta, Path,
-	Stmt,
-};
+use syn::{Arm, Expr, ExprBlock, ExprMethodCall, Lit, Path, Stmt};
 
 use std::cell::RefCell;
 
@@ -53,7 +50,7 @@ pub fn parse_path(path: &Path) -> String {
 ///
 /// # Arguments
 ///
-/// * `input` - A vec of [`syn::NestedMeta`] to parse
+/// * `input` - A vec of [`darling::ast::NestedMeta`] to parse
 fn parse_args(input: Vec<NestedMeta>) -> Vec<String> {
 	let mut args: Vec<String> = Vec::new();
 
@@ -68,8 +65,11 @@ fn parse_args(input: Vec<NestedMeta>) -> Vec<String> {
 				syn::Meta::NameValue(name) => {
 					let path = parse_path(&name.path);
 
-					let value = match &name.lit {
-						Lit::Str(str) => str.value(),
+					let value = match &name.value {
+						Expr::Lit(lit) => match &lit.lit {
+							Lit::Str(str) => str.value(),
+							_ => panic!("Value of attribute is not string."),
+						},
 						_ => panic!("Value of attribute is not string."),
 					};
 
@@ -79,6 +79,7 @@ fn parse_args(input: Vec<NestedMeta>) -> Vec<String> {
 					panic!("Invalid non-path supplied to meta");
 				}
 			},
+			_ => panic!("Invalid argument {:#?} supplied", arg),
 		};
 
 		args.push(data);
@@ -131,7 +132,7 @@ fn parse_index_body(body: &ExprBlock) -> Vec<Attribute> {
 	let call = body.block.stmts.get(0).unwrap();
 
 	let call = match call {
-		Stmt::Expr(expr) => match expr {
+		Stmt::Expr(expr, None) => match expr {
 			Expr::Call(call) => call,
 			_ => panic!("Expr is not call"),
 		},
@@ -210,12 +211,9 @@ fn parse_arm_body(expr: Expr) -> (String, bool) {
 /// * `arm` - The [`syn::Arm`] to parse
 fn parse_arm(arm: &Arm) -> Option<Attribute> {
 	let name = match &arm.pat {
-		syn::Pat::Lit(lit) => match &*lit.expr {
-			Expr::Lit(lit) => match &lit.lit {
-				syn::Lit::Str(str) => Some(str.value()),
-				_ => panic!("lit expr is not str"),
-			},
-			_ => panic!("lit is not expr"),
+		syn::Pat::Lit(lit) => match &lit.lit {
+			syn::Lit::Str(str) => Some(str.value()),
+			_ => panic!("lit expr is not str"),
 		},
 		syn::Pat::Reference(_) => None,
 		syn::Pat::Wild(_) => None,
@@ -246,8 +244,7 @@ fn parse_index_method(tokens: TokenStream) -> Vec<Attribute> {
 
 	ast.block.stmts.iter().find(|stmt| {
 		let data = match stmt {
-			syn::Stmt::Expr(expr) => find_meta_method(&expr, "MetaMethod::Index"),
-			syn::Stmt::Semi(expr, _semi) => find_meta_method(&expr, "MetaMethod::Index"),
+			syn::Stmt::Expr(expr, _semi) => find_meta_method(&expr, "MetaMethod::Index"),
 			_ => None,
 		};
 
@@ -290,12 +287,13 @@ pub fn get_doc_groups(tokens: TokenStream) -> Vec<String> {
 		.attrs
 		.into_iter()
 		.filter(|attr| {
-			let ppath = parse_path(&attr.path);
+			let ppath = parse_path(attr.path());
 
 			ppath == "doc"
 		})
 		.map(|args| {
-			args.tokens
+			args.meta
+				.to_token_stream()
 				.into_iter()
 				.map(|arg| match arg {
 					proc_macro2::TokenTree::Literal(lit) => {
@@ -356,7 +354,7 @@ pub fn lua_doc_generator(args: TokenStream, tokens: TokenStream) -> TokenStream 
 		return tokens;
 	}
 
-	let input: AttributeArgs = parse_macro_input!(args as AttributeArgs);
+	let input: Vec<NestedMeta> = NestedMeta::parse_meta_list(args.into()).unwrap();
 
 	let parsed_args = parse_args(input);
 

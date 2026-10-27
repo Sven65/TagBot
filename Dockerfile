@@ -2,7 +2,7 @@
 
 ################# COMPILE TAGBOT #################
 
-FROM --platform="linux/amd64" rust:1.81.0-bullseye as build
+FROM --platform="linux/amd64" rust:1.98.0-bullseye as build
 
 # Capture deps
 # COPY Cargo.toml Cargo.lock /app/

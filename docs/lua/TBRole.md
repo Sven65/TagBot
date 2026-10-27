@@ -10,7 +10,7 @@
 - mentionable :: bool
 - name :: String
 - permissions :: <!> Unknown (Not implemented) <!>
-- position :: i64
+- position :: u16
 - tags :: TBRoleTags
 - icon :: String?
 - unicode_emoji :: String?

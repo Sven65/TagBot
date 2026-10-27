@@ -2,13 +2,13 @@ use rlua::Lua;
 use serenity::model::prelude::ChannelId;
 use tagbot::tags::lua::lua_modules::rs_lua::types::serenity::channel_id::TBChannelId;
 
-use crate::util::creators::create_context;
+use crate::util::creators::create_http;
 
 #[rustfmt::skip]
 #[test]
 fn channel_id_to_string() {
-	let channel_id = ChannelId(172382467385196544);
-	let tb_channel_id = TBChannelId::new(channel_id, create_context());
+	let channel_id = ChannelId::new(172382467385196544);
+	let tb_channel_id = TBChannelId::new(channel_id, create_http());
 
 	let lua = Lua::new();
 	let userdata = lua.create_userdata(tb_channel_id).unwrap();

@@ -1,38 +1,36 @@
 use serenity::{
-	model::prelude::interaction::{
-		application_command::ApplicationCommandInteraction, modal::ModalSubmitInteraction,
-		InteractionResponseType,
-	},
+	builder::{CreateInteractionResponse, CreateInteractionResponseMessage},
+	model::prelude::{CommandInteraction, ModalInteraction},
 	prelude::Context,
 	Error as SerenityError,
 };
 
 pub async fn send_modal_message(
 	ctx: Context,
-	interaction: ModalSubmitInteraction,
+	interaction: ModalInteraction,
 	content: &str,
 	ephemeral: bool,
 ) -> Result<(), SerenityError> {
-	interaction
-		.create_interaction_response(&ctx.http, |response| {
-			response
-				.kind(InteractionResponseType::ChannelMessageWithSource)
-				.interaction_response_data(|message| message.content(content).ephemeral(ephemeral))
-		})
-		.await
+	let response = CreateInteractionResponse::Message(
+		CreateInteractionResponseMessage::new()
+			.content(content)
+			.ephemeral(ephemeral),
+	);
+
+	interaction.create_response(&ctx.http, response).await
 }
 
 pub async fn send_app_interaction_message(
 	ctx: Context,
-	interaction: ApplicationCommandInteraction,
+	interaction: CommandInteraction,
 	content: &str,
 	ephemeral: bool,
 ) -> Result<(), SerenityError> {
-	interaction
-		.create_interaction_response(&ctx.http, |response| {
-			response
-				.kind(InteractionResponseType::ChannelMessageWithSource)
-				.interaction_response_data(|message| message.content(content).ephemeral(ephemeral))
-		})
-		.await
+	let response = CreateInteractionResponse::Message(
+		CreateInteractionResponseMessage::new()
+			.content(content)
+			.ephemeral(ephemeral),
+	);
+
+	interaction.create_response(&ctx.http, response).await
 }

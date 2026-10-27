@@ -2,8 +2,8 @@ use reql::types::User;
 use serde::Serialize;
 use serenity::model::{
 	prelude::{
-		ChannelId, ChannelType, EmojiId, GuildId, MessageId, PermissionOverwrite, RoleId,
-		ThreadMember, ThreadMetadata, VideoQualityMode,
+		AutoArchiveDuration, ChannelId, ChannelType, EmojiId, GuildId, MessageId,
+		PartialThreadMember, PermissionOverwrite, RoleId, ThreadMetadata, VideoQualityMode,
 	},
 	Timestamp,
 };
@@ -18,14 +18,14 @@ pub struct Category {
 	pub nsfw: bool,
 	pub parent_id: Option<ChannelId>,
 	pub permission_overwrites: Vec<PermissionOverwrite>,
-	pub position: i64,
+	pub position: u16,
 }
 
 #[derive(Serialize)]
 pub struct SerenityChannel {
 	pub id: ChannelId,
 
-	pub bitrate: Option<u64>,
+	pub bitrate: Option<u32>,
 	pub parent_id: Option<ChannelId>,
 	pub guild_id: GuildId,
 
@@ -38,22 +38,22 @@ pub struct SerenityChannel {
 	pub permission_overwrites: Vec<PermissionOverwrite>,
 
 	#[serde(default)]
-	pub position: i64,
+	pub position: u16,
 	pub topic: Option<String>,
-	pub user_limit: Option<u64>,
+	pub user_limit: Option<u32>,
 	#[serde(default)]
 	pub nsfw: bool,
 	#[serde(default)]
-	pub rate_limit_per_user: Option<u64>,
+	pub rate_limit_per_user: Option<u16>,
 	pub rtc_region: Option<String>,
 	pub video_quality_mode: Option<VideoQualityMode>,
 	#[serde(default, deserialize_with = "message_count_patch")]
-	pub message_count: Option<u8>,
+	pub message_count: Option<u32>,
 	pub member_count: Option<u8>,
 
 	pub thread_metadata: Option<ThreadMetadata>,
-	pub member: Option<ThreadMember>,
-	pub default_auto_archive_duration: Option<u64>,
+	pub member: Option<PartialThreadMember>,
+	pub default_auto_archive_duration: Option<AutoArchiveDuration>,
 }
 
 #[derive(Serialize)]

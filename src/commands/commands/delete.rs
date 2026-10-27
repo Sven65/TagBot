@@ -1,24 +1,19 @@
 use cat_loggr::log_fatal;
 use serenity::{
-	builder::CreateApplicationCommand,
-	model::prelude::{
-		command::CommandOptionType,
-		interaction::application_command::{ApplicationCommandInteraction, CommandDataOptionValue},
-	},
+	builder::{CreateCommand, CreateCommandOption},
+	model::prelude::{CommandDataOptionValue, CommandInteraction, CommandOptionType},
 	prelude::Context,
 };
 
 use crate::{services::rethinkdb::tags::TagsTable, util::command_options::FindOption};
 
-pub async fn delete(interaction: ApplicationCommandInteraction, _ctx: Context) -> String {
+pub async fn delete(interaction: CommandInteraction, _ctx: Context) -> String {
 	let data = interaction.data.clone();
 
-	let name = data
+	let name = &data
 		.find_option("name")
 		.expect("Expected name option")
-		.resolved
-		.as_ref()
-		.expect("Expected name value");
+		.value;
 
 	let name: String = match name {
 		CommandDataOptionValue::String(option) => option.to_string(),
@@ -47,14 +42,9 @@ pub async fn delete(interaction: ApplicationCommandInteraction, _ctx: Context) -
 	format!("Deleted tag {}", name)
 }
 
-pub fn delete_options_creator(
-	command: &mut CreateApplicationCommand,
-) -> &mut CreateApplicationCommand {
-	command.create_option(|option| {
-		option
-			.name("name")
-			.kind(CommandOptionType::String)
-			.description("The name of the tag")
-			.required(true)
-	}) as _
+pub fn delete_options_creator(command: CreateCommand) -> CreateCommand {
+	command.add_option(
+		CreateCommandOption::new(CommandOptionType::String, "name", "The name of the tag")
+			.required(true),
+	)
 }

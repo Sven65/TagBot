@@ -1,7 +1,8 @@
 use rlua::{Error as LuaError, IntoLua, MetaMethod, UserData, Value};
 use serenity::model::prelude::UserId;
 use serenity::model::user::User;
-use serenity::{prelude::Context as SerenityContext, Error};
+use serenity::{http::Http, Error};
+use std::sync::Arc;
 use tagbot_macros::lua_document;
 use tokio::runtime::Handle;
 
@@ -9,8 +10,8 @@ use crate::tags::lua::lua_modules::rs_lua::types::utils::types::ConstructableFro
 
 use super::user::TBUser;
 
-async fn get_user(user_id: UserId, s_ctx: SerenityContext) -> Result<User, Error> {
-	let user = user_id.to_user(&s_ctx.http).await.unwrap();
+async fn get_user(user_id: UserId, http: Arc<Http>) -> Result<User, Error> {
+	let user = user_id.to_user(&http).await.unwrap();
 
 	Ok(user)
 }
@@ -18,16 +19,16 @@ async fn get_user(user_id: UserId, s_ctx: SerenityContext) -> Result<User, Error
 /// Wrapper for [`serenity::model::prelude::UserId`]
 #[derive(Clone)]
 #[lua_document("TBUserId", class)]
-pub struct TBUserId(pub UserId, pub SerenityContext);
+pub struct TBUserId(pub UserId, pub Arc<Http>);
 
-impl ConstructableFrom2<UserId, SerenityContext> for TBUserId {
+impl ConstructableFrom2<UserId, Arc<Http>> for TBUserId {
 	/// Creates a new wrapper
 	///
 	/// # Arguments
 	/// * `user_id` - The serenity UserId to wrap
-	/// * `s_ctx` - SerenityContext to use when resolving channel
-	fn new(user_id: UserId, s_ctx: SerenityContext) -> TBUserId {
-		TBUserId(user_id, s_ctx)
+	/// * `http` - Http client to use when resolving channel
+	fn new(user_id: UserId, http: Arc<Http>) -> TBUserId {
+		TBUserId(user_id, http)
 	}
 }
 
@@ -44,10 +45,10 @@ impl UserData for TBUserId {
 		/// @return {TBUser} A discord user
 		methods.add_method("resolve", |ctx, this, _: Value| {
 			let user_id = this.0;
-			let s_ctx = this.1.clone();
+			let http = this.1.clone();
 
 			let user = tokio::task::block_in_place(move || {
-				Handle::current().block_on(async move { get_user(user_id, s_ctx).await })
+				Handle::current().block_on(async move { get_user(user_id, http).await })
 			});
 
 			if user.is_err() {

@@ -1,10 +1,7 @@
 use cat_loggr::log_fatal;
 use serenity::{
-	builder::CreateApplicationCommand,
-	model::prelude::{
-		command::CommandOptionType,
-		interaction::application_command::{ApplicationCommandInteraction, CommandDataOptionValue},
-	},
+	builder::{CreateCommand, CreateCommandOption, CreateInteractionResponseFollowup},
+	model::prelude::{CommandDataOptionValue, CommandInteraction, CommandOptionType},
 	prelude::Context,
 };
 
@@ -15,14 +12,12 @@ use crate::{
 	util::{command_options::*, message::send_app_interaction_message},
 };
 
-pub async fn tag(interaction: ApplicationCommandInteraction, ctx: Context) -> String {
-	let name = interaction
+pub async fn tag(interaction: CommandInteraction, ctx: Context) -> String {
+	let name = &interaction
 		.data
 		.find_option("name")
 		.expect("Expected name option")
-		.resolved
-		.as_ref()
-		.expect("Expected name value");
+		.value;
 
 	let name: String = match name {
 		CommandDataOptionValue::String(option) => option.to_string(),
@@ -62,7 +57,10 @@ pub async fn tag(interaction: ApplicationCommandInteraction, ctx: Context) -> St
 		}
 
 		let res = interaction
-			.create_followup_message(&ctx.http, |res| res.content(data))
+			.create_followup(
+				&ctx.http,
+				CreateInteractionResponseFollowup::new().content(data),
+			)
 			.await;
 
 		if res.is_err() {
@@ -76,21 +74,15 @@ pub async fn tag(interaction: ApplicationCommandInteraction, ctx: Context) -> St
 	}
 }
 
-pub fn tag_options_creator(
-	command: &mut CreateApplicationCommand,
-) -> &mut CreateApplicationCommand {
-	command.create_option(|option| {
-		option
-			.name("name")
-			.kind(CommandOptionType::String)
-			.description("The name of the tag")
-			.required(true)
-	});
-
-	command.create_option(|option| {
-		option
-			.name("args")
-			.kind(CommandOptionType::String)
-			.description("Arguments for the tag")
-	}) as _
+pub fn tag_options_creator(command: CreateCommand) -> CreateCommand {
+	command
+		.add_option(
+			CreateCommandOption::new(CommandOptionType::String, "name", "The name of the tag")
+				.required(true),
+		)
+		.add_option(CreateCommandOption::new(
+			CommandOptionType::String,
+			"args",
+			"Arguments for the tag",
+		))
 }

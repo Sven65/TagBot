@@ -1,5 +1,5 @@
 use rlua::{Error, IntoLua, MetaMethod, UserData, Value};
-use serenity::utils::Colour;
+use serenity::model::Colour;
 use tagbot_macros::lua_document;
 
 use crate::tags::lua::lua_modules::rs_lua::types::{

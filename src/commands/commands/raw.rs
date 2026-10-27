@@ -1,15 +1,11 @@
 use cat_loggr::log_fatal;
 use futures::AsyncWriteExt;
 use serenity::{
-	builder::CreateApplicationCommand,
-	model::prelude::{
-		command::CommandOptionType,
-		interaction::{
-			application_command::{ApplicationCommandInteraction, CommandDataOptionValue},
-			InteractionResponseType,
-		},
-		AttachmentType,
+	builder::{
+		CreateAttachment, CreateCommand, CreateCommandOption, CreateInteractionResponse,
+		CreateInteractionResponseMessage,
 	},
+	model::prelude::{CommandDataOptionValue, CommandInteraction, CommandOptionType},
 	prelude::Context,
 };
 
@@ -19,15 +15,13 @@ use crate::{
 	util::{command_options::*, message::send_app_interaction_message},
 };
 
-pub async fn raw(interaction: ApplicationCommandInteraction, ctx: Context) -> String {
+pub async fn raw(interaction: CommandInteraction, ctx: Context) -> String {
 	let data = interaction.data.clone();
 
-	let name = data
+	let name = &data
 		.find_option("name")
 		.expect("Expected name option")
-		.resolved
-		.as_ref()
-		.expect("Expected name value");
+		.value;
 
 	let name: String = match name {
 		CommandDataOptionValue::String(option) => option.to_string(),
@@ -53,20 +47,15 @@ pub async fn raw(interaction: ApplicationCommandInteraction, ctx: Context) -> St
 			"Failed to write to temp file while creating raw tag file"
 		);
 
-		let file =
-			AttachmentType::Bytes { data: file_data.into(), filename: format!("{}.txt", tag.id) };
+		let file = CreateAttachment::bytes(file_data, format!("{}.txt", tag.id));
 
-		let result = interaction
-			.create_interaction_response(&ctx.http, |response| {
-				response
-					.kind(InteractionResponseType::ChannelMessageWithSource)
-					.interaction_response_data(|message| {
-						message
-							.content(format!("Raw data for tag {}", tag.id))
-							.add_file(file)
-					})
-			})
-			.await;
+		let response = CreateInteractionResponse::Message(
+			CreateInteractionResponseMessage::new()
+				.content(format!("Raw data for tag {}", tag.id))
+				.add_file(file),
+		);
+
+		let result = interaction.create_response(&ctx.http, response).await;
 
 		if result.is_err() {
 			log_fatal!("Failed sending response {}", result.err().unwrap());
@@ -76,14 +65,9 @@ pub async fn raw(interaction: ApplicationCommandInteraction, ctx: Context) -> St
 	"".to_string()
 }
 
-pub fn raw_options_creator(
-	command: &mut CreateApplicationCommand,
-) -> &mut CreateApplicationCommand {
-	command.create_option(|option| {
-		option
-			.name("name")
-			.kind(CommandOptionType::String)
-			.description("The name of the tag")
-			.required(true)
-	}) as _
+pub fn raw_options_creator(command: CreateCommand) -> CreateCommand {
+	command.add_option(
+		CreateCommandOption::new(CommandOptionType::String, "name", "The name of the tag")
+			.required(true),
+	)
 }

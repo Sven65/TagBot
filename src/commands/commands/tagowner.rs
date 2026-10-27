@@ -1,23 +1,18 @@
 use serenity::{
-	builder::CreateApplicationCommand,
-	model::prelude::{
-		command::CommandOptionType,
-		interaction::application_command::{ApplicationCommandInteraction, CommandDataOptionValue},
-	},
+	builder::{CreateCommand, CreateCommandOption},
+	model::prelude::{CommandDataOptionValue, CommandInteraction, CommandOptionType, UserId},
 	prelude::Context,
 };
 
 use crate::{services::rethinkdb::tags::TagsTable, util::command_options::*};
 
-pub async fn tagowner(interaction: ApplicationCommandInteraction, ctx: Context) -> String {
+pub async fn tagowner(interaction: CommandInteraction, ctx: Context) -> String {
 	let data = interaction.data.clone();
 
-	let name = data
+	let name = &data
 		.find_option("name")
 		.expect("Expected name option")
-		.resolved
-		.as_ref()
-		.expect("Expected name value");
+		.value;
 
 	let name: String = match name {
 		CommandDataOptionValue::String(option) => option.to_string(),
@@ -30,7 +25,7 @@ pub async fn tagowner(interaction: ApplicationCommandInteraction, ctx: Context) 
 		"That tag doesn't exist!".to_string()
 	} else {
 		let tag = gotten_tag.unwrap();
-		let user_id = tag.owner.parse::<u64>();
+		let user_id = tag.owner.parse::<UserId>();
 
 		if user_id.is_err() {
 			return "Failed to get tag owner, as owner ID could not be parsed.".to_string();
@@ -57,14 +52,9 @@ pub async fn tagowner(interaction: ApplicationCommandInteraction, ctx: Context) 
 	}
 }
 
-pub fn tagowner_options_creator(
-	command: &mut CreateApplicationCommand,
-) -> &mut CreateApplicationCommand {
-	command.create_option(|option| {
-		option
-			.name("name")
-			.kind(CommandOptionType::String)
-			.description("The name of the tag")
-			.required(true)
-	}) as _
+pub fn tagowner_options_creator(command: CreateCommand) -> CreateCommand {
+	command.add_option(
+		CreateCommandOption::new(CommandOptionType::String, "name", "The name of the tag")
+			.required(true),
+	)
 }

@@ -12,4 +12,4 @@
 - available :: bool
 - guild_id :: TBGuildId?
 - user :: TBUser?
-- sort_value :: u64?
+- sort_value :: u16?

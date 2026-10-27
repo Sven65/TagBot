@@ -1,4 +1,5 @@
 use serenity::model::user::User;
+use std::num::NonZeroU16;
 use tagbot::tags::legacy::executor::replace_sender_variables;
 use test_case::test_case;
 
@@ -7,7 +8,7 @@ fn get_test_user() -> User {
 
 	test_user.id = 141610251299454976.into();
 	test_user.bot = false;
-	test_user.discriminator = 7196;
+	test_user.discriminator = NonZeroU16::new(7196);
 	test_user.name = "Mackan".to_string();
 
 	test_user

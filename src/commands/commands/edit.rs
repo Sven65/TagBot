@@ -1,14 +1,12 @@
 use cat_loggr::log_fatal;
 use serenity::{
-	builder::CreateApplicationCommand,
+	builder::{
+		CreateActionRow, CreateCommand, CreateCommandOption, CreateInputText,
+		CreateInteractionResponse, CreateModal,
+	},
 	model::prelude::{
-		command::CommandOptionType,
-		component::InputTextStyle,
-		interaction::{
-			application_command::{ApplicationCommandInteraction, CommandDataOptionValue},
-			modal::ModalSubmitInteraction,
-			InteractionResponseType,
-		},
+		CommandDataOptionValue, CommandInteraction, CommandOptionType, InputTextStyle,
+		ModalInteraction,
 	},
 	prelude::Context,
 };
@@ -19,14 +17,12 @@ use crate::{
 	util::{command_options::*, input_field::FindInput, message::send_modal_message},
 };
 
-pub async fn edit(interaction: ApplicationCommandInteraction, ctx: Context) -> String {
-	let name = interaction
+pub async fn edit(interaction: CommandInteraction, ctx: Context) -> String {
+	let name = &interaction
 		.data
 		.find_option("name")
 		.expect("Expected name option")
-		.resolved
-		.as_ref()
-		.expect("Expected name value");
+		.value;
 
 	let name: String = match name {
 		CommandDataOptionValue::String(option) => option.to_string(),
@@ -45,29 +41,19 @@ pub async fn edit(interaction: ApplicationCommandInteraction, ctx: Context) -> S
 		return "You don't own that tag".to_string();
 	}
 
+	let content_input = CreateInputText::new(InputTextStyle::Paragraph, "Content", "content_input")
+		.min_length(1)
+		.required(true)
+		.value(gotten_tag.content);
+
+	let modal = CreateModal::new(
+		format!("edit-{}-{}", interaction.user.id, name),
+		format!("Editing tag {}", name),
+	)
+	.components(vec![CreateActionRow::InputText(content_input)]);
+
 	let modal = interaction
-		.create_interaction_response(&ctx.http, |response| {
-			response
-				.kind(InteractionResponseType::Modal)
-				.interaction_response_data(|modal| {
-					modal
-						.custom_id(format!("edit-{}-{}", interaction.user.id, name))
-						.title(format!("Editing tag {}", name))
-						.components(|comp| {
-							comp.create_action_row(|row| {
-								row.create_input_text(|input| {
-									input
-										.custom_id("content_input")
-										.label("Content")
-										.min_length(1)
-										.required(true)
-										.style(InputTextStyle::Paragraph)
-										.value(gotten_tag.content)
-								})
-							})
-						})
-				})
-		})
+		.create_response(&ctx.http, CreateInteractionResponse::Modal(modal))
 		.await;
 
 	if modal.is_err() {
@@ -77,7 +63,7 @@ pub async fn edit(interaction: ApplicationCommandInteraction, ctx: Context) -> S
 	"".to_string()
 }
 
-pub async fn edit_tag_handle_modal(interaction: ModalSubmitInteraction, ctx: Context) -> String {
+pub async fn edit_tag_handle_modal(interaction: ModalInteraction, ctx: Context) -> String {
 	let id_split = interaction.data.custom_id.split('-');
 	let tag_name = id_split.skip(2).collect::<Vec<_>>().join("-");
 
@@ -86,7 +72,7 @@ pub async fn edit_tag_handle_modal(interaction: ModalSubmitInteraction, ctx: Con
 	}
 
 	let content_field = interaction.data.components.find_input("content_input");
-	let content = &content_field.unwrap().value;
+	let content = content_field.unwrap().value.as_ref().unwrap();
 
 	if content.is_empty() {
 		handle_error!(
@@ -123,14 +109,13 @@ pub async fn edit_tag_handle_modal(interaction: ModalSubmitInteraction, ctx: Con
 	}
 }
 
-pub fn edit_options_creator(
-	command: &mut CreateApplicationCommand,
-) -> &mut CreateApplicationCommand {
-	command.create_option(|option| {
-		option
-			.name("name")
-			.kind(CommandOptionType::String)
-			.description("The name of the tag to edit")
-			.required(true)
-	}) as _
+pub fn edit_options_creator(command: CreateCommand) -> CreateCommand {
+	command.add_option(
+		CreateCommandOption::new(
+			CommandOptionType::String,
+			"name",
+			"The name of the tag to edit",
+		)
+		.required(true),
+	)
 }

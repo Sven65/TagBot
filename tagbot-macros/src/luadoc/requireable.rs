@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use darling::ToTokens;
 use proc_macro::TokenStream;
-use syn::{Attribute, ExprMethodCall, ImplItemMethod};
+use syn::{Attribute, ExprMethodCall, ImplItemFn};
 
 use crate::luadoc::{
 	comments::{parse_comment_line, Annotation},
@@ -23,7 +23,7 @@ fn parse_attributes_to_doc(attribs: Vec<Attribute>) -> Vec<String> {
 	attribs
 		.iter()
 		.filter_map(|attr| {
-			let ident = attr.path.get_ident().unwrap().to_string();
+			let ident = attr.path().get_ident().unwrap().to_string();
 
 			if ident != "doc" {
 				return None;
@@ -32,8 +32,8 @@ fn parse_attributes_to_doc(attribs: Vec<Attribute>) -> Vec<String> {
 			Some(attr)
 		})
 		.map(|attr| {
-			attr.tokens
-				.clone()
+			attr.meta
+				.to_token_stream()
 				.into_iter()
 				.filter_map(|token| match token {
 					proc_macro2::TokenTree::Literal(lit) => {
@@ -55,11 +55,11 @@ fn parse_attributes_to_doc(attribs: Vec<Attribute>) -> Vec<String> {
 ///
 /// # Arguments
 /// * `method` - The `create_module` method to parse
-fn get_return_table_ident_name(method: &ImplItemMethod) -> String {
+fn get_return_table_ident_name(method: &ImplItemFn) -> String {
 	let last_stmt = method.block.stmts.last().unwrap();
 
 	let call = match last_stmt {
-		syn::Stmt::Expr(expr) => match expr {
+		syn::Stmt::Expr(expr, None) => match expr {
 			syn::Expr::Call(call) => Some(call),
 			_ => None,
 		},
@@ -148,18 +148,14 @@ fn parse_table_set_args(call: &ExprMethodCall) -> ValueSetParams {
 /// # Arguments
 /// * `method` - The `create_module` method to parse
 /// * `ident_name` - The ident being returned by the function
-fn parse_return_sets(method: &ImplItemMethod, ident_name: String) -> Vec<ValueSetParams> {
+fn parse_return_sets(method: &ImplItemFn, ident_name: String) -> Vec<ValueSetParams> {
 	let added_values: Vec<&ExprMethodCall> = method
 		.block
 		.stmts
 		.iter()
 		.filter_map(|stmt| {
 			let call = match stmt {
-				syn::Stmt::Expr(expr) => match expr {
-					syn::Expr::MethodCall(call) => Some(call),
-					_ => None,
-				},
-				syn::Stmt::Semi(expr, _) => match expr {
+				syn::Stmt::Expr(expr, _) => match expr {
 					syn::Expr::MethodCall(call) => Some(call),
 					_ => None,
 				},
@@ -203,7 +199,7 @@ fn parse_return_sets(method: &ImplItemMethod, ident_name: String) -> Vec<ValueSe
 ///
 /// # Arguments
 /// * `method` - The `create_module` function to parse
-fn find_function_creators(method: &ImplItemMethod) -> Vec<&syn::Local> {
+fn find_function_creators(method: &ImplItemFn) -> Vec<&syn::Local> {
 	let found_methods: Vec<&syn::Local> = method
 		.block
 		.stmts
@@ -211,7 +207,7 @@ fn find_function_creators(method: &ImplItemMethod) -> Vec<&syn::Local> {
 		.filter_map(|stmt| match stmt {
 			syn::Stmt::Local(local) => {
 				let init = local.init.as_ref().unwrap();
-				match &*init.1 {
+				match &*init.expr {
 					syn::Expr::MethodCall(call) => {
 						let called_method = call.method.to_string();
 
@@ -290,7 +286,7 @@ fn parse_function_docs(docs: HashMap<String, Vec<String>>) -> HashMap<String, Ve
 ///
 /// # Arguments
 /// * `method` - The method to parse
-fn parse_return_table(method: &ImplItemMethod) -> HashMap<String, Vec<Annotation>> {
+fn parse_return_table(method: &ImplItemFn) -> HashMap<String, Vec<Annotation>> {
 	let return_ident_name = get_return_table_ident_name(method);
 
 	let return_sets = parse_return_sets(method, return_ident_name);
@@ -311,11 +307,11 @@ fn parse_return_table(method: &ImplItemMethod) -> HashMap<String, Vec<Annotation
 pub fn parse_requireable(tokens: TokenStream) -> HashMap<String, Vec<Annotation>> {
 	let ast: syn::ItemImpl = syn::parse(tokens.clone()).unwrap();
 
-	let found_methods: Vec<&ImplItemMethod> = ast
+	let found_methods: Vec<&ImplItemFn> = ast
 		.items
 		.iter()
 		.filter_map(|item| match item {
-			syn::ImplItem::Method(method) => {
+			syn::ImplItem::Fn(method) => {
 				let method_name = method.sig.ident.to_string();
 
 				if method_name != "create_module".to_string() {

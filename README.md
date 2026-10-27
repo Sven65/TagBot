@@ -129,10 +129,10 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 - [x] Legacy tag support
 - [ ] Lua scripting
   - [x] Serenity userdata
-    - [x] [interaction](https://docs.rs/serenity/latest/serenity/model/application/interaction/application_command/struct.ApplicationCommandInteraction.html) guild_id
-    - [x] [interaction](https://docs.rs/serenity/latest/serenity/model/application/interaction/application_command/struct.ApplicationCommandInteraction.html) channel_id
-    - [x] [interaction](https://docs.rs/serenity/latest/serenity/model/application/interaction/application_command/struct.ApplicationCommandInteraction.html) member
-    - [x] [interaction](https://docs.rs/serenity/latest/serenity/model/application/interaction/application_command/struct.ApplicationCommandInteraction.html) user
+    - [x] [interaction](https://docs.rs/serenity/latest/serenity/model/application/struct.CommandInteraction.html) guild_id
+    - [x] [interaction](https://docs.rs/serenity/latest/serenity/model/application/struct.CommandInteraction.html) channel_id
+    - [x] [interaction](https://docs.rs/serenity/latest/serenity/model/application/struct.CommandInteraction.html) member
+    - [x] [interaction](https://docs.rs/serenity/latest/serenity/model/application/struct.CommandInteraction.html) user
   - [ ] Serenity userdata functions
   - [x] Automatic luadoc generation
 
